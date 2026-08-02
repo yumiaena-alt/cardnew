@@ -60,8 +60,18 @@
     "unknown_author": "제공자 미상"
   },
   "DeckNewPage": {
-    "scaffold_title": "카드뉴스 만들기 화면을 준비하고 있어요",
-    "scaffold_description": "생성 폼은 곧 들어옵니다. 화면 이동과 레이아웃은 준비됐어요."
+    "title": "카드뉴스 만들기",
+    "subtitle": "소재 한 줄이면 충분해요. 만들기 전에 크레딧이 얼마 드는지 보여드려요.",
+    "topic_label": "소재",
+    "topic_hint": "주제나 하고 싶은 말을 적어주세요. 최대 500자.",
+    "topic_placeholder": "예: 여름 신메뉴 3종 소개",
+    "channel_label": "채널",
+    "channel_hint": "{ratio} 비율로 만들어요.",
+    "channel_instagram": "인스타그램",
+    "channel_threads": "스레드",
+    "channel_tiktok": "틱톡",
+    "channel_blog": "블로그",
+    "submit": "견적 보기"
   },
   "TemplateGalleryPage": {
     "scaffold_title": "템플릿 갤러리를 만들고 있어요",

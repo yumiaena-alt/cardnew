@@ -60,8 +60,18 @@
     "unknown_author": "an unknown author"
   },
   "DeckNewPage": {
-    "scaffold_title": "Deck creation is being built",
-    "scaffold_description": "The generation form lands in Phase 1-D. Routing and layout are ready."
+    "title": "New card news",
+    "subtitle": "One line of topic is enough. You see the cost before anything is spent.",
+    "topic_label": "Topic",
+    "topic_hint": "What the cards should say. Up to 500 characters.",
+    "topic_placeholder": "e.g. Introducing three new summer items",
+    "channel_label": "Channel",
+    "channel_hint": "Rendered at {ratio}.",
+    "channel_instagram": "Instagram",
+    "channel_threads": "Threads",
+    "channel_tiktok": "TikTok",
+    "channel_blog": "Blog",
+    "submit": "See the estimate"
   },
   "TemplateGalleryPage": {
     "scaffold_title": "Template gallery is being built",

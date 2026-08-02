@@ -1,6 +1,7 @@
-import { Sparkles } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { DeckCreateForm } from '@/components/deck/DeckCreateForm';
+import { getBalance } from '@/features/credit/service';
+import { findScope } from '@/features/shared/scope';
 
 type DeckNewPageProps = {
   params: Promise<{ locale: string }>;
@@ -11,13 +12,17 @@ export default async function DeckNewPage(props: DeckNewPageProps) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'DeckNewPage' });
 
+  const scope = await findScope();
+  const creditBalance = scope ? await getBalance(scope) : 0;
+
   return (
-    <div className="mx-auto max-w-6xl">
-      <EmptyState
-        icon={Sparkles}
-        title={t('scaffold_title')}
-        description={t('scaffold_description')}
-      />
+    <div className="mx-auto flex max-w-2xl flex-col gap-6">
+      <header className="flex flex-col gap-1">
+        <h1 className="text-xl font-bold text-foreground">{t('title')}</h1>
+        <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+      </header>
+
+      <DeckCreateForm creditBalance={creditBalance} />
     </div>
   );
 }
