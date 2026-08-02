@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/Modal';
 import type { RunFailureCode } from '@/features/run/actions';
 import type { RunEstimate } from '@/features/run/estimate';
+import { Link } from '@/libs/I18nNavigation';
 
 type DryRunPanelProps = {
   open: boolean;
@@ -22,6 +23,8 @@ type DryRunPanelProps = {
   balance: number;
   failureCode: RunFailureCode | null;
   isPending: boolean;
+  /** Set once generation has been accepted. Switches the modal to its done state. */
+  startedRunId: string | null;
   onConfirm: () => void;
 };
 
@@ -41,6 +44,7 @@ export function DryRunPanel(props: DryRunPanelProps) {
   const total = props.estimate?.total ?? 0;
   const isShort = total > props.balance;
   const canRun = props.estimate !== null && !isShort && !props.isPending;
+  const hasStarted = props.startedRunId !== null;
 
   return (
     <ModalRoot open={props.open} onOpenChange={props.onOpenChange}>
@@ -50,9 +54,11 @@ export function DryRunPanel(props: DryRunPanelProps) {
           <ModalTitle>{t('title')}</ModalTitle>
         </div>
 
-        <ModalDescription>{t('description')}</ModalDescription>
+        <ModalDescription>
+          {hasStarted ? t('started_description') : t('description')}
+        </ModalDescription>
 
-        {props.estimate ? (
+        {props.estimate && !hasStarted ? (
           <dl className="flex flex-col gap-2 rounded-lg border border-border bg-background p-3 text-sm">
             <div className="flex items-center justify-between">
               <dt className="text-muted-foreground">{t('origin_count')}</dt>
@@ -75,7 +81,13 @@ export function DryRunPanel(props: DryRunPanelProps) {
           </dl>
         ) : null}
 
-        {isShort ? (
+        {hasStarted ? (
+          <p className="rounded-lg border border-status-done-border bg-status-done p-3 text-sm text-status-done-foreground">
+            {t('started_note')}
+          </p>
+        ) : null}
+
+        {isShort && !hasStarted ? (
           <p className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
             {t('short_balance', { missing: total - props.balance })}
           </p>
@@ -91,16 +103,35 @@ export function DryRunPanel(props: DryRunPanelProps) {
         ) : null}
 
         <ModalFooter>
-          <ModalClose
-            render={
-              <Button variant="ghost" size="lg">
-                {t('cancel')}
+          {hasStarted ? (
+            <>
+              <ModalClose
+                render={
+                  <Button variant="ghost" size="lg">
+                    {t('close')}
+                  </Button>
+                }
+              />
+              <Button
+                variant="default"
+                size="lg"
+                render={<Link href="/dashboard/deck">{t('view_decks')}</Link>}
+              />
+            </>
+          ) : (
+            <>
+              <ModalClose
+                render={
+                  <Button variant="ghost" size="lg">
+                    {t('cancel')}
+                  </Button>
+                }
+              />
+              <Button variant="signal" size="lg" disabled={!canRun} onClick={props.onConfirm}>
+                {props.isPending ? t('running') : t('confirm')}
               </Button>
-            }
-          />
-          <Button variant="signal" size="lg" disabled={!canRun} onClick={props.onConfirm}>
-            {props.isPending ? t('running') : t('confirm')}
-          </Button>
+            </>
+          )}
         </ModalFooter>
       </ModalContent>
     </ModalRoot>

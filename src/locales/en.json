@@ -46,7 +46,12 @@
     "create_action": "Create your first deck",
     "title": "My card news",
     "summary": "{count} decks",
-    "card_meta": "{count} slides · {ratio}"
+    "card_meta": "{count} slides · {ratio}",
+    "status_drafting": "Generating",
+    "status_ready": "Ready",
+    "status_scheduled": "Scheduled",
+    "status_published": "Published",
+    "status_archived": "Archived"
   },
   "DeckDetailPage": {
     "meta": "{count} slides · {ratio} · {channel}",
@@ -103,7 +108,11 @@
     "error_conflict": "This request was already handled.",
     "error_insufficient_credits": "Not enough credits.",
     "error_invalid_input": "Check the board contents.",
-    "error_queue_unavailable": "The generation service is not connected yet."
+    "error_queue_unavailable": "The generation service is not connected yet.",
+    "close": "Close",
+    "view_decks": "View decks",
+    "started_description": "Generation has started. Decks appear in the list as they finish.",
+    "started_note": "Cards show up in the list as they complete. You can close this."
   },
   "MarketingHeader": {
     "brand_name": "Panelo",

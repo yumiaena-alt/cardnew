@@ -44,6 +44,7 @@ export function BoardView(props: BoardViewProps) {
   const [quote, setQuote] = useState<RunEstimate | null>(null);
   const [isPanelOpen, setPanelOpen] = useState(false);
   const [failureCode, setFailureCode] = useState<RunFailureCode | null>(null);
+  const [startedRunId, setStartedRunId] = useState<string | null>(null);
   // Held across the confirm so a double submit reuses the key and the server
   // returns the run it already created instead of charging a second time.
   const [runKey, setRunKey] = useState('');
@@ -61,7 +62,9 @@ export function BoardView(props: BoardViewProps) {
       return;
     }
 
-    setPanelOpen(false);
+    // The modal stays open on success. Generation is asynchronous, so closing
+    // here would leave the user with no sign anything happened.
+    setStartedRunId(result.runId);
   };
 
   const requestQuote = () => {
@@ -70,6 +73,7 @@ export function BoardView(props: BoardViewProps) {
     setRunKey(key);
     setQuote(null);
     setFailureCode(null);
+    setStartedRunId(null);
     setPanelOpen(true);
 
     startTransition(async () => {
@@ -168,6 +172,7 @@ export function BoardView(props: BoardViewProps) {
         balance={props.creditBalance}
         failureCode={failureCode}
         isPending={isPending}
+        startedRunId={startedRunId}
         onConfirm={confirmRun}
       />
 

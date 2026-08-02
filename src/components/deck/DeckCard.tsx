@@ -1,7 +1,22 @@
 import { Images } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { StatusChip } from '@/components/ui/StatusChip';
 import type { DeckSummary } from '@/features/deck/repository';
 import { Link } from '@/libs/I18nNavigation';
+
+/**
+ * Deck status mapped onto the four tones the design system defines.
+ *
+ * `drafting` is the state a deck sits in while the worker is still rendering
+ * it, which is why it reads as in-progress rather than as a problem.
+ */
+const STATUS_TONE = {
+  drafting: 'draft',
+  ready: 'done',
+  scheduled: 'wait',
+  published: 'done',
+  archived: 'draft',
+} as const;
 
 type DeckCardProps = {
   deck: DeckSummary;
@@ -40,11 +55,17 @@ export function DeckCard(props: DeckCardProps) {
         <Images className="size-6" aria-hidden="true" />
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
         <h3 className="line-clamp-2 text-sm font-medium text-foreground">{props.deck.title}</h3>
-        <p className="text-xs text-muted-foreground">
-          {t('card_meta', { count: props.deck.panelCount, ratio: props.deck.ratio })}
-        </p>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusChip tone={STATUS_TONE[props.deck.status]}>
+            {t(`status_${props.deck.status}`)}
+          </StatusChip>
+          <span className="text-xs text-muted-foreground">
+            {t('card_meta', { count: props.deck.panelCount, ratio: props.deck.ratio })}
+          </span>
+        </div>
       </div>
     </Link>
   );
