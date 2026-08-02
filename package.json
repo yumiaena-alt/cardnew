@@ -39,7 +39,7 @@
     "@logtape/logtape": "^2.1.1",
     "@sentry/nextjs": "^10.53.1",
     "@t3-oss/env-nextjs": "^0.13.11",
-    "@trigger.dev/sdk": "^4.5.9",
+    "@trigger.dev/sdk": "4.5.9",
     "ai": "^7.0.48",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
