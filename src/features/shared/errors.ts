@@ -48,6 +48,18 @@ export function forbiddenError(message: string): DomainError {
 }
 
 /**
+ * Builds the error for a record that does not exist, or that exists in another
+ * organization. Both cases use this code so crossing the boundary cannot be
+ * told apart from asking for something imaginary.
+ *
+ * @param message - Operator-facing detail. Never shown to the user.
+ * @returns The domain error.
+ */
+export function notFoundError(message: string): DomainError {
+  return new DomainError('not_found', message);
+}
+
+/**
  * Builds the error for a webhook that arrives before the records it references.
  *
  * @param message - Operator-facing detail. Never shown to the user.

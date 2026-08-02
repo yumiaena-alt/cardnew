@@ -55,6 +55,14 @@ export type RefundInput = {
   idempotencyKey: string;
 };
 
+export type PartialRefundInput = {
+  /** Credits to return. Must be a positive integer. */
+  amount: number;
+  reason: RefundReason;
+  idempotencyKey: string;
+  ref?: LedgerRef;
+};
+
 type PostInput = {
   delta: number;
   reason: CreditReason;
@@ -194,6 +202,33 @@ export async function refundSpend(scope: OrgScope, input: RefundInput): Promise<
     reason: input.reason,
     idempotencyKey: input.idempotencyKey,
     ref: spend.refType && spend.refId ? { type: spend.refType, id: spend.refId } : undefined,
+  });
+}
+
+/**
+ * Returns part of an earlier spend.
+ *
+ * A run charges up front for every cut it plans to produce, but a single failed
+ * card does not invalidate the rest of the batch. This posts only the amount
+ * that was not delivered, which `refundSpend` cannot express because it always
+ * reverses a spend in full.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param input - Amount to return, reason, and idempotency key.
+ * @returns The refund entry, or the existing one on replay.
+ * @throws DomainError `conflict` when the amount is not a positive integer.
+ */
+export async function refundCredits(
+  scope: OrgScope,
+  input: PartialRefundInput,
+): Promise<CreditEntry> {
+  assertPositiveAmount(input.amount);
+
+  return await postEntry(scope, {
+    delta: input.amount,
+    reason: input.reason,
+    idempotencyKey: input.idempotencyKey,
+    ref: input.ref,
   });
 }
 
