@@ -79,6 +79,57 @@ export async function uploadObject(input: UploadInput): Promise<string> {
   return input.path;
 }
 
+/** Long enough for one editing session, short enough that a leaked link dies. */
+const DEFAULT_SIGNED_URL_TTL_SECONDS = 3600;
+
+/**
+ * Creates a time-limited URL for a private object.
+ *
+ * The render bucket is private, so this is the only way a browser sees a
+ * generated panel. Signing per request rather than making the bucket public
+ * keeps one tenant's cards from being readable by anyone who guesses a path.
+ *
+ * @param bucket - Bucket the object lives in.
+ * @param path - Object path inside the bucket.
+ * @param expiresInSeconds - Lifetime of the URL.
+ * @returns An absolute signed URL.
+ * @throws Error when storage is unconfigured or the object cannot be signed.
+ */
+export async function createSignedUrl(
+  bucket: string,
+  path: string,
+  expiresInSeconds: number = DEFAULT_SIGNED_URL_TTL_SECONDS,
+): Promise<string> {
+  const config = requireConfig();
+
+  const response = await fetch(`${config.url}/storage/v1/object/sign/${bucket}/${path}`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${config.key}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ expiresIn: expiresInSeconds }),
+    signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Storage sign failed with ${response.status}`);
+  }
+
+  const payload: unknown = await response.json();
+
+  if (
+    typeof payload !== 'object' ||
+    payload === null ||
+    !('signedURL' in payload) ||
+    typeof payload.signedURL !== 'string'
+  ) {
+    throw new Error('Storage sign returned no URL');
+  }
+
+  return `${config.url}/storage/v1${payload.signedURL}`;
+}
+
 /**
  * Builds the storage path for one rendered panel.
  *

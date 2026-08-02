@@ -5,11 +5,32 @@ import { cardnews } from './Namespace';
 import { organizations, projects, users } from './Org';
 import { templateVersions } from './Template';
 
+/**
+ * Where a stock photo came from.
+ *
+ * Stored with the slot rather than in a side table because attribution has to
+ * survive as long as the image is on screen: Unsplash requires the credit to be
+ * shown, and `commercialSafe` is what the publishing path checks before a card
+ * goes out to a paying user's audience.
+ */
+export type SlotProvenance = {
+  source: string;
+  sourceId: string;
+  sourceUrl: string | null;
+  authorName: string | null;
+  authorUrl: string | null;
+  license: string;
+  attributionRequired: boolean;
+  commercialSafe: boolean;
+};
+
 /** The value a slot currently holds — text content, or the id of an image asset. */
 export type PanelSlotValue = {
   type: 'text' | 'image' | 'shape';
   value: string;
   style?: Record<string, string>;
+  /** Set on image slots sourced from a stock provider. */
+  provenance?: SlotProvenance;
   /** A slot the user edited by hand survives regeneration untouched. */
   isUserEdited?: boolean;
 };

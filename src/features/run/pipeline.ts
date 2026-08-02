@@ -7,8 +7,10 @@ import { composeCardnews } from '@/lib/renderer/compose';
 import { logger } from '@/libs/Logger';
 import { renderPanel } from '@/libs/RenderService';
 import { panelRenderPath, RENDER_BUCKET, uploadObject } from '@/libs/Storage';
-import type { NewPanel, PanelSlotValue } from '@/models/Deck';
+import type { NewPanel, PanelSlotValue, SlotProvenance } from '@/models/Deck';
 import type { RunItem } from '@/models/Run';
+import type { SlideImagery } from './imagery';
+import { sourceImagery } from './imagery';
 
 /**
  * Generation of one cut, from topic to stored panels.
@@ -27,11 +29,14 @@ export type GenerateCutInput = {
   createdBy: string;
   /** Plan from the origin cut of the same topic. Absent for the origin itself. */
   plan?: CardnewsPlan;
+  /** Photography sourced by the origin cut. Reused so channels stay visually consistent. */
+  imagery?: SlideImagery;
 };
 
 export type GenerateCutResult = {
   deckId: string;
   plan: CardnewsPlan;
+  imagery: SlideImagery;
   panelCount: number;
   /** Typesetting problems worth surfacing. Not failures. */
   warnings: string[];
@@ -99,7 +104,10 @@ function toPanelRole(role: CardnewsPlan['slides'][number]['role'] | undefined, i
   return index === 0 ? 'cover' : 'body';
 }
 
-function toSlots(slide: CardnewsPlan['slides'][number]): Record<string, PanelSlotValue> {
+function toSlots(
+  slide: CardnewsPlan['slides'][number],
+  provenance: SlotProvenance | null,
+): Record<string, PanelSlotValue> {
   const slots: Record<string, PanelSlotValue> = {
     headline: { type: 'text', value: slide.headline },
   };
@@ -110,6 +118,16 @@ function toSlots(slide: CardnewsPlan['slides'][number]): Record<string, PanelSlo
 
   if (slide.eyebrow) {
     slots.eyebrow = { type: 'text', value: slide.eyebrow };
+  }
+
+  if (provenance) {
+    // The value is the provider's own id, not our path: the bytes live in the
+    // rendered PNG, and what has to survive is who the photo belongs to.
+    slots.background = {
+      type: 'image',
+      value: `${provenance.source}:${provenance.sourceId}`,
+      provenance,
+    };
   }
 
   return slots;
@@ -126,6 +144,7 @@ async function renderAndStore(input: {
   versionId: string;
   composed: ComposedCardnews;
   plan: CardnewsPlan;
+  imagery: SlideImagery;
 }): Promise<{ rows: PanelRow[]; warnings: string[] }> {
   const rows: PanelRow[] = [];
   const warnings: string[] = [];
@@ -149,7 +168,7 @@ async function renderAndStore(input: {
     rows.push({
       index,
       role: toPanelRole(planned?.role, index),
-      slots: planned ? toSlots(planned) : {},
+      slots: planned ? toSlots(planned, input.imagery.provenance[index] ?? null) : {},
       renderPath: path,
     });
   }
@@ -166,10 +185,12 @@ async function renderAndStore(input: {
  */
 export async function generateCut(input: GenerateCutInput): Promise<GenerateCutResult> {
   const { plan, usage } = await resolvePlan(input.item, input.plan);
+  const imagery = input.imagery ?? (await sourceImagery(plan, input.item.ratio));
 
   const composed = composeCardnews({
     plan,
     ratio: input.item.ratio,
+    images: imagery.images,
     // Seeded by the item so a retry redraws the same layout rather than
     // silently producing a different design for the same charge.
     seed: input.item.id,
@@ -194,6 +215,7 @@ export async function generateCut(input: GenerateCutInput): Promise<GenerateCutR
     versionId: version.id,
     composed,
     plan,
+    imagery,
   });
 
   await replacePanels(version.id, rows);
@@ -207,5 +229,5 @@ export async function generateCut(input: GenerateCutInput): Promise<GenerateCutR
     warnings: warnings.length,
   });
 
-  return { deckId: deck.id, plan, panelCount: rows.length, warnings, usage };
+  return { deckId: deck.id, plan, imagery, panelCount: rows.length, warnings, usage };
 }

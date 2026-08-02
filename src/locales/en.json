@@ -43,7 +43,16 @@
   "DeckListPage": {
     "empty_title": "No decks yet",
     "empty_description": "Turn one topic into a set of cards, then reuse it across channels.",
-    "create_action": "Create your first deck"
+    "create_action": "Create your first deck",
+    "title": "My card news",
+    "summary": "{count} decks",
+    "card_meta": "{count} slides · {ratio}"
+  },
+  "DeckDetailPage": {
+    "meta": "{count} slides · {ratio} · {channel}",
+    "panel_alt": "Slide {index}",
+    "photo_credit": "Photo by {author}",
+    "unknown_author": "an unknown author"
   },
   "DeckNewPage": {
     "scaffold_title": "Deck creation is being built",

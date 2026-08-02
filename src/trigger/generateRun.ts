@@ -1,5 +1,6 @@
 import { logger as triggerLogger, task } from '@trigger.dev/sdk';
 import { findDefaultProjectId } from '@/features/deck/repository';
+import type { SlideImagery } from '@/features/run/imagery';
 import { generateCut } from '@/features/run/pipeline';
 import { findRun, listRunItems, updateRun, updateRunItem } from '@/features/run/repository';
 import type { RunItemOutcome } from '@/features/run/service';
@@ -31,12 +32,16 @@ export type GenerateRunPayload = {
 };
 
 /**
- * Groups reusable plans by source topic so derived cuts skip planning.
+ * What an origin cut produced, for its derived cuts to reuse.
  *
  * Keyed by topic rather than by row: two rows with identical text are the same
- * writing job, and the origin of one can seed the other.
+ * writing job, and the origin of one can seed the other. The photography is
+ * carried along with the plan so the channels of one topic show the same
+ * pictures — a fan-out where Instagram and TikTok used different photos would
+ * read as two unrelated posts.
  */
-type PlanCache = Map<string, CardnewsPlan>;
+type OriginOutput = { plan: CardnewsPlan; imagery: SlideImagery };
+type PlanCache = Map<string, OriginOutput>;
 
 type CutOutcome = {
   outcome: RunItemOutcome;
@@ -64,16 +69,19 @@ async function runOneCut(input: {
       attempts: input.item.attempts + 1,
     });
 
+    const reuse = input.item.isOrigin ? undefined : input.plans.get(input.item.topic);
+
     const result = await generateCut({
       scope: input.scope,
       item: input.item,
       projectId: input.projectId,
       createdBy: input.scope.userId,
-      plan: input.item.isOrigin ? undefined : input.plans.get(input.item.topic),
+      plan: reuse?.plan,
+      imagery: reuse?.imagery,
     });
 
     if (input.item.isOrigin) {
-      input.plans.set(input.item.topic, result.plan);
+      input.plans.set(input.item.topic, { plan: result.plan, imagery: result.imagery });
     }
 
     return {

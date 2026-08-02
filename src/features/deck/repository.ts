@@ -1,4 +1,4 @@
-import { eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import { orgScoped } from '@/features/shared/orgScope';
 import type { OrgScope } from '@/features/shared/scope';
 import { db } from '@/libs/DB';
@@ -149,4 +149,82 @@ export async function setDeckStatus(
     .returning();
 
   return row ?? null;
+}
+
+export type DeckSummary = {
+  id: string;
+  title: string;
+  topic: string;
+  channel: Deck['channel'];
+  ratio: Deck['ratio'];
+  status: Deck['status'];
+  createdAt: Date;
+  panelCount: number;
+};
+
+/**
+ * Lists the organization's decks, newest first.
+ *
+ * The panel count comes from the active version only. A deck's older versions
+ * still hold their panels, and counting those would report a number the user
+ * cannot see anywhere.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param limit - Most decks to return.
+ * @returns Deck summaries for the list view.
+ */
+export async function listDecks(scope: OrgScope, limit = 50): Promise<DeckSummary[]> {
+  const rows = await db
+    .select({
+      id: decks.id,
+      title: decks.title,
+      topic: decks.topic,
+      channel: decks.channel,
+      ratio: decks.ratio,
+      status: decks.status,
+      createdAt: decks.createdAt,
+      panelCount: db.$count(panels, eq(panels.versionId, decks.activeVersionId)),
+    })
+    .from(decks)
+    .where(orgScoped(scope, decks, isNull(decks.deletedAt)))
+    .orderBy(desc(decks.createdAt))
+    .limit(limit);
+
+  return rows;
+}
+
+export type DeckDetail = {
+  deck: Deck;
+  panels: Panel[];
+};
+
+/**
+ * Reads one deck with the panels of its active version.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param deckId - Deck to read.
+ * @returns The deck and its panels, or null when it is not the caller's.
+ */
+export async function findDeckDetail(scope: OrgScope, deckId: string): Promise<DeckDetail | null> {
+  const [deck] = await db
+    .select()
+    .from(decks)
+    .where(orgScoped(scope, decks, eq(decks.id, deckId), isNull(decks.deletedAt)))
+    .limit(1);
+
+  if (!deck) {
+    return null;
+  }
+
+  if (!deck.activeVersionId) {
+    return { deck, panels: [] };
+  }
+
+  const rows = await db
+    .select()
+    .from(panels)
+    .where(and(eq(panels.versionId, deck.activeVersionId)))
+    .orderBy(panels.index);
+
+  return { deck, panels: rows };
 }

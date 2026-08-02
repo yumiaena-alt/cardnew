@@ -43,7 +43,16 @@
   "DeckListPage": {
     "empty_title": "아직 만든 카드뉴스가 없어요",
     "empty_description": "소재 하나로 카드뉴스를 만들고, 채널마다 다시 쓰세요.",
-    "create_action": "첫 카드뉴스 만들기"
+    "create_action": "첫 카드뉴스 만들기",
+    "title": "내 카드뉴스",
+    "summary": "{count}건",
+    "card_meta": "{count}장 · {ratio}"
+  },
+  "DeckDetailPage": {
+    "meta": "{count}장 · {ratio} · {channel}",
+    "panel_alt": "{index}번째 슬라이드",
+    "photo_credit": "사진 {author}",
+    "unknown_author": "제공자 미상"
   },
   "DeckNewPage": {
     "scaffold_title": "카드뉴스 만들기 화면을 준비하고 있어요",
