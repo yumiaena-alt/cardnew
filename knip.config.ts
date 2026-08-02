@@ -22,6 +22,10 @@ const config: KnipConfig = {
     // real form ships; the boilerplate counter form that used them is gone.
     'react-hook-form',
     '@hookform/resolvers',
+    // Read only by the ported planner under `src/lib/plan/**`, which is
+    // excluded above until a route consumes it. Drop these two then.
+    'ai',
+    '@ai-sdk/anthropic',
     '@swc/helpers', // Avoid error in CI: "`npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync."
   ],
   // Include custom Playwright test file suffixes
