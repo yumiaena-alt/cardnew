@@ -181,8 +181,12 @@
   --color-status-fail-foreground: var(--status-fail-foreground);
 
   --font-sans: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Instrument Serif', 'Pretendard Variable', serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+  /* Hangul has no Instrument Serif coverage, so the tail is the sans stack
+     rather than a generic serif — a system serif reads dated in Korean. */
+  --font-display:
+    var(--font-instrument-serif), 'Pretendard Variable', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, 'SFMono-Regular', monospace;
 }
 
 @layer base {

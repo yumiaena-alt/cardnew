@@ -8,35 +8,29 @@ import { expect, test } from '@playwright/test';
 // You can run them locally or on CI to ensure that the application is ready for deployment.
 
 test.describe('Sanity', () => {
-  test.describe('Static pages', () => {
-    test('should display the homepage', async ({ page }) => {
-      await page.goto('/');
+  test.describe('Marketing page', () => {
+    test('should display the hero heading', async ({ page }) => {
+      await page.goto('/en');
 
       await expect(
-        page.getByRole('heading', {
-          name: 'Boilerplate Code for Your Next.js Project with Tailwind CSS',
-        }),
+        page.getByRole('heading', { name: 'A month of card news, in one sitting.', level: 1 }),
       ).toBeVisible();
     });
 
-    test('should navigate to the about page', async ({ page }) => {
-      await page.goto('/');
+    test('should offer the sign-up call to action', async ({ page }) => {
+      await page.goto('/en');
 
-      await page.getByRole('link', { name: 'About' }).click();
-
-      await expect(page).toHaveURL(/about$/u);
-
-      await expect(page.getByText('Welcome to our About page', { exact: false })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Start free' }).first()).toBeVisible();
     });
 
-    test('should navigate to the portfolio page', async ({ page }) => {
-      await page.goto('/');
+    test('should jump to the how-it-works section', async ({ page }) => {
+      await page.goto('/en');
 
-      await page.getByRole('link', { name: 'Portfolio' }).click();
+      await page.getByRole('link', { name: 'See how it works' }).click();
 
-      await expect(page).toHaveURL(/portfolio$/u);
-
-      await expect(page.locator('main').getByRole('link', { name: /^Portfolio/u })).toHaveCount(6);
+      await expect(
+        page.getByRole('heading', { name: 'Three steps, then it is done.' }),
+      ).toBeVisible();
     });
   });
 });

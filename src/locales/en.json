@@ -1,57 +1,4 @@
 {
-  "RootLayout": {
-    "home_link": "Home",
-    "about_link": "About",
-    "counter_link": "Counter",
-    "portfolio_link": "Portfolio",
-    "sign_in_link": "Sign in",
-    "sign_up_link": "Sign up"
-  },
-  "BaseTemplate": {
-    "description": "Starter code for your Nextjs Boilerplate with Tailwind CSS",
-    "footer_text": "© {year} {name}. Made with <author></author>.",
-    "main_navigation_label": "Main navigation"
-  },
-  "Index": {
-    "meta_title": "Next.js Boilerplate Presentation",
-    "meta_description": "Next js Boilerplate is the perfect starter code for your project. Build your React application with the Next.js framework.",
-    "sponsors_title": "Sponsors",
-    "zap_emoji_label": "Zap"
-  },
-  "Counter": {
-    "meta_title": "Counter",
-    "meta_description": "An example of DB operation",
-    "security_powered_by": "Security, bot detection and rate limiting powered by"
-  },
-  "CounterForm": {
-    "presentation": "The counter is stored in the database and incremented by the value you provide.",
-    "label_increment": "Increment by",
-    "button_increment": "Increment",
-    "error_increment_range": "Value must be between 1 and 3"
-  },
-  "CurrentCount": {
-    "count": "Count: {count}"
-  },
-  "About": {
-    "meta_title": "About",
-    "meta_description": "About page description",
-    "about_paragraph": "Welcome to our About page! We are a team of passionate individuals dedicated to creating amazing software.",
-    "translation_powered_by": "Translation powered by"
-  },
-  "Portfolio": {
-    "meta_title": "Portfolio",
-    "meta_description": "Welcome to my portfolio page!",
-    "presentation": "Welcome to my portfolio page! Here you will find a carefully curated collection of my work and accomplishments. Through this portfolio, I'm to showcase my expertise, creativity, and the value I can bring to your projects.",
-    "portfolio_name": "Portfolio {name}",
-    "error_reporting_powered_by": "Error reporting powered by"
-  },
-  "PortfolioSlug": {
-    "meta_title": "Portfolio {slug}",
-    "meta_description": "Portfolio {slug} description",
-    "header": "Portfolio {slug}",
-    "content": "Created a set of promotional materials and branding elements for a corporate event. Crafted a visually unified theme, encompassing a logo, posters, banners, and digital assets. Integrated the client's brand identity while infusing it with a contemporary and innovative approach.",
-    "code_review_powered_by": "Code review powered by"
-  },
   "SignIn": {
     "meta_title": "Sign in",
     "meta_description": "Seamlessly sign in to your account with our user-friendly login process."
@@ -59,11 +6,6 @@
   "SignUp": {
     "meta_title": "Sign up",
     "meta_description": "Effortlessly create an account through our intuitive sign-up process."
-  },
-  "Dashboard": {
-    "hello_message": "Hello {email}!",
-    "alternative_message": "Need advanced features? Multi-tenancy & Teams, Roles & Permissions, Shadcn UI, End-to-End Typesafety with oRPC, Stripe Payment, Light / Dark mode. Try <url></url>.",
-    "max_message": "Or, need a Self-hosted auth stack (Better Auth)? Try <url></url>."
   },
   "DashboardLayout": {
     "meta_title": "Dashboard",
@@ -133,5 +75,56 @@
     "fill_handle": "Drag to fill down",
     "run": "Generate {count}",
     "keyboard_hint": "Arrow keys move · Enter edits · Esc cancels · Cmd+V pastes a range · Cmd+Z undoes"
+  },
+  "MarketingHeader": {
+    "brand_name": "Panelo",
+    "sign_in": "Sign in",
+    "sign_up": "Start free"
+  },
+  "MarketingFooter": {
+    "tagline": "A month of card news, in one sitting.",
+    "copyright": "© {year} Panelo"
+  },
+  "HomePage": {
+    "meta_title": "Panelo — a month of card news in one sitting",
+    "meta_description": "Turn one idea into Instagram, Reels, and Threads card news at once, then schedule it. You always see the estimate before any credit is spent.",
+    "eyebrow": "Card news for solo operators",
+    "headline": "A month of card news, in one sitting.",
+    "subheadline": "Stop rebuilding the same idea for every channel. Write the topic once and the channel cuts come with it, all the way through to scheduling.",
+    "cta_primary": "Start free",
+    "cta_secondary": "See how it works",
+    "trust_note": "50 credits on sign-up · no card required",
+    "fanout_visual_heading": "How one source fans out into channel cuts",
+    "visual_source_label": "1 source",
+    "visual_generated_label": "AI generated",
+    "channel_instagram": "Instagram",
+    "channel_reels": "Reels",
+    "channel_threads": "Threads",
+    "features_heading": "More channels, same amount of work.",
+    "feature_fanout_title": "Automatic channel fan-out",
+    "feature_fanout_body": "Build the original once and each channel gets its own ratio and tone. 15 credits for the origin, 5 for every derived cut.",
+    "feature_batch_title": "Monthly batch session",
+    "feature_batch_body": "Empty calendar slots open as a spreadsheet. Paste and drag to fill a whole month at once.",
+    "feature_dryrun_title": "Estimate before you spend",
+    "feature_dryrun_body": "You see the cost before you press run, every time. If generation fails, the credits come back automatically.",
+    "how_heading": "Three steps, then it is done.",
+    "step_label": "STEP {index}",
+    "step_topic_title": "Write the topic",
+    "step_topic_body": "One line is enough. For a batch, paste straight into the sheet.",
+    "step_generate_title": "Check the estimate, then generate",
+    "step_generate_body": "See what it costs and run it. Regenerate only the cards you want to change.",
+    "step_schedule_title": "Schedule and forget",
+    "step_schedule_body": "Set the publish time per channel and stop thinking about it.",
+    "closing_heading": "Finish this month's card news today."
+  },
+  "DashboardPage": {
+    "heading": "What are we making today?",
+    "subheading": "Build a single deck, or a whole month at once.",
+    "shortcut_board_title": "Open Board",
+    "shortcut_board_body": "Create many decks at once from a spreadsheet.",
+    "shortcut_deck_title": "New Deck",
+    "shortcut_deck_body": "Turn a single topic into one card news deck.",
+    "shortcut_template_title": "Browse templates",
+    "shortcut_template_body": "Pick a style, or train a new one from your references."
   }
 }
