@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-02** · 문서 버전 **1.1** · 기준 커밋 `7c1f59a`
+최종 갱신: **2026-08-02** · 문서 버전 **1.2** · 기준 커밋 `7c1f59a` + Phase 1-B 미커밋 변경
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -72,9 +72,12 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 - [x] **전용 Postgres 스키마 `cardnews`** — 모든 테이블·enum이 `cardnews.table()` / `cardnews.enum()`
 - [x] 마이그레이션 `0001_org_billing_system` — 테이블 10개 · enum 4개 · `plan_limits` 시드 4행
 - [x] `Env.ts` 확장 (Supabase · Stripe · LLM · Resend · Clerk webhook — 전부 optional)
-- [ ] Clerk Organizations 활성화 + `api/webhooks/clerk` (Svix 검증 + 멱등)
-- [ ] `features/shared/scope.ts` — `getScope()` / `requirePermission()`
-- [ ] 테넌트 격리 통합 테스트
+- [x] `api/webhooks/clerk` — Svix 서명 검증 + `webhook_events` 멱등 + org/user/membership upsert
+- [x] `features/shared/scope.ts` — `getScope()` / `requirePermission()` / `mapClerkRole()`
+- [x] `features/shared/orgScope.ts` — `orgScoped()` 테넌트 필터 헬퍼 + 권한 카탈로그 `permissions.ts`
+- [x] 마이그레이션 `0002_default_project_unique` — 조직당 default 프로젝트 1개 부분 unique 인덱스
+- [ ] **Clerk 대시보드에서 Organizations 활성화** ← 사용자 작업
+- [ ] 조직 간 접근 404 통합 테스트 — 조직 범위 엔드포인트가 생기는 1-D로 연기
 - [ ] 나머지 마이그레이션 (`brand` · `template` · `deck` · `run` · `board` · `publish`)
 
 ### 🔄 Phase 3: 핵심 기능/UI 컴포넌트 — **부분 진행**
@@ -104,15 +107,52 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 - [ ] LLM / 이미지 생성 API 어댑터
 - [ ] Framer Motion 프리셋 모듈 — **`motion` 패키지는 knip이 미사용으로 잡아 제거했다.** 실제로 쓸 때 재설치한다
 
-### 🚀 배포 준비 — **부분 완료**
+### 🎨 마케팅 페이지 — **신규 구축 (2026-08-02)**
+
+배포하고 보니 공개 첫 화면이 **Next.js 보일러플레이트 데모 그대로**였다. 대시보드 작업물은 전부 `/dashboard` 뒤(로그인 필요)에 있어서, 방문자에게는 우리 제품이 하나도 보이지 않는 상태였다.
+
+| 신규 파일 | 역할 |
+|---|---|
+| `src/app/[locale]/(marketing)/page.tsx` | 랜딩 — 히어로 · 팬아웃 비주얼 · 차별화 3축 · 3단계 · 클로징 CTA |
+| `src/components/marketing/MarketingHeader.tsx` | 상단 바 (대시보드 셸과 동일한 1px 라인 언어) |
+| `src/components/marketing/MarketingFooter.tsx` | 하단 |
+| `src/components/marketing/PanelStack.tsx` | 팬아웃 비주얼 — 소재 1개 → 채널별 컷 3개 |
+| `src/components/marketing/PanelStack.test.tsx` | 브라우저 테스트 3건 (삭제된 `BaseTemplate.test.tsx` 대체) |
+
+**디자인 규칙 준수**: Hex 직접 사용 0건(전부 시맨틱 토큰) · 사용자 노출 문자열 0건 하드코딩(`HomePage` 네임스페이스) · **`--signal` 라임은 팬아웃 비주얼의 "AI 생성" 마커 단 한 곳** · 그림자 대신 1px 라인 · `320/768/1024` 대응 · `<section aria-labelledby>` 시맨틱 마크업.
+
+### 🚀 배포 — **완료 (2026-08-02)**
+
+**라이브: https://cardnews-limigogos-projects.vercel.app**
+
+| 항목 | 상태 |
+|---|---|
+| Supabase | ✅ `cardnews` 스키마 · 테이블 10 · enum 4 · `plan_limits` 시드 4행 · `0002` 인덱스 |
+| Vercel 프로젝트 | ✅ `limigogos-projects/cardnews` (GitHub 연결됨) |
+| 프로덕션 환경변수 | ✅ `DATABASE_URL`(6543 트랜잭션 풀러) · `CLERK_SECRET_KEY` · `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` · `CLERK_WEBHOOK_SECRET` |
+| Deployment Protection | ✅ 해제 (`ssoProtection: null`) — **켜져 있으면 Clerk 웹훅이 Vercel 로그인벽에 막힌다** |
+| 프로덕션 스모크 | ✅ `<html lang="ko">` · `/sign-in` Clerk 렌더 · 웹훅 서명 없음→400 / 잘못된 서명→400 |
+
+**배포하며 밟은 함정 3가지**
+
+1. **DB 비밀번호 URL 인코딩.** `!@#`를 그대로 넣으면 `@`에서 호스트가 끊기고 `#`부터는 프래그먼트로 잘린다. 게다가 dotenv는 unquoted 값의 `#`을 주석으로 처리한다. → `%21%40%23`
+2. **마이그레이션은 5432(세션), 런타임은 6543(트랜잭션).** 6543으로는 DDL이 안 된다.
+3. **Deployment Protection은 웹훅도 막는다.** 팀 프로젝트 기본값이 `all_except_custom_domains`라 Clerk·Stripe 웹훅이 전부 실패한다. 공개 여부와 무관하게 반드시 처리해야 한다.
+
+> **마이그레이션 실행법**: 자격증명은 `.env.migrate.local`(gitignore 대상)에 있다. `.env.local`에 넣으면 **vitest·Playwright까지 프로덕션 DB를 때리므로** 절대 합치지 않는다.
+> ```
+> node node_modules/dotenv-cli/cli.js -e .env.migrate.local -- node node_modules/drizzle-kit/bin.cjs migrate
+> ```
+
+### 배포 준비 이력 — **완료**
 
 - [x] GitHub 푸시 완료 (`yumiaena-alt/next-boilerplate-drizzle-clerk`, `main`)
 - [x] `vercel.json` — 리전 `icn1`(서울), `buildCommand`를 `next build`로 오버라이드
 - [x] `docs/06-DEPLOYMENT.md` — 절차 · 필수 환경변수 · 리스크
 - [x] Vercel CLI 인증 확인 (`yumiaena-alt` / 팀 `limigogos-projects`)
-- [ ] **Supabase 프로젝트 생성** ← 사용자 작업. 배포 차단 요인
-- [ ] Vercel 프로젝트 생성 + 환경변수 3개 등록 ← 사용자 작업 (시크릿)
-- [ ] `npx vercel --prod`
+- [x] **Supabase 프로젝트 생성** (`wprxbwoxmznmlmzbuwgz`, ap-northeast-2)
+- [x] Vercel 프로젝트 생성 + 환경변수 4개 등록
+- [x] `npx vercel --prod` — 배포 완료
 
 > `buildCommand`를 오버라이드한 이유: 기본 `npm run build`가 `run-s db:migrate build:next`라 **배포마다 프로덕션 DB에 마이그레이션이 실행**된다. 동시 배포 경쟁 + pooler는 DDL에 부적합.
 
@@ -228,7 +268,14 @@ Board ⭐      boards, board_rows, board_row_outputs, series_templates
 
 ### 현재 멈춘 위치
 
-**로드맵 Phase 1-A(기반 정비) 완료 → Phase 1-B(인증·테넌트) 착수 직전.**
+**로드맵 Phase 1-B·1-C 완료 + 마케팅 페이지 신규 구축 → 1-D(생성 파이프라인) 착수 직전.**
+
+1-D는 **R3(LLM·이미지 API 제공사 미선정)에 막혀 있다.** 제공사·단가·키가 정해져야 시작할 수 있다.
+
+1-C에서 남은 것은 **Stripe 결제뿐**이고, 그건 `stripe` 패키지 설치 승인이 필요하다.
+
+1-B에서 남은 것은 **코드가 아니라 Clerk 대시보드 설정(사용자 작업)** 과, 조직 범위
+엔드포인트가 없어 1-D로 연기한 교차 조직 404 테스트뿐이다.
 
 Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼저 만들어졌다.
 
@@ -244,35 +291,108 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `7e5e51a` | `models/` 도메인 분리 + 마이그레이션 `0001` + `Env.ts` 확장 |
 | `237abbd` | Supabase 절차 문서 보강 |
 | `7c1f59a` | **전용 스키마 `cardnews`로 전환** + `0001` 재생성 |
+| (미커밋) | **Phase 1-B 인증·테넌트** — Clerk 웹훅 · `scope`/`permissions`/`orgScope` · `0002` |
+
+**Phase 1-B 산출물 (신규 파일)**
+
+| 파일 | 역할 |
+|---|---|
+| `src/app/api/webhooks/clerk/route.ts` | Svix 검증 → 멱등 클레임 → 적용. 프록시 matcher 밖이라 Arcjet 미경유 |
+| `src/features/org/repository.ts` | 조직·사용자·멤버십 upsert, `findScopeIdentity()`, 웹훅 멱등 테이블 |
+| `src/features/org/service.ts` | 검증된 이벤트 → 리포지토리 분기 |
+| `src/features/shared/scope.ts` | `Scope` 타입 · `getScope()` · `requirePermission()` |
+| `src/features/shared/permissions.ts` | 권한 카탈로그 · 역할별 grant · `mapClerkRole()` |
+| `src/features/shared/orgScope.ts` | `orgScoped()` — 모든 테넌트 쿼리의 `orgId` 필터 강제 |
+| `src/features/shared/errors.ts` | `DomainError` + code(`unauthorized`/`forbidden`/`not_found`/`conflict`) |
+| `src/validations/ClerkWebhookValidation.ts` | 웹훅 페이로드 Zod 판별 유니온 |
+| `migrations/0002_default_project_unique.sql` | `projects(org_id) WHERE is_default` 부분 unique |
+| `src/features/credit/repository.ts` | 원장 SUM·조회·삽입 + `withOrgCreditLock()` advisory lock |
+| `src/features/credit/service.ts` | `getBalance` · `grantCredits` · `spendCredits` · `refundSpend` · `grantSignupCredits` · `grantMonthlyCredits` |
+| `src/features/billing/repository.ts` | `findPlanLimit()` — 플랜 한도는 코드가 아니라 `plan_limits` 테이블에서 |
+| `tests/security/clerk-webhook.integ.ts` | 서명 위조·멱등·순서역전 Playwright 테스트 |
+
+**1-B 설계 결정 4가지**
+
+1. **`Scope.orgId`는 Clerk id가 아니라 `organizations.id`(UUID).** 테넌트 테이블이 UUID를
+   참조하므로 `getScope()`가 DB에서 해석한다. 이때 **우리 `memberships` 행까지 재확인**해
+   웹훅 미동기화·멤버십 취소 상태에서 fail-closed 된다.
+2. **에러는 클래스 1개 + `code`.** 린트가 파일당 클래스 1개를 강제한다. 교차 조직 접근은
+   `not_found`로 응답해 타 조직 리소스의 존재를 확인시켜 주지 않는다.
+3. **웹훅 멱등은 `svix-id` + `processed_at` 2단계.** 적용 완료분만 duplicate로 스킵하고,
+   중간에 죽은 클레임은 재처리를 허용한다(핸들러가 전부 upsert라 재적용이 안전).
+4. **순서 역전은 409.** 멤버십이 조직·사용자보다 먼저 도착하면 삼키지 않고 Clerk가
+   재시도하게 둔다.
+
+> **새 패키지 0개.** Svix 검증은 `@clerk/nextjs/webhooks`의 `verifyWebhook`이 제공하고,
+> 서명 라이브러리(`standardwebhooks`)는 `@clerk/backend`에 이미 딸려 있다.
+
+**1-C 설계 결정 3가지**
+
+1. **`Scope`를 `OrgScope`와 분리했다.** 리포지토리는 격리에 `orgId`만 필요하고,
+   웹훅·스케줄 잡처럼 사용자가 없는 경로가 **가짜 세션을 만들지 않고** 테넌트에
+   작업할 수 있어야 한다. `Scope = OrgScope & {userId, role, …}`라 기존 호출부는 그대로다.
+2. **spend는 조직 advisory lock 안에서 실행한다.** 잔액을 읽고 그에 기대어 쓰기 때문에,
+   락이 없으면 동시 Run 두 개가 모두 "잔액 충분"을 보고 초과 인출한다. Postgres
+   advisory lock은 프로세스를 넘어 직렬화되므로 Trigger.dev 도입 후에도 유효하다.
+3. **멱등키는 의미로 도출한다.** 가입 지급은 `signup:{orgId}`, 월간 지급은
+   `monthly:{orgId}:{YYYY-MM}`. 웹훅 재전송이나 잡 재실행이 구조적으로 무해해진다.
 
 로컬 개발 환경 수정 (커밋에 포함):
 - `db-server:*` 스크립트를 `node` 직접 실행으로 변경 → Windows에서 `npm run build-local` / `npm run dev` 동작
 - `next-env.d.ts` 생성 → 이미지 모듈 타입 오류 13건 해소
 - Playwright chromium 설치 → `npm run test`의 browser 프로젝트 동작
 
-### 검증 상태 (`7c1f59a` 기준, 전부 실측)
+### 검증 상태 (Phase 1-B 기준, 전부 실측)
 
 | 검사 | 결과 |
 |---|---|
-| `npx tsc --noEmit` | ✅ **0건** |
-| `npm run lint` | ✅ **0건** |
+| `npm run check:types` | ✅ **0건** |
+| `npm run lint` | ✅ **0건** (Board 컴포넌트 a11y warning 4건은 기존 이슈) |
 | `npm run check:i18n` | ✅ exit 0 |
 | `npm run check:deps` (knip) | ✅ 통과 |
-| `npm run test` | ✅ **49건 통과** — unit 47 + **browser(chromium) 2** |
-| `npm run build-local` | ✅ **통과** — 마이그레이션이 로컬 PGlite에 실제 적용되는 것까지 확인 |
-| `npx drizzle-kit check` | ✅ 통과 |
+| `npm run test` | ✅ **113건 통과** — unit 110 + browser(chromium) 3 |
+| `npm run build-local` | ✅ **통과** — `0002` 포함 마이그레이션이 로컬 PGlite에 적용되고 `/api/webhooks/clerk`가 라우트로 등록되는 것까지 확인 |
+| `grep -ri mirr src/ tests/` | ✅ **0건** |
+| `npm run test:e2e` | ✅ **15건 전부 통과** — 웹훅 보안 7건 포함 (보일러플레이트 데모 테스트 8건은 대상 삭제로 함께 제거) |
+
+**`test:e2e` 관련해 이번에 고친 것**
+
+1. **Windows에서 아예 기동조차 안 됐다.** `playwright.config.ts`의 webServer가
+   `pglite-server --run 'run-s db:migrate dev:next'`였는데, pglite-server는 `--run`을
+   **셸 없이** 공백으로 잘라 `spawn`한다. 그래서 ① 작은따옴표가 그대로 인자로 들어가고
+   ② `run-s`/`npm`은 Windows에서 `.cmd`라 셸 없이 spawn 불가. R7과 동일한 계열의 문제다.
+   → `scripts/e2e-server.mjs` 단일 node 진입점으로 교체 (마이그레이션 후 Next 기동).
+   CI/로컬 분기는 스크립트 안에서 `process.env.CI`로 처리한다.
+2. **`fr` 로케일 잔재 테스트 3건.** `fr`은 이 프로젝트에서 제거됐는데 테스트가 남아 있었다
+   (R6 잔재). 마케팅 문구가 아직 미번역이라 문구 비교가 불가능해, 로케일 전환은
+   **URL 기준**으로 검증하도록 바꿨다.
+3. **`/`는 항상 한국어가 아니다.** next-intl이 첫 요청에서 `Accept-Language`를 감지하는데
+   테스트 브라우저가 `en-US`를 보내 `/` → `/en`으로 리다이렉트된다. 기본 로케일을
+   전제하는 테스트는 `/en`에서 시작해 `ko`로 전환하는 방식으로 결정론적으로 만들었다.
 
 > ⚠️ **`--project unit`만 돌리지 말 것.** `vitest.config.ts`는 `unit`(node)과 `ui`(chromium browser) 두 프로젝트를 정의한다. `npm run test`로 둘 다 돌려야 한다. Playwright 바이너리가 없으면 `ui`가 실패하므로 새 머신에서는 `npx playwright install chromium`이 필요하다.
 
 ### 다음 세션에서 바로 실행할 작업
 
 ```
-1. Phase 1-B 인증·테넌트  ← 여기부터
-   → Clerk 대시보드에서 Organizations 활성화
-   → api/webhooks/clerk (Svix 서명 검증 → webhook_events 멱등 → users/orgs/memberships upsert)
-   → features/shared/scope.ts : getScope() / requirePermission()
-   → 리포지토리 규약: 첫 인자 Scope + 모든 쿼리에 eq(table.orgId, scope.orgId)
-   → tests/security/tenant-isolation.integ.ts : 조직 간 접근이 404
+0. Phase 1-B 잔여 (코드 아님)
+   → [사용자] .env.local 에 실제 CLERK_SECRET_KEY 넣기 (R11 — 이게 없으면 로컬에서
+     /sign-in 과 /dashboard/* 가 런타임 에러로 죽고 test:e2e 1건이 계속 실패한다)
+   → [사용자] Clerk 대시보드에서 Organizations 활성화
+   → [사용자] Clerk 대시보드 → Webhooks → {APP_URL}/api/webhooks/clerk 엔드포인트 등록.
+     구독 이벤트: user.created/updated/deleted,
+                  organization.created/updated/deleted,
+                  organizationMembership.created/updated/deleted
+   → [사용자] 발급된 signing secret 을 .env.local 의 CLERK_WEBHOOK_SECRET 에 넣는다
+     (.env 는 git 추적 대상이라 절대 여기 두지 않는다)
+   → npm run test:e2e 로 tests/security/clerk-webhook.integ.ts 실행 (R10)
+
+1. Phase 1-C 과금 기반  ← 코드 작업은 여기부터
+   → features/credit : getBalance()=SUM(delta) / grant() / spend() / refund(), 전부 멱등
+   → 단위 테스트: 동일 idempotencyKey 재호출 시 잔액 불변
+   → 가입 시 Free 50cr 지급
+   → Stripe Checkout (Standard 단일 플랜) + 웹훅
+   ※ credit_ledger / plan_limits 테이블과 시드는 0001 에서 이미 만들어져 있다
 
 2. 폰트 적용 (R2)
    → Pretendard Variable / JetBrains Mono / Instrument Serif.
@@ -323,9 +443,14 @@ project_status.md 를 같은 턴에 갱신해 줘.
 | R1 | **상표 미검증** — `Panelo`의 `panel`은 일반명사라 식별력이 약하다. KIPRIS(35·42·9류) / USPTO / EUIPO 검색과 `panelo.app` 도메인 확보가 아직 안 됐다 | **브랜드 에셋 제작 전.** 현재 브랜드명은 i18n 키(`DashboardNav.brand_name`)로만 노출되므로 교체 비용은 낮다 |
 | R2 | 폰트 미적용 — `global.css`에 패밀리명만 정의, 실제 파일 없음 → 현재 시스템 폰트로 렌더 | 다음 세션 |
 | ~~R7~~ | ~~`build-local` 실패~~ → **해결됨** (`7c1f59a`). 두 단계 문제였다: ① 작은따옴표를 Windows가 못 넘김 ② 고친 뒤엔 `spawn npm ENOENT`(Windows는 `npm.cmd`라 shell 없이 spawn 불가). `node`로 직접 실행해 해결. **당초 "CI 게이트가 막혔다"고 기록한 것은 과장이었다** — CI는 `ubuntu-latest`라 원래 정상이었고 Windows 로컬 전용 문제였다 | 완료 |
+| ~~R11~~ | ~~Clerk 시크릿 키 미설정~~ → **해결됨.** 사용자가 `.env.local`에 실제 키를 넣었는데도 같은 에러가 났는데, 원인은 **`.env.local` 안에 `CLERK_SECRET_KEY`가 두 번 정의**된 것이었다(10행 실제 키, 36행 `your_clerk_secret_key` placeholder). **dotenv는 나중 값이 이긴다** → placeholder가 승리. 36행 제거로 해결. 이제 `/sign-in`·`/dashboard/*`가 로컬에서 정상 렌더되므로 **R8(Board UI 브라우저 검증)도 착수 가능** | 완료 |
+| R10 | **Clerk 웹훅이 실제 Clerk 트래픽으로는 미검증.** 자체 서명 Playwright 테스트 7건(서명 위조·멱등·순서역전)은 실서버+PGlite 대상으로 전부 통과했다. 남은 것은 Clerk 대시보드에서 엔드포인트 등록 후 "Send test event"로 실물 페이로드 확인 | Clerk Organizations 활성화 직후 |
 | R8 | Board UI 브라우저 미검증 — 타입·린트·빌드·테스트는 통과했지만 키보드 이동·붙여넣기·필 핸들의 실제 동작은 아직 눈으로 확인하지 않았다 | Storybook/E2E 작성 시 |
 | R9 | `counter` 테이블만 `public` 스키마에 남아 있다 (보일러플레이트 데모, `0000`에서 생성). 나머지는 전부 `cardnews` | 마케팅 페이지 정리 시 테이블째 제거 |
 | R3 | LLM·이미지 API 제공사 미선정 → 크레딧 단가(15cr/5cr)의 원가 검증 안 됨 | 로드맵 1-D 착수 전 |
-| R4 | Supabase 프로젝트 미생성 — 현재 로컬 PGlite로만 동작 | 로드맵 1-B 착수 전 |
+| ~~R2~~ | ~~폰트 미적용~~ → **부분 해결.** Instrument Serif(디스플레이) · JetBrains Mono(수치)를 `next/font/google`로 빌드 타임 셀프호스팅. **Pretendard는 아직 미적용** — Google Fonts에 없어 npm 패키지(`pretendard`) 설치 승인이 필요하다. 그때까지 한글은 시스템 sans로 렌더된다 (`--font-display` 폴백 꼬리를 `serif`에서 sans 스택으로 바꿨다 — 한글 시스템 serif는 낡아 보인다) | Pretendard 설치 승인 시 |
+| ~~R6~~ | ~~보일러플레이트 잔재~~ → **해결됨.** `/about` `/portfolio` `/counter` `/api/counter` 라우트, `Counter*`·`Sponsors`·`Hello`·`Demo*`·`BaseTemplate` 컴포넌트, 관련 로케일 네임스페이스 10개, e2e 8건을 제거하고 Panelo 랜딩 페이지로 교체. 프로덕션에서 4개 경로 전부 404 확인 | 완료 |
+| ~~R9~~ | ~~`counter` 테이블이 `public`에 남음~~ → **코드에서는 제거됨**(`models/Schema.ts` 삭제). **테이블 자체는 DB에 그대로 둔다** — 파괴적 마이그레이션이라 사람이 리뷰 후 실행할 일이다. 아무것도 참조하지 않으므로 무해 | 스키마 정리 시 |
+| ~~R4~~ | ~~Supabase 미생성~~ → **해결됨.** 마이그레이션 3종 적용 완료. 로컬은 계속 PGlite, 프로덕션만 Supabase | 완료 |
 | R5 | `npm audit` 취약점 43건 (critical 5) — 기존 보일러플레이트 의존성 | 별도 점검 필요 |
 | R6 | 기존 보일러플레이트 잔재 — `Counter`, `Portfolio`, `Sponsors`, `Hello` 등 데모 코드가 남아 있음 | 마케팅 페이지 작업 시 정리 |

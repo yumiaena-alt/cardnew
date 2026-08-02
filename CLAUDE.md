@@ -215,4 +215,6 @@ DB 작업이 필요할 때만 `db:generate` · `db:migrate`
 ## 7. 현재 상태
 
 - **Phase 0** (상표·도메인 검증) 미완 — 브랜드명은 i18n 키로만 노출해 교체 비용을 낮춘다
-- **Phase 1-Z** (v0 자산 이관) 진행 중 — [`docs/04-TASKS.md`](docs/04-TASKS.md)
+- **Phase 1-Z·1-A·1-B** 완료 — v0 자산 이관 · Board 시트 · `cardnews` 스키마 · Clerk 웹훅/테넌트 스코프
+- **Phase 1-C** (과금 기반) 착수 직전 — [`docs/04-TASKS.md`](docs/04-TASKS.md)
+- 서버 진입점을 새로 만들 때는 `getScope()` → `requirePermission()` → 리포지토리(`orgScoped()`) 순서를 지킨다

@@ -50,7 +50,7 @@
 | 1.3 | `[ ]` Clerk `koKR` 로컬라이제이션 등록 (`AppConfig.ClerkLocalizations`) | P0 |
 | 1.4 | `[ ]` `motion` 패키지 설치 + `MotionProvider`(LazyMotion + reduced-motion 래퍼) | P0 |
 | 1.5 | `[ ]` **`global.css`에 `:root` / `.dark` / `@theme inline` 토큰 이식** ([05-DESIGN-SYSTEM §2](05-DESIGN-SYSTEM.md)) — 이게 없으면 v0 컴포넌트가 무채색으로 렌더된다 | P0 |
-| 1.6 | `[ ]` 폰트 설치 — Pretendard Variable, JetBrains Mono, Instrument Serif | P0 |
+| 1.6 | `[~]` 폰트 — Instrument Serif · JetBrains Mono는 `next/font/google`로 적용 완료. **Pretendard는 패키지 설치 승인 필요** | P0 |
 | 1.7 | `[ ]` **v0 하드코딩 한국어 → next-intl 키 전환** (Sidebar, Topbar, navData) | P0 |
 | 1.8 | `[ ]` **IA 재구성** — `navData.ts`를 Board 중심으로 ([05-DESIGN-SYSTEM §5](05-DESIGN-SYSTEM.md)) | P0 |
 | 1.9 | `[ ]` **SPA view 스위칭 → App Router 라우팅** 전환, `DashboardShell`을 `dashboard/layout.tsx`로 | P0 |
@@ -65,24 +65,24 @@
 
 | # | 태스크 | 우선 |
 |---|---|---|
-| 1.16 | `[ ]` Clerk 대시보드에서 Organizations 활성화 | P0 |
-| 1.17 | `[ ]` 마이그레이션 `0001_org_and_users` | P0 |
-| 1.18 | `[ ]` `api/webhooks/clerk` — Svix 검증 + `webhook_events` 멱등 처리 | P0 |
-| 1.19 | `[ ]` 가입 시 조직 + `default` 프로젝트 자동 생성 | P0 |
-| 1.20 | `[ ]` `features/shared/scope.ts` — `getScope()`, `requirePermission()` | P0 |
-| 1.21 | `[ ]` 리포지토리 규약 확립 — 모든 함수 첫 인자 `Scope`, 모든 쿼리에 `orgId` 필터 | P0 |
-| 1.22 | `[ ]` `tests/security/tenant-isolation.integ.ts` — 조직 간 접근이 404를 반환 | P0 |
-| 1.23 | `[ ]` 워크스페이스/프로젝트 스위처 UI **숨김 처리** (v0 사이드바의 breadcrumb 영역) | P0 |
+| 1.16 | `[x]` Clerk Organizations 활성화 — Backend API `PATCH /v1/instance/organization_settings`로 처리. 프로브 조직으로 웹훅 → Supabase 전 구간 검증 완료 | P0 |
+| 1.17 | `[x]` 마이그레이션 `0001_org_billing_system` (+ `0002_default_project_unique`) | P0 |
+| 1.18 | `[x]` `api/webhooks/clerk` — Svix 검증 + `webhook_events` 멱등 처리 | P0 |
+| 1.19 | `[x]` 조직 생성 시 `default` 프로젝트 자동 생성 (부분 unique 인덱스로 중복 차단) | P0 |
+| 1.20 | `[x]` `features/shared/scope.ts` — `getScope()`, `requirePermission()` | P0 |
+| 1.21 | `[x]` 리포지토리 규약 확립 — 첫 인자 `Scope` + `orgScoped()` 헬퍼로 `orgId` 필터 강제 | P0 |
+| 1.22 | `[~]` `tests/security/clerk-webhook.integ.ts` 작성 (서명·멱등). **조직 간 404 검증은 1-D로 연기** — 조직 범위 엔드포인트가 아직 없다 | P0 |
+| 1.23 | `[x]` 워크스페이스/프로젝트 스위처 UI 없음 확인 — v0 breadcrumb은 셸 이관 때 폐기됨 | P0 |
 
 ### 1-C. 과금 기반 (0.5주)
 
 | # | 태스크 | 우선 |
 |---|---|---|
-| 1.24 | `[ ]` 마이그레이션 `0002_billing` + `plan_limits` 시드 (free/standard) | P0 |
-| 1.25 | `[ ]` `features/credit` — `getBalance()`(SUM), `grant()`, `spend()`, `refund()` 전부 멱등 | P0 |
-| 1.26 | `[ ]` 단위 테스트 — 동일 idempotencyKey 재호출 시 잔액 불변 | P0 |
-| 1.27 | `[ ]` Stripe Checkout (Standard 단일 플랜) + 웹훅 | P0 |
-| 1.28 | `[ ]` 가입 시 Free 50cr 지급, 월간 지급 잡 | P0 |
+| 1.24 | `[x]` `plan_limits` 테이블 + 시드 4행 — `0001`에 이미 포함 (free 50cr / standard 500cr) | P0 |
+| 1.25 | `[x]` `features/credit` — `getBalance()`(SUM), `grantCredits()`, `spendCredits()`, `refundSpend()` 전부 멱등 + 조직 advisory lock으로 초과 인출 차단 | P0 |
+| 1.26 | `[x]` 단위 테스트 22건 — 동일 idempotencyKey 재호출 시 잔액 불변(grant/spend/refund 각각) | P0 |
+| 1.27 | `[ ]` Stripe Checkout (Standard 단일 플랜) + 웹훅 — **`stripe` 패키지 미설치. 설치 승인 필요** | P0 |
+| 1.28 | `[~]` `grantSignupCredits()`(조직 생성 웹훅에 연결 완료) · `grantMonthlyCredits()`(기간 멱등, 함수만 — **스케줄러는 Trigger.dev 도입 시**) | P0 |
 | 1.29 | `[ ]` `CreditBadge` 컴포넌트 (mono + tabular-nums) — v0 사이드바의 "AI 60 left" 자리를 대체 | P0 |
 
 ### 1-D. 생성 파이프라인 (2주)
