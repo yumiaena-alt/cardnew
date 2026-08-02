@@ -167,7 +167,7 @@ export async function spendCredits(scope: OrgScope, input: SpendInput): Promise<
 }
 
 /**
- * Reverses an earlier spend by posting its mirror image.
+ * Reverses an earlier spend by posting its opposite.
  *
  * The original row stays untouched, so a failed run leaves both the charge and
  * its reversal visible rather than looking as though it never happened.

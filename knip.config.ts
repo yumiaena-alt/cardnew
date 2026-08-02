@@ -8,6 +8,11 @@ const config: KnipConfig = {
     'src/types/I18n.ts',
     // Referenced only as a command string in `playwright.config.ts`.
     'scripts/e2e-server.mjs',
+    // Ported layout engine (docs/07-PORTED-MODULES.md). Its consumers — typeset,
+    // templates, the renderer — arrive in the next stage, so most exports read
+    // as unused until then. Remove these two entries once that lands.
+    'src/lib/slidedoc/**',
+    'src/lib/renderer/**',
   ],
   // Dependencies to ignore during analysis
   ignoreDependencies: [
