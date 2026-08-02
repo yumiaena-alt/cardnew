@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-02** · 문서 버전 **1.2** · 기준 커밋 `7c1f59a` + Phase 1-B 미커밋 변경
+최종 갱신: **2026-08-02** · 문서 버전 **1.3** · 기준 커밋 `b8b3458` (origin/main 동기화됨)
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -44,6 +44,8 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 | `docs/04-TASKS.md` | Phase 0~4 태스크리스트 (약 140개) |
 | `docs/05-DESIGN-SYSTEM.md` | 토큰 정의, 컴포넌트 규약, 모션, a11y |
 | `docs/06-DEPLOYMENT.md` | Vercel·Supabase 배포 절차, 필수 환경변수, 배포 리스크 |
+| **`docs/07-PORTED-MODULES.md`** | **Toneflow 이식 기록 — 단계별 산출물, 고친 것, 남은 부채** |
+| `services/render/README.md` | 렌더 서비스 배포 (RackNerd VPS) |
 
 ---
 
@@ -101,10 +103,12 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 ### 🔄 Phase 4: 외부 오픈소스 이식 및 모듈화 — **부분 진행**
 
 - [x] **Board 상호작용 코어 자체 구현** (`src/lib/sheet/`) — 오픈소스 5종 검토 후 **의존성 0 추가**로 결론
-- [ ] Trigger.dev v3 (배치 생성 큐)
+- [x] Trigger.dev v3 SDK + `trigger.config.ts` — **태스크는 아직 없다.** `runs` 테이블이 생겨야 상태를 기록할 곳이 생긴다
 - [ ] Supabase Storage 래퍼 (`libs/Storage.ts`)
 - [ ] Stripe Checkout
-- [ ] LLM / 이미지 생성 API 어댑터
+- [x] LLM 어댑터 — Anthropic 플래너 이식 (`src/lib/plan/planner.ts`)
+- [x] 스톡 이미지 어댑터 — Unsplash + 저작권 원장 (`src/lib/images/`)
+- [ ] fal 생성 이미지 — 키만 있고 미구현
 - [ ] Framer Motion 프리셋 모듈 — **`motion` 패키지는 knip이 미사용으로 잡아 제거했다.** 실제로 쓸 때 재설치한다
 
 ### 🎨 마케팅 페이지 — **신규 구축 (2026-08-02)**
@@ -268,9 +272,42 @@ Board ⭐      boards, board_rows, board_row_outputs, series_templates
 
 ### 현재 멈춘 위치
 
-**로드맵 Phase 1-B·1-C 완료 + 마케팅 페이지 신규 구축 → 1-D(생성 파이프라인) 착수 직전.**
+**Phase 1-B·1-C 완료 · 마케팅 페이지 구축 · Toneflow 이식 1~7단계 완료 → 1-D(생성 파이프라인) 배선만 남음.**
 
-1-D는 **R3(LLM·이미지 API 제공사 미선정)에 막혀 있다.** 제공사·단가·키가 정해져야 시작할 수 있다.
+R3(제공사 미선정)은 해결됐다 — Anthropic(기획) · Unsplash(스톡) · fal(생성 이미지), 키 전부 `.env.local`에 있고 `Env.ts`에서 검증한다.
+
+### 조각은 다 모였다. 남은 건 배선이다
+
+| 있음 | 없음 |
+|---|---|
+| 슬라이드 문서 모델 · 조판 · 템플릿(84조합 검증) | **`runs`·`run_items` 테이블** ← 최우선 병목 |
+| 가독성 자동 결정 · 폰트 맞춤 | `createRun()` 오케스트레이터 |
+| Anthropic 플래너 + JSONL 스트리밍 파서 | Trigger.dev 태스크 (`src/trigger/`) |
+| 스톡 이미지 조달 + 저작권 원장 | 렌더 서비스 VPS 배포 ← 사용자 작업 |
+| 렌더 서비스 코드 (`services/render/`) | 생성 UI (`DryRunPanel`) |
+| 크레딧 원장 (멱등 · 초과인출 차단) | Trigger.dev 계정 ← 사용자 작업 |
+
+### 다음 세션의 순서
+
+**1) 마이그레이션 `0003`~`0006`이 먼저다.** `runs`가 `boards`·`decks`·`board_rows`를 참조하므로 template → deck → board → run 순으로 한 묶음이다. `docs/03-DATA-MODEL.md` §10에 `runs`·`run_items` 정의가 있고, §6 주석대로 `decks.active_version_id` ↔ `deck_versions.deck_id` 순환 FK는 `0005`에서 분리해 추가한다.
+
+**2) `createRun()`** — `docs/02-ARCHITECTURE.md` §5-2의 9단계 순서를 따른다. 원본 참고 구현은 `C:\Claude	oneflow`의 `apps/web/src/lib/pipeline/cardnews-job.ts`(441줄). **부분 실패 정책도 거기 있다 — 한 장이 실패해도 나머지는 끝까지 만들되, 첫 장 실패는 즉시 중단한다**(연결 자체가 안 되면 나머지도 전부 실패하므로 시간·크레딧 낭비).
+
+**3) Trigger.dev 태스크.** 태스크가 들어오면 `knip.config.ts`의 `trigger.config.ts`·`@trigger.dev/sdk` 예외 두 줄을 지운다.
+
+### 이식 결과 (상세는 `docs/07-PORTED-MODULES.md`)
+
+| 단계 | 내용 | 이식 테스트 |
+|---|---|---|
+| 1 | SlideDoc 모델 · WCAG 가독성 · autofit | 67 |
+| 2 | 조판 · 스택 · CSS · 렌더러 | — |
+| 3 | 템플릿 엔진 | 84 |
+| 4 | JSONL 스트리밍 파서 | 11 |
+| 5 | Anthropic 플래너 | — |
+| 6 | 스톡 이미지 + 저작권 원장 | 23 |
+| 7 | 렌더 서비스 (`services/render/`) | — |
+
+**이식한 테스트 185건이 전부 수정 없이 통과했다.** 원본 가이드의 합격 기준이 그것이다.
 
 1-C에서 남은 것은 **Stripe 결제뿐**이고, 그건 `stripe` 패키지 설치 승인이 필요하다.
 
@@ -350,7 +387,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `npm run lint` | ✅ **0건** (Board 컴포넌트 a11y warning 4건은 기존 이슈) |
 | `npm run check:i18n` | ✅ exit 0 |
 | `npm run check:deps` (knip) | ✅ 통과 |
-| `npm run test` | ✅ **113건 통과** — unit 110 + browser(chromium) 3 |
+| `npm run test` | ✅ **298건 통과** (이식 전 113건 → 이식으로 +185) |
 | `npm run build-local` | ✅ **통과** — `0002` 포함 마이그레이션이 로컬 PGlite에 적용되고 `/api/webhooks/clerk`가 라우트로 등록되는 것까지 확인 |
 | `grep -ri mirr src/ tests/` | ✅ **0건** |
 | `npm run test:e2e` | ✅ **15건 전부 통과** — 웹훅 보안 7건 포함 (보일러플레이트 데모 테스트 8건은 대상 삭제로 함께 제거) |
