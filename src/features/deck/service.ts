@@ -20,6 +20,9 @@ export type PanelView = {
   /** Signed image URL, or null when the panel has not rendered or cannot be signed. */
   imageUrl: string | null;
   headline: string | null;
+  body: string | null;
+  /** True once the copy has been edited by hand and no longer matches the image. */
+  isEdited: boolean;
   /** Photo credit, when the provider requires attribution. */
   credit: { authorName: string | null; authorUrl: string | null; sourceUrl: string | null } | null;
 };
@@ -110,6 +113,8 @@ export async function getDeckView(scope: OrgScope, deckId: string): Promise<Deck
         role: panel.role,
         imageUrl: await signPanel(panel),
         headline: slotText(panel, 'headline'),
+        body: slotText(panel, 'body'),
+        isEdited: Object.values(panel.slots).some((slot) => slot.isUserEdited === true),
         credit: panelCredit(panel),
       }),
     ),

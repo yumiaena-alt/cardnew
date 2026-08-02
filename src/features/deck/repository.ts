@@ -228,3 +228,50 @@ export async function findDeckDetail(scope: OrgScope, deckId: string): Promise<D
 
   return { deck, panels: rows };
 }
+
+/**
+ * Reads one panel, checking it belongs to the caller through its deck.
+ *
+ * Panels carry no `orgId` of their own — they are reachable only through a
+ * version of a deck that does — so ownership is proven by the join rather than
+ * by a column on the row.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param panelId - Panel to read.
+ * @returns The panel, or null when it is not the caller's.
+ */
+export async function findOwnedPanel(scope: OrgScope, panelId: string): Promise<Panel | null> {
+  const [row] = await db
+    .select({
+      id: panels.id,
+      versionId: panels.versionId,
+      index: panels.index,
+      role: panels.role,
+      slots: panels.slots,
+      renderPath: panels.renderPath,
+      blurDataUrl: panels.blurDataUrl,
+    })
+    .from(panels)
+    .innerJoin(deckVersions, eq(deckVersions.id, panels.versionId))
+    .innerJoin(decks, eq(decks.id, deckVersions.deckId))
+    .where(and(eq(panels.id, panelId), eq(decks.orgId, scope.orgId)))
+    .limit(1);
+
+  return row ?? null;
+}
+
+/**
+ * Writes a panel's slot values.
+ *
+ * @param panelId - Panel to update.
+ * @param slots - The complete slot map to store.
+ * @returns The updated panel.
+ */
+export async function updatePanelSlots(
+  panelId: string,
+  slots: Panel['slots'],
+): Promise<Panel | null> {
+  const [row] = await db.update(panels).set({ slots }).where(eq(panels.id, panelId)).returning();
+
+  return row ?? null;
+}

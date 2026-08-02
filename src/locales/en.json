@@ -57,7 +57,17 @@
     "meta": "{count} slides · {ratio} · {channel}",
     "panel_alt": "Slide {index}",
     "photo_credit": "Photo by {author}",
-    "unknown_author": "an unknown author"
+    "unknown_author": "an unknown author",
+    "edit_action": "Edit",
+    "edited_badge": "Edited · image unchanged",
+    "edit_title": "Edit card copy",
+    "edit_description": "Text only. The image updates when the card is regenerated.",
+    "edit_headline": "Headline",
+    "edit_body": "Body",
+    "edit_save": "Save",
+    "edit_saving": "Saving",
+    "edit_cancel": "Cancel",
+    "edit_failed": "Could not save."
   },
   "DeckNewPage": {
     "title": "New card news",
