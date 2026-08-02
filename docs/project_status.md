@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-02** · 문서 버전 **1.3** · 기준 커밋 `b8b3458` (origin/main 동기화됨)
+최종 갱신: **2026-08-02** · 문서 버전 **1.4** · 기준 커밋 `097bbc0` (로컬 main, 아직 미푸시)
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -78,9 +78,11 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 - [x] `features/shared/scope.ts` — `getScope()` / `requirePermission()` / `mapClerkRole()`
 - [x] `features/shared/orgScope.ts` — `orgScoped()` 테넌트 필터 헬퍼 + 권한 카탈로그 `permissions.ts`
 - [x] 마이그레이션 `0002_default_project_unique` — 조직당 default 프로젝트 1개 부분 unique 인덱스
+- [x] 마이그레이션 `0003`~`0006` — `template` · `deck` · `deck_active_version` · `board`+`run` (테이블 12개 · enum 4개 추가)
 - [ ] **Clerk 대시보드에서 Organizations 활성화** ← 사용자 작업
 - [ ] 조직 간 접근 404 통합 테스트 — 조직 범위 엔드포인트가 생기는 1-D로 연기
-- [ ] 나머지 마이그레이션 (`brand` · `template` · `deck` · `run` · `board` · `publish`)
+- [ ] 남은 마이그레이션 (`brand` · `publish`) — 쓰는 코드가 생길 때 만든다
+- [ ] **`0003`~`0006` 프로덕션(Supabase) 적용** ← 사용자 확인 후 실행
 
 ### 🔄 Phase 3: 핵심 기능/UI 컴포넌트 — **부분 진행**
 
@@ -272,7 +274,7 @@ Board ⭐      boards, board_rows, board_row_outputs, series_templates
 
 ### 현재 멈춘 위치
 
-**Phase 1-B·1-C 완료 · 마케팅 페이지 구축 · Toneflow 이식 1~7단계 완료 → 1-D(생성 파이프라인) 배선만 남음.**
+**Phase 1-B·1-C 완료 · 마케팅 페이지 구축 · Toneflow 이식 1~7단계 완료 · 마이그레이션 `0003`~`0006` + `createRun()` 완료 → 남은 건 실제 생성 실행(8단계)뿐이고, 그건 Trigger.dev 계정에 막혀 있다.**
 
 R3(제공사 미선정)은 해결됐다 — Anthropic(기획) · Unsplash(스톡) · fal(생성 이미지), 키 전부 `.env.local`에 있고 `Env.ts`에서 검증한다.
 
@@ -280,20 +282,56 @@ R3(제공사 미선정)은 해결됐다 — Anthropic(기획) · Unsplash(스톡
 
 | 있음 | 없음 |
 |---|---|
-| 슬라이드 문서 모델 · 조판 · 템플릿(84조합 검증) | **`runs`·`run_items` 테이블** ← 최우선 병목 |
-| 가독성 자동 결정 · 폰트 맞춤 | `createRun()` 오케스트레이터 |
-| Anthropic 플래너 + JSONL 스트리밍 파서 | Trigger.dev 태스크 (`src/trigger/`) |
-| 스톡 이미지 조달 + 저작권 원장 | 렌더 서비스 VPS 배포 ← 사용자 작업 |
-| 렌더 서비스 코드 (`services/render/`) | 생성 UI (`DryRunPanel`) |
+| 슬라이드 문서 모델 · 조판 · 템플릿(84조합 검증) | Trigger.dev 태스크 (`src/trigger/`) ← **계정에 막힘** |
+| 가독성 자동 결정 · 폰트 맞춤 | 생성 실행 루프 (§5-2 8단계) |
+| Anthropic 플래너 + JSONL 스트리밍 파서 | 렌더 서비스 VPS 배포 ← 사용자 작업 |
+| 스톡 이미지 조달 + 저작권 원장 | 생성 UI (`DryRunPanel` 모달) |
+| 렌더 서비스 코드 (`services/render/`) | `createRun()`을 부르는 Server Action |
 | 크레딧 원장 (멱등 · 초과인출 차단) | Trigger.dev 계정 ← 사용자 작업 |
+| **`runs`·`run_items` 등 테이블 12개** | |
+| **`createRun()` / `finalizeRun()`** | |
+
+### 이번 세션에 한 것 (마이그레이션 `0003`~`0006` + `createRun()`)
+
+**마이그레이션 4종 — 전부 추가만 한다.** `DROP`·`ALTER COLUMN`·`DELETE` 0건을 실측으로 확인했고, 빈 PGlite에 `0000`~`0006`을 통째로 적용해 통과시켰다.
+
+| 마이그레이션 | 내용 |
+|---|---|
+| `0003_template` | `templates` · `template_versions` · `design_learnings` (+ enum `template_source`) |
+| `0004_deck` | `decks` · `deck_versions` · `panels` (+ enum `deck_status` · `run_scope_kind`) |
+| `0005_deck_active_version` | `decks.active_version_id` FK **한 줄뿐** — 순환 참조 해소 |
+| `0006_board_and_run` | `boards` · `board_rows` · `board_row_outputs` · `series_templates` · `runs` · `run_items` (+ enum `board_row_status` · `run_status`) |
+
+> ⚠️ **`0002` 스냅샷에서 `public.counter`를 지웠다.** 모델 파일(`models/Schema.ts`)은 진작 삭제됐는데 스냅샷은 그 테이블을 계속 추적하고 있었다. 그래서 drizzle-kit이 새 테이블마다 "이게 `counter`의 이름 변경이냐"고 대화형으로 물어 `generate`가 아예 진행되지 않았고, 방치했으면 언젠가 `DROP TABLE counter`를 뱉었을 것이다. **DB의 테이블 자체는 그대로 둔다**(R9 결정). 스냅샷은 dev 전용이라 `db:migrate`에는 영향이 없다.
+
+**`createRun()` (`src/features/run/`)** — §5-2의 1~7단계. 8단계(실제 생성)는 큐가 없어 비워 뒀고, Run은 `queued`에 남아 워커를 기다린다.
+
+| 파일 | 역할 |
+|---|---|
+| `src/validations/RunValidation.ts` | 입력 Zod 스키마. 채널·비율 enum을 Drizzle enum에서 가져와 DB와 어긋날 수 없게 했다 |
+| `src/features/run/estimate.ts` | Cut 단위 견적. **dry-run 견적과 실제 과금이 같은 함수**라 "본 금액 ≠ 청구 금액"이 구조적으로 불가능 |
+| `src/features/run/repository.ts` | Run·RunItem 접근. 전부 `orgScoped()` 경유 |
+| `src/features/run/service.ts` | `createRun()` · `finalizeRun()` |
+
+**설계 결정 4가지**
+
+1. **크레딧은 큐에 넣기 전에 차감한다.** 완료 후 과금이면 잔액보다 많은 Run을 동시에 띄울 수 있고, 잔액을 확인할 시점엔 이미 제공사 비용이 나간 뒤다.
+2. **중간에 죽은 Run은 재개한다.** Run 삽입과 차감 사이에서 죽으면 `estimated`로 남는데, 같은 멱등키로 다시 부르면 그대로 돌려주는 대신 차감을 마저 진행한다. spend 멱등키가 `run:{runId}`라 재게시가 없다.
+3. **부분 실패는 정상 경로다.** 한 장이 실패해도 나머지는 남고, **못 만든 Cut만** 환불한다. Run이 `failed`가 되는 건 아무것도 안 나왔을 때뿐 — 첫 장 실패로 나머지를 중단한 경우가 바로 그것이다(참고: `toneflow/apps/web/src/lib/pipeline/cardnews-job.ts:415`의 `if (index === 0) throw error`).
+4. **RunItem 결과에 `canceled`를 뒀다.** 첫 장 실패로 **시도조차 못 한** Cut을 `failed`와 구분하기 위한 것이다. 둘 다 환불 대상이지만 원인이 다르다.
+
+> 부분 환불을 위해 `refundCredits()`를 credit 서비스에 추가했다. 기존 `refundSpend()`는 spend를 **전액** 되돌리는 것이라 "3개 중 1개 실패"를 표현할 수 없다.
 
 ### 다음 세션의 순서
 
-**1) 마이그레이션 `0003`~`0006`이 먼저다.** `runs`가 `boards`·`decks`·`board_rows`를 참조하므로 template → deck → board → run 순으로 한 묶음이다. `docs/03-DATA-MODEL.md` §10에 `runs`·`run_items` 정의가 있고, §6 주석대로 `decks.active_version_id` ↔ `deck_versions.deck_id` 순환 FK는 `0005`에서 분리해 추가한다.
+**1) `createRun()`을 부르는 Server Action + `DryRunPanel` 모달.** 서비스는 다 됐고, `getScope()` → `requirePermission()` → `createRun()`으로 잇는 진입점과 견적을 보여줄 UI가 없다. Trigger.dev 없이도 여기까지는 만들 수 있다.
 
-**2) `createRun()`** — `docs/02-ARCHITECTURE.md` §5-2의 9단계 순서를 따른다. 원본 참고 구현은 `C:\Claude	oneflow`의 `apps/web/src/lib/pipeline/cardnews-job.ts`(441줄). **부분 실패 정책도 거기 있다 — 한 장이 실패해도 나머지는 끝까지 만들되, 첫 장 실패는 즉시 중단한다**(연결 자체가 안 되면 나머지도 전부 실패하므로 시간·크레딧 낭비).
+**2) Trigger.dev 태스크 (계정 확보 후).** §5-2 8단계. 태스크가 들어오면 `knip.config.ts`의 `trigger.config.ts`·`@trigger.dev/sdk` 예외 두 줄을 지운다. 태스크는 Run을 `running`으로 올리고, 끝나면 `finalizeRun()`에 Cut별 결과를 넘긴다.
 
-**3) Trigger.dev 태스크.** 태스크가 들어오면 `knip.config.ts`의 `trigger.config.ts`·`@trigger.dev/sdk` 예외 두 줄을 지운다.
+**3) 프로덕션 마이그레이션 적용 (사용자 확인 필요).** 5432(세션 풀러)로 붙어야 DDL이 된다.
+```
+node node_modules/dotenv-cli/cli.js -e .env.migrate.local -- node node_modules/drizzle-kit/bin.cjs migrate
+```
 
 ### 이식 결과 (상세는 `docs/07-PORTED-MODULES.md`)
 
@@ -328,6 +366,8 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `7e5e51a` | `models/` 도메인 분리 + 마이그레이션 `0001` + `Env.ts` 확장 |
 | `237abbd` | Supabase 절차 문서 보강 |
 | `7c1f59a` | **전용 스키마 `cardnews`로 전환** + `0001` 재생성 |
+| `41f2868` | **마이그레이션 `0003`~`0006`** — template · deck · 순환 FK · board+run |
+| `097bbc0` | **`createRun()` / `finalizeRun()`** + 부분 환불 `refundCredits()` |
 | (미커밋) | **Phase 1-B 인증·테넌트** — Clerk 웹훅 · `scope`/`permissions`/`orgScope` · `0002` |
 
 **Phase 1-B 산출물 (신규 파일)**
@@ -379,18 +419,20 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 - `next-env.d.ts` 생성 → 이미지 모듈 타입 오류 13건 해소
 - Playwright chromium 설치 → `npm run test`의 browser 프로젝트 동작
 
-### 검증 상태 (Phase 1-B 기준, 전부 실측)
+### 검증 상태 (커밋 `097bbc0` 기준, 전부 실측)
 
 | 검사 | 결과 |
 |---|---|
 | `npm run check:types` | ✅ **0건** |
-| `npm run lint` | ✅ **0건** (Board 컴포넌트 a11y warning 4건은 기존 이슈) |
+| `npm run lint` | ✅ **error 0건** (Board a11y 4건 · `SlideRenderer` img 3건은 기존 warning) |
 | `npm run check:i18n` | ✅ exit 0 |
 | `npm run check:deps` (knip) | ✅ 통과 |
-| `npm run test` | ✅ **298건 통과** (이식 전 113건 → 이식으로 +185) |
-| `npm run build-local` | ✅ **통과** — `0002` 포함 마이그레이션이 로컬 PGlite에 적용되고 `/api/webhooks/clerk`가 라우트로 등록되는 것까지 확인 |
+| `npm run test` | ✅ **322건 통과** (298 → run 견적 6건 + run 서비스 18건) |
+| `npm run build-local` | ✅ **통과** |
+| 마이그레이션 `0000`~`0006` | ✅ 빈 PGlite에 전부 적용 성공 |
+| 생성 SQL 파괴적 구문 검사 | ✅ `0003`~`0006`에 `DROP`·`ALTER COLUMN`·`DELETE` **0건** |
 | `grep -ri mirr src/ tests/` | ✅ **0건** |
-| `npm run test:e2e` | ✅ **15건 전부 통과** — 웹훅 보안 7건 포함 (보일러플레이트 데모 테스트 8건은 대상 삭제로 함께 제거) |
+| `npm run test:e2e` | ✅ **15건 전부 통과** — 웹훅 보안 7건 포함 |
 
 **`test:e2e` 관련해 이번에 고친 것**
 
@@ -412,7 +454,12 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 ### 다음 세션에서 바로 실행할 작업
 
 ```
-0. Phase 1-B 잔여 (코드 아님)
+0. 사용자 작업 (코드 아님)
+   → [사용자] 마이그레이션 0003~0006 을 프로덕션 Supabase 에 적용할지 확인
+   → [사용자] Trigger.dev 계정 — proj_ ref 와 tr_ 시크릿
+   → [사용자] RackNerd VPS 에 렌더 서비스 배포 (services/render/README.md)
+
+0-1. Phase 1-B 잔여 (코드 아님)
    → [사용자] .env.local 에 실제 CLERK_SECRET_KEY 넣기 (R11 — 이게 없으면 로컬에서
      /sign-in 과 /dashboard/* 가 런타임 에러로 죽고 test:e2e 1건이 계속 실패한다)
    → [사용자] Clerk 대시보드에서 Organizations 활성화
@@ -424,34 +471,38 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
      (.env 는 git 추적 대상이라 절대 여기 두지 않는다)
    → npm run test:e2e 로 tests/security/clerk-webhook.integ.ts 실행 (R10)
 
-1. Phase 1-C 과금 기반  ← 코드 작업은 여기부터
-   → features/credit : getBalance()=SUM(delta) / grant() / spend() / refund(), 전부 멱등
-   → 단위 테스트: 동일 idempotencyKey 재호출 시 잔액 불변
-   → 가입 시 Free 50cr 지급
-   → Stripe Checkout (Standard 단일 플랜) + 웹훅
-   ※ credit_ledger / plan_limits 테이블과 시드는 0001 에서 이미 만들어져 있다
+1. 생성 진입점 배선  ← 코드 작업은 여기부터
+   → Server Action: getScope() → requirePermission('run:execute') → createRun()
+   → DryRunPanel 모달 — dryRun:true 로 견적을 받아 보여주고, 확인하면 dryRun:false
+   → Board 행 선택 → RunItemInput[] 변환 (targets 에 origin 정확히 1개)
+   ※ createRun() / finalizeRun() / 견적은 이미 있다. 부르는 쪽만 없다
 
-2. 폰트 적용 (R2)
-   → Pretendard Variable / JetBrains Mono / Instrument Serif.
-     global.css 에 패밀리명만 있고 실제 파일이 없어 지금은 시스템 폰트로 렌더된다.
+2. Trigger.dev 태스크 (계정 확보 후)
+   → Run 을 running 으로 → item 별 생성 → finalizeRun() 에 결과 전달
+   → 첫 장 실패는 즉시 중단, 나머지 item 은 canceled 로 넘긴다
+   → knip.config.ts 의 trigger.config.ts · @trigger.dev/sdk 예외 두 줄 삭제
 
-3. Board 마무리
-   → DryRunPanel 모달 (현재는 헤더 CreditBadge 인라인 견적만)
+3. Stripe Checkout (Standard 단일 플랜) + 웹훅
+   ※ stripe 패키지 설치 승인이 필요하다
+
+4. 폰트 적용 (R2)
+   → Pretendard 만 남았다. Google Fonts 에 없어 npm 패키지 설치 승인 필요
+
+5. Board 마무리
    → BoardGrid / BoardCell Storybook 스토리 + a11y 스캔
    → 브라우저에서 키보드·붙여넣기·필 핸들 실동작 확인 (R8, 아직 미검증)
 
-4. libs/Storage.ts (Supabase Storage 래퍼 + 서명 URL)
-
-5. 배포 마무리 — Supabase 생성(사용자) → 환경변수 3개(사용자) → npx vercel --prod
+6. libs/Storage.ts (Supabase Storage 래퍼 + 서명 URL)
 ```
 
 **다음 세션 시작 프롬프트**
 
 ```
-docs/project_status.md 와 CLAUDE.md 를 먼저 읽고 컨텍스트를 파악해 줘.
-그다음 §4 '다음 세션에서 바로 실행할 작업' 1번부터 순서대로 진행해 줘.
-작업 후에는 schema-backend-validator 와 test-runner 서브에이전트로 검수하고,
-project_status.md 를 같은 턴에 갱신해 줘.
+docs/project_status.md §4 와 CLAUDE.md 를 먼저 읽고 컨텍스트를 파악해 줘.
+그다음 §4 '다음 세션에서 바로 실행할 작업' 1번(생성 진입점 배선)부터 진행해 줘.
+createRun()·finalizeRun()·견적은 이미 src/features/run/ 에 있으니 다시 만들지 말고,
+Server Action 과 DryRunPanel 로 잇기만 하면 된다.
+머지 게이트 전부 통과 후 커밋하고, project_status.md 를 같은 턴에 갱신해 줘.
 ```
 
 ---
@@ -478,6 +529,8 @@ project_status.md 를 같은 턴에 갱신해 줘.
 | # | 리스크 | 조치 필요 시점 |
 |---|---|---|
 | R1 | **상표 미검증** — `Panelo`의 `panel`은 일반명사라 식별력이 약하다. KIPRIS(35·42·9류) / USPTO / EUIPO 검색과 `panelo.app` 도메인 확보가 아직 안 됐다 | **브랜드 에셋 제작 전.** 현재 브랜드명은 i18n 키(`DashboardNav.brand_name`)로만 노출되므로 교체 비용은 낮다 |
+| R12 | **마이그레이션 `0003`~`0006`이 프로덕션에 미적용.** 로컬 PGlite에만 올라가 있어 로컬과 Supabase의 스키마가 갈라져 있다. 전부 추가 전용이라 위험은 낮지만, 적용 전까지 프로덕션에서 Run·Deck·Board를 쓰는 코드는 런타임에 죽는다 | **사용자 확인 후 적용.** 5432(세션 풀러)로 붙어야 DDL이 된다 |
+| R13 | Run이 `queued`에 쌓이기만 하고 아무도 집어가지 않는다. Trigger.dev 태스크가 없어서다. `createRun()`을 부르는 진입점을 만들기 전이라 아직 실해가 없지만, 진입점이 먼저 나가면 크레딧만 빠지고 결과가 안 나온다 | 생성 진입점 배선과 **같은 시점**에 큐가 있어야 한다 |
 | R2 | 폰트 미적용 — `global.css`에 패밀리명만 정의, 실제 파일 없음 → 현재 시스템 폰트로 렌더 | 다음 세션 |
 | ~~R7~~ | ~~`build-local` 실패~~ → **해결됨** (`7c1f59a`). 두 단계 문제였다: ① 작은따옴표를 Windows가 못 넘김 ② 고친 뒤엔 `spawn npm ENOENT`(Windows는 `npm.cmd`라 shell 없이 spawn 불가). `node`로 직접 실행해 해결. **당초 "CI 게이트가 막혔다"고 기록한 것은 과장이었다** — CI는 `ubuntu-latest`라 원래 정상이었고 Windows 로컬 전용 문제였다 | 완료 |
 | ~~R11~~ | ~~Clerk 시크릿 키 미설정~~ → **해결됨.** 사용자가 `.env.local`에 실제 키를 넣었는데도 같은 에러가 났는데, 원인은 **`.env.local` 안에 `CLERK_SECRET_KEY`가 두 번 정의**된 것이었다(10행 실제 키, 36행 `your_clerk_secret_key` placeholder). **dotenv는 나중 값이 이긴다** → placeholder가 승리. 36행 제거로 해결. 이제 `/sign-in`·`/dashboard/*`가 로컬에서 정상 렌더되므로 **R8(Board UI 브라우저 검증)도 착수 가능** | 완료 |
