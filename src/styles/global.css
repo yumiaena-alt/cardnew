@@ -1,3 +1,204 @@
 @layer theme, base, clerk, components, utilities; /* Ensure Clerk is compatible with Tailwind CSS v4 */
 
 @import 'tailwindcss';
+
+/* Class-based dark mode, driven by the theme toggle in the dashboard shell. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Panelo design tokens — see docs/05-DESIGN-SYSTEM.md
+ * Never write raw hex in components. Use the semantic utilities generated below.
+ */
+:root {
+  /* Surface — warm paper */
+  --background: #fbfaf7;
+  --foreground: #14140f;
+  --card: #ffffff;
+  --card-foreground: #14140f;
+  --popover: #ffffff;
+  --popover-foreground: #14140f;
+
+  /* Primary — ink black */
+  --primary: #14140f;
+  --primary-foreground: #fbfaf7;
+
+  /* Secondary — clay */
+  --secondary: #f7e4dc;
+  --secondary-foreground: #8f3a1c;
+
+  /* Signal — reserved for AI actions only */
+  --signal: #c8f751;
+  --signal-foreground: #14140f;
+  --signal-subtle: #eefbc4;
+  --signal-strong: #8fbf12;
+
+  /* Neutral */
+  --muted: #f2f0ea;
+  --muted-foreground: #5c5a52;
+  --accent: #f2f0ea;
+  --accent-foreground: #14140f;
+  --border: #e4e0d6;
+  --input: #e4e0d6;
+  --ring: #8fbf12;
+
+  /* Semantic */
+  --destructive: #c1362b;
+  --destructive-foreground: #ffffff;
+  --success: #1f7a4c;
+  --warning: #b5730b;
+  --info: #2c5fa8;
+
+  /* Sidebar */
+  --sidebar: #f7f5f0;
+  --sidebar-foreground: #14140f;
+  --sidebar-border: #e4e0d6;
+  --sidebar-accent: #eae6dc;
+  --sidebar-accent-foreground: #14140f;
+
+  /* Status — board rows and lifecycle badges */
+  --status-wait: #fdf6e3;
+  --status-wait-border: #f0e0b0;
+  --status-wait-foreground: #7a5b0b;
+  --status-draft: #eef4fd;
+  --status-draft-border: #c7dbf5;
+  --status-draft-foreground: #24537f;
+  --status-done: #edf7f0;
+  --status-done-border: #c0e3cd;
+  --status-done-foreground: #1f6b41;
+  --status-fail: #fdeeec;
+  --status-fail-border: #f5c9c4;
+  --status-fail-foreground: #9b2c22;
+
+  /* Radius — intentionally non-uniform */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+}
+
+.dark {
+  --background: #111310;
+  --foreground: #edebe4;
+  --card: #1b1e19;
+  --card-foreground: #edebe4;
+  --popover: #1b1e19;
+  --popover-foreground: #edebe4;
+
+  --primary: #edebe4;
+  --primary-foreground: #14140f;
+
+  --secondary: #3a241c;
+  --secondary-foreground: #e8b9a5;
+
+  --signal: #c8f751;
+  --signal-foreground: #14140f;
+  --signal-subtle: #2a3312;
+  --signal-strong: #a9dc2e;
+
+  --muted: #22261f;
+  --muted-foreground: #9a968a;
+  --accent: #262b22;
+  --accent-foreground: #edebe4;
+  --border: #2c3129;
+  --input: #2c3129;
+  --ring: #a9dc2e;
+
+  --destructive: #e0685c;
+  --destructive-foreground: #14140f;
+  --success: #4fb783;
+  --warning: #e0a63c;
+  --info: #6d9ee0;
+
+  --sidebar: #161914;
+  --sidebar-foreground: #edebe4;
+  --sidebar-border: #2c3129;
+  --sidebar-accent: #262b22;
+  --sidebar-accent-foreground: #edebe4;
+
+  --status-wait: #2e2611;
+  --status-wait-border: #4a3d16;
+  --status-wait-foreground: #e0c067;
+  --status-draft: #17222e;
+  --status-draft-border: #24374a;
+  --status-draft-foreground: #8fb8e0;
+  --status-done: #152a1e;
+  --status-done-border: #22432f;
+  --status-done-foreground: #7ccfa0;
+  --status-fail: #2e1815;
+  --status-fail-border: #4a2420;
+  --status-fail-foreground: #e89a90;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-signal: var(--signal);
+  --color-signal-foreground: var(--signal-foreground);
+  --color-signal-subtle: var(--signal-subtle);
+  --color-signal-strong: var(--signal-strong);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+
+  --color-status-wait: var(--status-wait);
+  --color-status-wait-border: var(--status-wait-border);
+  --color-status-wait-foreground: var(--status-wait-foreground);
+  --color-status-draft: var(--status-draft);
+  --color-status-draft-border: var(--status-draft-border);
+  --color-status-draft-foreground: var(--status-draft-foreground);
+  --color-status-done: var(--status-done);
+  --color-status-done-border: var(--status-done-border);
+  --color-status-done-foreground: var(--status-done-foreground);
+  --color-status-fail: var(--status-fail);
+  --color-status-fail-border: var(--status-fail-border);
+  --color-status-fail-foreground: var(--status-fail-foreground);
+
+  --font-sans: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Instrument Serif', 'Pretendard Variable', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+
+  /* Numeric columns must not jitter — credits, counts, board cells. */
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}

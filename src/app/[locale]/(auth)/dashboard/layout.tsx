@@ -1,72 +1,45 @@
-import { SignOutButton } from '@clerk/nextjs';
+import { UserButton } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { DashboardShell } from '@/components/dashboard/DashboardShell';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
-import { Link } from '@/libs/I18nNavigation';
-import { BaseTemplate } from '@/templates/BaseTemplate';
 
 type DashboardLayoutProps = {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 };
 
+/** Free-tier allowance until the billing tables land in Phase 1-C. */
+const PLACEHOLDER_CREDIT_BALANCE = 50;
+const PLACEHOLDER_PLAN_KEY = 'free';
+
 export async function generateMetadata(props: DashboardLayoutProps): Promise<Metadata> {
   const { locale } = await props.params;
-  const t = await getTranslations({
-    locale,
-    namespace: 'DashboardLayout',
-  });
+  const t = await getTranslations({ locale, namespace: 'DashboardLayout' });
 
   return {
     title: t('meta_title'),
     description: t('meta_description'),
+    robots: { index: false, follow: false },
   };
 }
 
 export default async function DashboardLayout(props: DashboardLayoutProps) {
   const { locale } = await props.params;
   setRequestLocale(locale);
-  const t = await getTranslations({
-    locale,
-    namespace: 'DashboardLayout',
-  });
 
   return (
-    <BaseTemplate
-      leftNav={
+    <DashboardShell
+      creditBalance={PLACEHOLDER_CREDIT_BALANCE}
+      planKey={PLACEHOLDER_PLAN_KEY}
+      topbarActions={
         <>
-          <li>
-            <Link href="/dashboard/" className="border-none text-gray-700 hover:text-gray-900">
-              {t('dashboard_link')}
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/dashboard/user-profile/"
-              className="border-none text-gray-700 hover:text-gray-900"
-            >
-              {t('user_profile_link')}
-            </Link>
-          </li>
-        </>
-      }
-      rightNav={
-        <>
-          <li>
-            <SignOutButton>
-              <button className="border-none text-gray-700 hover:text-gray-900" type="button">
-                {t('sign_out')}
-              </button>
-            </SignOutButton>
-          </li>
-
-          <li>
-            <LocaleSwitcher />
-          </li>
+          <LocaleSwitcher />
+          <UserButton />
         </>
       }
     >
       {props.children}
-    </BaseTemplate>
+    </DashboardShell>
   );
 }

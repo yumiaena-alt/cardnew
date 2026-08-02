@@ -74,64 +74,64 @@
   },
   "DashboardNav": {
     "brand_name": "Panelo",
-    "primary_navigation": "Primary navigation",
-    "close_sidebar": "Close sidebar",
-    "board": "Board",
-    "deck": "Deck",
-    "deck_new": "New deck",
-    "deck_list": "My decks",
-    "template": "Templates",
-    "template_gallery": "Gallery",
-    "template_learn": "Learn a design",
-    "calendar": "Calendar",
-    "analytics": "Performance",
-    "credits_left": "{count} left",
-    "upgrade": "Upgrade plan"
+    "primary_navigation": "주요 메뉴",
+    "close_sidebar": "사이드바 닫기",
+    "board": "보드",
+    "deck": "덱",
+    "deck_new": "새로 만들기",
+    "deck_list": "내 덱",
+    "template": "템플릿",
+    "template_gallery": "갤러리",
+    "template_learn": "디자인 학습",
+    "calendar": "캘린더",
+    "analytics": "성과",
+    "credits_left": "{count} 남음",
+    "upgrade": "플랜 업그레이드"
   },
   "DashboardTopbar": {
-    "open_sidebar": "Open sidebar",
-    "switch_to_dark": "Switch to dark mode",
-    "switch_to_light": "Switch to light mode"
+    "open_sidebar": "사이드바 열기",
+    "switch_to_dark": "다크 모드로 전환",
+    "switch_to_light": "라이트 모드로 전환"
   },
   "Credit": {
-    "unit": "cr",
-    "balance_label": "Credit balance",
-    "estimate_label": "Estimated cost"
+    "unit": "크레딧",
+    "balance_label": "크레딧 잔액",
+    "estimate_label": "예상 사용량"
   },
   "DeckListPage": {
-    "empty_title": "No decks yet",
-    "empty_description": "Turn one topic into a set of cards, then reuse it across channels.",
-    "create_action": "Create your first deck"
+    "empty_title": "아직 덱이 없어요",
+    "empty_description": "소재 하나를 카드 묶음으로 만들고, 채널마다 다시 쓰세요.",
+    "create_action": "첫 덱 만들기"
   },
   "DeckNewPage": {
-    "scaffold_title": "Deck creation is being built",
-    "scaffold_description": "The generation form lands in Phase 1-D. Routing and layout are ready."
+    "scaffold_title": "덱 생성 화면을 만들고 있어요",
+    "scaffold_description": "생성 폼은 Phase 1-D에 들어옵니다. 라우팅과 레이아웃은 준비됐어요."
   },
   "TemplateGalleryPage": {
-    "scaffold_title": "Template gallery is being built",
-    "scaffold_description": "System templates land in Phase 1-D. Routing and layout are ready."
+    "scaffold_title": "템플릿 갤러리를 만들고 있어요",
+    "scaffold_description": "기본 템플릿은 Phase 1-D에 들어옵니다. 라우팅과 레이아웃은 준비됐어요."
   },
   "TemplateLearnPage": {
-    "scaffold_title": "Design learning is being built",
-    "scaffold_description": "Reference upload lands in Phase 2-D. Routing and layout are ready."
+    "scaffold_title": "디자인 학습 화면을 만들고 있어요",
+    "scaffold_description": "레퍼런스 업로드는 Phase 2-D에 들어옵니다. 라우팅과 레이아웃은 준비됐어요."
   },
   "BoardPage": {
-    "title": "This month's batch",
-    "summary": "{rows} rows · {cuts} derived cuts",
-    "grid_label": "Board sheet",
-    "row_number": "Row {index}",
-    "column_topic": "Topic",
-    "column_fanout": "Channels",
-    "column_scheduled": "Publish at",
-    "column_notes": "Notes",
-    "channel_instagram": "Instagram",
-    "channel_threads": "Threads",
-    "channel_tiktok": "TikTok",
-    "channel_blog": "Blog",
-    "undo": "Undo",
-    "redo": "Redo",
-    "fill_handle": "Drag to fill down",
-    "run": "Generate {count}",
-    "keyboard_hint": "Arrow keys move · Enter edits · Esc cancels · Cmd+V pastes a range · Cmd+Z undoes"
+    "title": "이번 달 배치",
+    "summary": "{rows}행 · 파생 컷 {cuts}개",
+    "grid_label": "보드 시트",
+    "row_number": "{index}행",
+    "column_topic": "소재",
+    "column_fanout": "채널",
+    "column_scheduled": "발행일",
+    "column_notes": "메모",
+    "channel_instagram": "인스타그램",
+    "channel_threads": "스레드",
+    "channel_tiktok": "틱톡",
+    "channel_blog": "블로그",
+    "undo": "실행 취소",
+    "redo": "다시 실행",
+    "fill_handle": "끌어서 아래로 채우기",
+    "run": "{count}건 생성",
+    "keyboard_hint": "방향키로 이동 · Enter로 편집 · Esc로 취소 · Cmd+V로 범위 붙여넣기 · Cmd+Z로 실행 취소"
   }
 }
