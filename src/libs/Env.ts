@@ -13,8 +13,12 @@ export const Env = createEnv({
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
-    LLM_API_KEY: z.string().optional(),
-    IMAGE_API_KEY: z.string().optional(),
+    // Planning model. Prefixed check catches a pasted placeholder early.
+    ANTHROPIC_API_KEY: z.string().startsWith('sk-ant-').optional(),
+    // Stock photography. Unsplash terms require the download trigger to fire.
+    UNSPLASH_ACCESS_KEY: z.string().optional(),
+    // Generative imagery, `<uuid>:<secret>`.
+    FAL_KEY: z.string().includes(':').optional(),
     RESEND_API_KEY: z.string().optional(),
   },
   client: {
@@ -41,8 +45,9 @@ export const Env = createEnv({
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
-    LLM_API_KEY: process.env.LLM_API_KEY,
-    IMAGE_API_KEY: process.env.IMAGE_API_KEY,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+    UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY,
+    FAL_KEY: process.env.FAL_KEY,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
