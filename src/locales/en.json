@@ -76,6 +76,26 @@
     "run": "Generate {count}",
     "keyboard_hint": "Arrow keys move · Enter edits · Esc cancels · Cmd+V pastes a range · Cmd+Z undoes"
   },
+  "DryRunPanel": {
+    "title": "Check before generating",
+    "description": "Credits are spent after you confirm.",
+    "origin_count": "New card news",
+    "cut_count": "Derived cuts",
+    "total": "Total",
+    "balance_after": "Credits left after",
+    "credits": "{count} credits",
+    "short_balance": "You are {missing} credits short.",
+    "cancel": "Cancel",
+    "confirm": "Generate",
+    "running": "Generating",
+    "error_unauthorized": "Sign in to continue.",
+    "error_forbidden": "Your role cannot do this.",
+    "error_not_found": "That target no longer exists.",
+    "error_conflict": "This request was already handled.",
+    "error_insufficient_credits": "Not enough credits.",
+    "error_invalid_input": "Check the board contents.",
+    "error_queue_unavailable": "The generation service is not connected yet."
+  },
   "MarketingHeader": {
     "brand_name": "Panelo",
     "sign_in": "Sign in",

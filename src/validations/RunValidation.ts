@@ -19,7 +19,12 @@ const fanoutTargetSchema = z.object({
 
 const runItemSchema = z.object({
   topic: z.string().min(1).max(500),
-  templateVersionId: z.uuid(),
+  /**
+   * Pins a template. Left out, the template engine picks one from the topic —
+   * that is how `lib/renderer/compose` already works, so requiring a pinned id
+   * would block every caller that has not built a template picker yet.
+   */
+  templateVersionId: z.uuid().optional(),
   /**
    * Channels this item expands into. The data model requires a channel per
    * generated cut, so the origin is an explicit target rather than implied by an
