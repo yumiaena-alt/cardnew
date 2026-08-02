@@ -1,17 +1,9 @@
-import {
-  boolean,
-  index,
-  integer,
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from 'drizzle-orm/pg-core';
+import { boolean, index, integer, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { creditReasonEnum } from './Enums';
+import { cardnews } from './Namespace';
 import { organizations } from './Org';
 
-export const subscriptions = pgTable(
+export const subscriptions = cardnews.table(
   'subscriptions',
   {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -35,7 +27,7 @@ export const subscriptions = pgTable(
  * balance is always `SUM(delta)`. A charge and its refund stay as separate rows,
  * which keeps the history auditable and makes double-charging impossible to hide.
  */
-export const creditLedger = pgTable(
+export const creditLedger = cardnews.table(
   'credit_ledger',
   {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -59,7 +51,7 @@ export const creditLedger = pgTable(
   ],
 );
 
-export const planLimits = pgTable('plan_limits', {
+export const planLimits = cardnews.table('plan_limits', {
   planKey: text('plan_key').primaryKey(),
   monthlyCredits: integer('monthly_credits').notNull(),
   maxSocialAccounts: integer('max_social_accounts').notNull(),

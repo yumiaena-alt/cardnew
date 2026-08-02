@@ -1,11 +1,12 @@
-import { boolean, index, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, index, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { memberRoleEnum } from './Enums';
+import { cardnews } from './Namespace';
 
 /**
  * A Clerk Organization mirrored into our database. Every row that belongs to a
  * tenant carries `orgId` directly so isolation filters never need a join.
  */
-export const organizations = pgTable('organizations', {
+export const organizations = cardnews.table('organizations', {
   id: uuid('id').defaultRandom().primaryKey(),
   clerkOrgId: text('clerk_org_id').notNull().unique(),
   name: text('name').notNull(),
@@ -20,7 +21,7 @@ export const organizations = pgTable('organizations', {
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
 });
 
-export const users = pgTable('users', {
+export const users = cardnews.table('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   clerkUserId: text('clerk_user_id').notNull().unique(),
   email: text('email').notNull(),
@@ -33,7 +34,7 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-export const memberships = pgTable(
+export const memberships = cardnews.table(
   'memberships',
   {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -57,7 +58,7 @@ export const memberships = pgTable(
  * organization and hides the switcher; the schema already supports the
  * multi-brand agency case so enabling it later needs no migration.
  */
-export const projects = pgTable(
+export const projects = cardnews.table(
   'projects',
   {
     id: uuid('id').defaultRandom().primaryKey(),

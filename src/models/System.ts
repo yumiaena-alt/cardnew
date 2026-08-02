@@ -1,11 +1,12 @@
-import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { index, jsonb, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { cardnews } from './Namespace';
 import { organizations, users } from './Org';
 
 /**
  * Webhook idempotency. Provider event ids are stored before processing so a
  * redelivery is recognised and skipped rather than applied twice.
  */
-export const webhookEvents = pgTable(
+export const webhookEvents = cardnews.table(
   'webhook_events',
   {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -18,7 +19,7 @@ export const webhookEvents = pgTable(
   (t) => [uniqueIndex('webhook_events_provider_external_uq').on(t.provider, t.externalEventId)],
 );
 
-export const notifications = pgTable(
+export const notifications = cardnews.table(
   'notifications',
   {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -37,7 +38,7 @@ export const notifications = pgTable(
   (t) => [index('notifications_user_read_idx').on(t.userId, t.readAt)],
 );
 
-export const auditLogs = pgTable(
+export const auditLogs = cardnews.table(
   'audit_logs',
   {
     id: uuid('id').defaultRandom().primaryKey(),

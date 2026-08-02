@@ -107,6 +107,11 @@ src/
 
 ### Drizzle
 ```ts
+// 모든 테이블은 전용 스키마 cardnews 소속. pgTable을 직접 쓰지 않는다.
+import { cardnews } from './Namespace';
+
+export const decks = cardnews.table('decks', { ... });
+
 // 타입은 스키마에서 추론한다. 수기 인터페이스 중복 정의 금지
 export type Deck = typeof decks.$inferSelect;
 export type NewDeck = typeof decks.$inferInsert;

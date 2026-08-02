@@ -2,14 +2,36 @@
 
 기준일: 2026-08-02 · 버전 0.2 · Drizzle ORM 0.45 / PostgreSQL 17 (Supabase)
 
+## 0. Postgres 스키마 — `cardnews`
+
+애플리케이션 테이블은 `public`이 아니라 **전용 스키마 `cardnews`** 에 만든다. Supabase가 관리하는 객체나 확장이 `public`에 떨어뜨리는 것들과 섞이지 않게 하려는 것이고, 권한 부여·백업 대상을 애플리케이션 표면에 정확히 겨눌 수 있다.
+
+```ts
+// src/models/Namespace.ts
+import { pgSchema } from 'drizzle-orm/pg-core';
+
+export const cardnews = pgSchema('cardnews');
+```
+
+모든 테이블과 enum은 `pgTable`/`pgEnum`이 아니라 이 네임스페이스를 통해 선언한다.
+
+```ts
+export const organizations = cardnews.table('organizations', { … });
+export const memberRoleEnum = cardnews.enum('member_role', [ … ]);
+```
+
+생성된 마이그레이션은 `CREATE SCHEMA "cardnews";`로 시작하고, 테이블·enum·인덱스·FK가 전부 `"cardnews"."…"`로 한정된다.
+
+> **예외**: 보일러플레이트 데모 테이블 `counter`(`src/models/Schema.ts`)는 `0000_init-db.sql`에서 이미 `public`에 만들어졌으므로 그대로 둔다. 마케팅 페이지 정리 시 테이블째 제거할 대상이다.
+
 ## 1. 파일 구성
 
-기존 `src/models/Schema.ts` 단일 파일을 도메인별로 분리하고, `drizzle.config.ts`의 `schema`를 `./src/models/index.ts`로 변경한다.
+기존 `src/models/Schema.ts` 단일 파일을 도메인별로 분리하고, `drizzle.config.ts`의 `schema`를 glob(`./src/models/*.ts`)으로 바꾼다. barrel 파일을 두지 않는 이유는 린트의 `no-barrel-file` 규칙 때문이다.
 
 ```
 src/models/
-├─ index.ts        # 전체 re-export (drizzle-kit 진입점)
-├─ Enums.ts        # pgEnum 정의
+├─ Namespace.ts    # pgSchema('cardnews') — 모든 테이블의 소속
+├─ Enums.ts        # cardnews.enum 정의
 ├─ Org.ts          # organizations, users, memberships, projects
 ├─ Brand.ts        # brand_kits, brand_assets
 ├─ Template.ts     # templates, template_versions, design_learnings
@@ -18,7 +40,8 @@ src/models/
 ├─ Run.ts          # runs, run_items
 ├─ Billing.ts      # subscriptions, credit_ledger, plan_limits
 ├─ Publish.ts      # social_accounts, schedules, publications, metrics_daily
-└─ System.ts       # webhook_events, notifications, audit_logs
+├─ System.ts       # webhook_events, notifications, audit_logs
+└─ Schema.ts       # (보일러플레이트) counter — public 스키마, 제거 예정
 ```
 
 ## 2. 엔티티 관계도
@@ -42,6 +65,7 @@ organizations ─┬─ memberships ── users
 
 | 항목 | 규칙 |
 |---|---|
+| 스키마 | 모든 테이블은 `cardnews.table(...)`. `pgTable`을 직접 쓰지 않는다 |
 | PK | `uuid('id').defaultRandom().primaryKey()` |
 | 조직 스코프 | 조직 데이터를 담는 모든 테이블은 `orgId` 컬럼을 **직접** 보유한다 (조인 없이 격리 필터가 걸리도록) |
 | 타임스탬프 | `timestamp(..., { withTimezone: true })`. 앱은 UTC 저장, 표시 시 사용자 타임존 변환 |

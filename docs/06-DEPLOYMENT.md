@@ -64,16 +64,20 @@ Vercel이 이걸 그대로 쓰면 **매 배포마다 프로덕션 DB에 마이�
 
 마이그레이션 파일은 이미 준비돼 있다.
 
-| 파일 | 내용 |
-|---|---|
-| `0000_init-db.sql` | 보일러플레이트 `counter` 테이블 |
-| `0001_org_billing_system.sql` | **organizations · users · memberships · projects · subscriptions · credit_ledger · plan_limits · webhook_events · notifications · audit_logs** + `plan_limits` 시드 4행 |
+| 파일 | 대상 스키마 | 내용 |
+|---|---|---|
+| `0000_init-db.sql` | `public` | 보일러플레이트 `counter` 테이블 (제거 예정) |
+| `0001_org_billing_system.sql` | **`cardnews`** | `CREATE SCHEMA "cardnews"` + 테이블 10개 · enum 4개 · `plan_limits` 시드 4행 |
+
+애플리케이션 테이블은 `public`이 아니라 **전용 스키마 `cardnews`** 에 만들어진다. Supabase가 관리하는 객체와 섞이지 않게 하려는 것이다.
 
 ```bash
 DATABASE_URL="<direct 5432 URL>" npm run db:migrate
 ```
 
-적용 후 Supabase Table Editor에서 `plan_limits`에 free/standard/pro/agency 4행이 들어갔는지 확인한다.
+적용 후 Supabase Table Editor 좌상단의 **schema 선택기를 `public`에서 `cardnews`로 바꿔야** 테이블이 보인다. `cardnews.plan_limits`에 free/standard/pro/agency 4행이 들어갔는지 확인한다.
+
+> Supabase의 자동 REST API(PostgREST)는 기본적으로 `public`만 노출한다. `cardnews`는 노출되지 않지만, 우리는 Drizzle로 직접 연결하므로 무관하다. 오히려 애플리케이션 테이블이 실수로 공개 API에 뚫리지 않는다는 이점이 있다.
 
 ### 3-2. Vercel 프로젝트 생성 및 연결
 

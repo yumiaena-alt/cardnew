@@ -1,12 +1,12 @@
 {
-  "id": "010d7cde-e324-40c2-a423-a9dc3f00f3d4",
+  "id": "eeebcc95-b80d-4735-beb9-1309a050c62d",
   "prevId": "0896e842-e142-406c-99b2-a602f7fa8731",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.credit_ledger": {
+    "cardnews.credit_ledger": {
       "name": "credit_ledger",
-      "schema": "",
+      "schema": "cardnews",
       "columns": {
         "id": {
           "name": "id",
@@ -30,7 +30,7 @@
         "reason": {
           "name": "reason",
           "type": "credit_reason",
-          "typeSchema": "public",
+          "typeSchema": "cardnews",
           "primaryKey": false,
           "notNull": true
         },
@@ -109,6 +109,7 @@
           "name": "credit_ledger_org_id_organizations_id_fk",
           "tableFrom": "credit_ledger",
           "tableTo": "organizations",
+          "schemaTo": "cardnews",
           "columnsFrom": [
             "org_id"
           ],
@@ -125,9 +126,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.plan_limits": {
+    "cardnews.plan_limits": {
       "name": "plan_limits",
-      "schema": "",
+      "schema": "cardnews",
       "columns": {
         "plan_key": {
           "name": "plan_key",
@@ -188,9 +189,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.subscriptions": {
+    "cardnews.subscriptions": {
       "name": "subscriptions",
-      "schema": "",
+      "schema": "cardnews",
       "columns": {
         "id": {
           "name": "id",
@@ -273,6 +274,7 @@
           "name": "subscriptions_org_id_organizations_id_fk",
           "tableFrom": "subscriptions",
           "tableTo": "organizations",
+          "schemaTo": "cardnews",
           "columnsFrom": [
             "org_id"
           ],
@@ -297,9 +299,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.memberships": {
+    "cardnews.memberships": {
       "name": "memberships",
-      "schema": "",
+      "schema": "cardnews",
       "columns": {
         "id": {
           "name": "id",
@@ -323,7 +325,7 @@
         "role": {
           "name": "role",
           "type": "member_role",
-          "typeSchema": "public",
+          "typeSchema": "cardnews",
           "primaryKey": false,
           "notNull": true,
           "default": "'editor'"
@@ -379,6 +381,7 @@
           "name": "memberships_org_id_organizations_id_fk",
           "tableFrom": "memberships",
           "tableTo": "organizations",
+          "schemaTo": "cardnews",
           "columnsFrom": [
             "org_id"
           ],
@@ -392,6 +395,7 @@
           "name": "memberships_user_id_users_id_fk",
           "tableFrom": "memberships",
           "tableTo": "users",
+          "schemaTo": "cardnews",
           "columnsFrom": [
             "user_id"
           ],
@@ -408,9 +412,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.organizations": {
+    "cardnews.organizations": {
       "name": "organizations",
-      "schema": "",
+      "schema": "cardnews",
       "columns": {
         "id": {
           "name": "id",
@@ -495,9 +499,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.projects": {
+    "cardnews.projects": {
       "name": "projects",
-      "schema": "",
+      "schema": "cardnews",
       "columns": {
         "id": {
           "name": "id",
@@ -561,6 +565,7 @@
           "name": "projects_org_id_organizations_id_fk",
           "tableFrom": "projects",
           "tableTo": "organizations",
+          "schemaTo": "cardnews",
           "columnsFrom": [
             "org_id"
           ],
@@ -577,9 +582,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.users": {
+    "cardnews.users": {
       "name": "users",
-      "schema": "",
+      "schema": "cardnews",
       "columns": {
         "id": {
           "name": "id",
@@ -689,9 +694,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.audit_logs": {
+    "cardnews.audit_logs": {
       "name": "audit_logs",
-      "schema": "",
+      "schema": "cardnews",
       "columns": {
         "id": {
           "name": "id",
@@ -773,6 +778,7 @@
           "name": "audit_logs_org_id_organizations_id_fk",
           "tableFrom": "audit_logs",
           "tableTo": "organizations",
+          "schemaTo": "cardnews",
           "columnsFrom": [
             "org_id"
           ],
@@ -786,6 +792,7 @@
           "name": "audit_logs_actor_user_id_users_id_fk",
           "tableFrom": "audit_logs",
           "tableTo": "users",
+          "schemaTo": "cardnews",
           "columnsFrom": [
             "actor_user_id"
           ],
@@ -802,9 +809,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.notifications": {
+    "cardnews.notifications": {
       "name": "notifications",
-      "schema": "",
+      "schema": "cardnews",
       "columns": {
         "id": {
           "name": "id",
@@ -892,6 +899,7 @@
           "name": "notifications_org_id_organizations_id_fk",
           "tableFrom": "notifications",
           "tableTo": "organizations",
+          "schemaTo": "cardnews",
           "columnsFrom": [
             "org_id"
           ],
@@ -905,6 +913,7 @@
           "name": "notifications_user_id_users_id_fk",
           "tableFrom": "notifications",
           "tableTo": "users",
+          "schemaTo": "cardnews",
           "columnsFrom": [
             "user_id"
           ],
@@ -921,9 +930,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.webhook_events": {
+    "cardnews.webhook_events": {
       "name": "webhook_events",
-      "schema": "",
+      "schema": "cardnews",
       "columns": {
         "id": {
           "name": "id",
@@ -996,9 +1005,9 @@
     }
   },
   "enums": {
-    "public.channel": {
+    "cardnews.channel": {
       "name": "channel",
-      "schema": "public",
+      "schema": "cardnews",
       "values": [
         "instagram",
         "threads",
@@ -1007,9 +1016,9 @@
         "blog"
       ]
     },
-    "public.credit_reason": {
+    "cardnews.credit_reason": {
       "name": "credit_reason",
-      "schema": "public",
+      "schema": "cardnews",
       "values": [
         "grant.signup",
         "grant.monthly",
@@ -1022,9 +1031,9 @@
         "expire.monthly"
       ]
     },
-    "public.member_role": {
+    "cardnews.member_role": {
       "name": "member_role",
-      "schema": "public",
+      "schema": "cardnews",
       "values": [
         "owner",
         "admin",
@@ -1033,9 +1042,9 @@
         "viewer"
       ]
     },
-    "public.ratio": {
+    "cardnews.ratio": {
       "name": "ratio",
-      "schema": "public",
+      "schema": "cardnews",
       "values": [
         "1:1",
         "4:5",
@@ -1045,7 +1054,9 @@
       ]
     }
   },
-  "schemas": {},
+  "schemas": {
+    "cardnews": "cardnews"
+  },
   "sequences": {},
   "roles": {},
   "policies": {},
