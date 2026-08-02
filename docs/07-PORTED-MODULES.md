@@ -70,13 +70,49 @@ Toneflow는 같은 문제(카드뉴스 생성)를 먼저 푼 우리 프로젝트
 
 파서는 **제공사 무관**이다. 남은 것은 Gemini 어댑터를 붙여 `parser.push(delta)`로 흘려 넣는 일뿐이다.
 
-## 5단계 이후 — 예정
+## 5단계 — 완료 (플래너)
 
-| 단계 | 내용 | 새 패키지 | 비고 |
-|---|---|---|---|
-| 5 | **Gemini 어댑터** — 파서에 스트림 연결 | **`@google/genai` (승인 필요)** | `LLM_API_KEY`는 `Env.ts`에 이미 있음 |
-| 6 | 스톡 이미지 조달 + 저작권 원장 | **sharp, Unsplash 키** | 승인 필요 |
-| 7 | 렌더 서비스 (SlideDoc → PNG) | **Playwright 런타임, 별도 배포 단위** | 승인 필요 |
+`src/lib/plan/planner.ts` + `prompts/plan-prompt.ts`. 패키지 `ai` · `@ai-sdk/anthropic` 설치.
+
+**Gemini가 아니라 Anthropic으로 갔다.** 제공된 키가 Anthropic이고 원본 코드도 Anthropic을 쓴다. AI SDK가 제공사를 추상화하므로 나중에 Gemini를 붙이려면 `@ai-sdk/google` 추가 + 모델 지정 한 줄이면 된다.
+
+AI SDK v7 대응: `usage`가 `promptTokens/completionTokens` → `inputTokens/outputTokens`로 바뀌고 optional이 됐다. 비스트리밍 `generateObject` 폴백은 **일부러 마이그레이션하지 않고 표시만** 했다 — 원본이 14.6초로 측정한 느린 경로라, 이 폴백이 필요한지부터 따져야 한다.
+
+## 6단계 — 완료 (스톡 이미지 + 저작권 원장)
+
+| 이식 모듈 | 위치 | 테스트 |
+|---|---|---|
+| 밴드별 휘도 분석 | `src/lib/images/analyze.ts` | **23건** |
+| 프로바이더 계약 | `src/lib/images/providers/types.ts` | — |
+| Unsplash 프로바이더 | `src/lib/images/providers/unsplash.ts` | — |
+| 검색·재랭킹·전처리 | `src/lib/images/source.ts` | — |
+
+패키지 `sharp` 설치. 프로바이더 인터페이스가 **license 필드를 타입으로 강제**해서, 저작권 정보 없이 새 소스를 붙이면 컴파일 오류가 난다.
+
+house rule 대응: `unsplash.ts`가 `process.env`를 직접 읽던 것을 `Env.ts` 경유로 바꿨다.
+
+> **Unsplash 이용약관상 `reportUsage()`(다운로드 트리거) 호출은 의무다.** 지우지 말 것.
+
+## 7단계 — 착수 전 결정 필요 (렌더 서비스)
+
+**패키지 승인만으로는 부족한 단계다.** 이건 라이브러리가 아니라 **새 프로덕션 서비스**를 세우는 일이다.
+
+원본이 이걸 별도 앱(`apps/render-service/`)으로 만든 이유는 명확하다 — **Next.js 서버리스 함수에 Chromium을 넣을 수 없고, 장시간 실행에도 부적합하다.** 로컬에서 되더라도 Vercel 배포에서 갈린다.
+
+따라서 결정할 것:
+
+| 항목 | 내용 |
+|---|---|
+| **호스팅** | Vercel 불가. Railway / Fly.io / Render / 컨테이너 중 선택 |
+| **비용** | 상시 구동 인스턴스 요금이 새로 발생 |
+| **인증** | 웹 앱 ↔ 렌더 서비스 간 공유 시크릿 |
+| **대안** | Vercel에서 `@sparticuz/chromium` 같은 서버리스 Chromium을 시도할 수는 있으나, 콜드스타트와 50MB 번들 제한 문제가 따로 붙는다 |
+
+**이식 자체는 `apps/render-service/` 통째로 복사라 가장 깔끔한 단위다.** 막힌 건 코드가 아니라 어디에 띄울지다.
+
+챙길 디테일(원본 가이드):
+- 스크린샷 전에 `document.fonts.ready`와 **모든 이미지 로드 완료**를 기다린다. 빠뜨리면 폴백 폰트로 렌더되거나 빈칸이 남는다
+- `computeDocHash()`에 결과 픽셀에 영향을 주는 **모든** 입력을 넣는다. 하나라도 빠지면 바뀐 문서에 옛 이미지가 나간다
 
 ### 4단계에서 반드시 챙길 것 — 스트리밍 방식
 
