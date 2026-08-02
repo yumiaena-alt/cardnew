@@ -98,7 +98,8 @@
     "redo": "Redo",
     "fill_handle": "Drag to fill down",
     "run": "Generate {count}",
-    "keyboard_hint": "Arrow keys move · Enter edits · Esc cancels · Cmd+V pastes a range · Cmd+Z undoes"
+    "keyboard_hint": "Arrow keys move · Enter edits · Esc cancels · Cmd+V pastes a range · Cmd+Z undoes",
+    "saving": "Saving"
   },
   "DryRunPanel": {
     "title": "Check before generating",

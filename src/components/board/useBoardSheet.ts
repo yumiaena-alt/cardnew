@@ -57,6 +57,12 @@ export type BoardSheet = {
 export function useBoardSheet(options: {
   columns: readonly SheetColumn[];
   initialRows: readonly SheetRow[];
+  /**
+   * Called after every committed change, including undo and redo. Every
+   * mutation funnels through one place, so persistence cannot miss an edit
+   * that a future action introduces.
+   */
+  onRowsChange?: (rows: SheetRow[]) => void;
 }): BoardSheet {
   const [history, setHistory] = useState<History<SheetState>>(() =>
     createHistory<SheetState>({ rows: [...options.initialRows] }),
@@ -70,6 +76,7 @@ export function useBoardSheet(options: {
 
   const commitRows = (next: SheetRow[]) => {
     setHistory((current) => push(current, { rows: next }));
+    options.onRowsChange?.(next);
   };
 
   const writeRange = (range: CellRange, values: readonly (readonly string[])[]) => {
@@ -207,12 +214,22 @@ export function useBoardSheet(options: {
     },
 
     undoEdit: () => {
-      setHistory(undo);
+      setHistory((current) => {
+        const next = undo(current);
+        options.onRowsChange?.(next.present.rows);
+
+        return next;
+      });
       setEditing(null);
     },
 
     redoEdit: () => {
-      setHistory(redo);
+      setHistory((current) => {
+        const next = redo(current);
+        options.onRowsChange?.(next.present.rows);
+
+        return next;
+      });
       setEditing(null);
     },
   };

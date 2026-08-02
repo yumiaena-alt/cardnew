@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/Button';
 import { CreditBadge } from '@/components/ui/CreditBadge';
+import { saveBoardRows } from '@/features/board/actions';
 import { estimateBoardCredits } from '@/features/credit/estimate';
 import type { RunActionResult, RunFailureCode } from '@/features/run/actions';
 import { submitRun } from '@/features/run/actions';
@@ -13,7 +14,7 @@ import { BoardCardList } from './BoardCardList';
 import { BoardGrid } from './BoardGrid';
 import { DryRunPanel } from './DryRunPanel';
 import type { FanoutChannelId } from './FanoutCell';
-import { parseFanout } from './FanoutCell';
+import { FANOUT_CHANNELS, parseFanout } from './FanoutCell';
 import { toRunItems } from './runInput';
 import type { SheetColumn, SheetRow } from './useBoardSheet';
 import { useBoardSheet } from './useBoardSheet';
@@ -28,7 +29,14 @@ const BOARD_COLUMNS: readonly SheetColumn[] = [
 type BoardViewProps = {
   initialRows: readonly SheetRow[];
   creditBalance: number;
+  /** Board the sheet writes back to. Null when the tenant is not resolvable yet. */
+  boardId: string | null;
 };
+
+/** Ratio each channel renders at, sent with a save so the board records its own fan-out. */
+const CHANNEL_RATIOS = Object.fromEntries(
+  FANOUT_CHANNELS.map((channel) => [channel.id, channel.ratio]),
+);
 
 /**
  * Board screen: a spreadsheet on wide viewports, stacked cards below `lg`.
@@ -39,7 +47,37 @@ type BoardViewProps = {
  */
 export function BoardView(props: BoardViewProps) {
   const t = useTranslations('BoardPage');
-  const sheet = useBoardSheet({ columns: BOARD_COLUMNS, initialRows: props.initialRows });
+  const [isSaving, startSaving] = useTransition();
+
+  // Saved on every committed edit rather than on a timer. The sheet commits per
+  // cell, not per keystroke, so this is one write per deliberate change — and a
+  // debounce would mean a close tab can lose the last edit.
+  const persistRows = (rows: SheetRow[]) => {
+    if (!props.boardId) {
+      return;
+    }
+
+    const { boardId } = props;
+
+    startSaving(async () => {
+      await saveBoardRows({
+        boardId,
+        rows: rows.map((row) => ({
+          topic: row.topic ?? '',
+          channels: parseFanout(row.fanout ?? ''),
+          scheduledAt: row.scheduledAt ?? '',
+          notes: row.notes ?? '',
+        })),
+        channelRatios: CHANNEL_RATIOS,
+      });
+    });
+  };
+
+  const sheet = useBoardSheet({
+    columns: BOARD_COLUMNS,
+    initialRows: props.initialRows,
+    onRowsChange: persistRows,
+  });
   const [isPending, startTransition] = useTransition();
   const [quote, setQuote] = useState<RunEstimate | null>(null);
   const [isPanelOpen, setPanelOpen] = useState(false);
@@ -153,6 +191,7 @@ export function BoardView(props: BoardViewProps) {
           >
             <Redo2 />
           </Button>
+          {isSaving ? <span className="text-xs text-muted-foreground">{t('saving')}</span> : null}
           <CreditBadge balance={props.creditBalance} estimate={estimate.total} />
           <Button
             variant="signal"
