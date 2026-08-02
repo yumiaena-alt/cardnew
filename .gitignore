@@ -63,3 +63,13 @@ build-archive.log
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Env files. `.env`, `.env.example` and `.env.production` hold public values
+# only and stay tracked; everything else (including `*.local`) is a secret.
+.env*
+!.env
+!.env.example
+!.env.production
+
+# Supabase CLI scratch state
+supabase/.temp/

@@ -30,9 +30,9 @@ export default defineConfig<ChromaticConfig>({
   // Run your local dev server before starting the tests:
   // https://playwright.dev/docs/test-advanced#launching-a-development-web-server-during-the-tests
   webServer: {
-    command: process.env.CI
-      ? "pglite-server -m 100 --run 'run-s db:migrate start'"
-      : "pglite-server -m 100 --run 'run-s db:migrate dev:next'",
+    // `--run` is spawned without a shell, so it has to be a single command that
+    // resolves on every platform. See `scripts/e2e-server.mjs`.
+    command: 'pglite-server -m 100 --run "node scripts/e2e-server.mjs"',
     url: baseURL,
     timeout: 60 * 1000,
     reuseExistingServer: !process.env.CI,
@@ -41,6 +41,10 @@ export default defineConfig<ChromaticConfig>({
       BROWSER_TO_TERMINAL_DISABLED: 'true',
       NEXT_PUBLIC_SENTRY_DISABLED: 'true',
       NEXT_PUBLIC_APP_URL: baseURL,
+      // Throwaway signing secret so the webhook security tests can produce a
+      // real Svix signature. It grants nothing: the value only ever reaches the
+      // local test server, and the deployed instances read their own secret.
+      CLERK_WEBHOOK_SECRET: 'whsec_cGFuZWxvLWUyZS13ZWJob29rLXNpZ25pbmcta2V5ISE=',
       PORT,
     },
   },
