@@ -44,19 +44,36 @@ Vercel이 이걸 그대로 쓰면 **매 배포마다 프로덕션 DB에 마이�
 시크릿 입력은 소유자만 할 수 있다.
 
 **① Supabase 프로젝트 생성**
-- 리전 **`ap-northeast-2` (서울)** — `vercel.json`의 `icn1`과 맞춘다
-- 연결 문자열 두 가지를 구분해 확보한다
-  - **Pooler (6543)** — 런타임용. `DATABASE_URL`에 넣는다
-  - **Direct (5432)** — 마이그레이션용. 로컬에서만 쓴다
+
+1. https://supabase.com/dashboard → New project
+2. 리전은 반드시 **Northeast Asia (Seoul) `ap-northeast-2`** — `vercel.json`의 `icn1`과 맞춘다
+3. Database Password를 생성해 **비밀번호 관리자에 저장**한다 (연결 문자열에 들어간다)
+4. 생성 후 **Project Settings → Database → Connection string**에서 두 가지를 구분해 확보한다
+
+| 용도 | 포트 | 어디에 쓰나 |
+|---|---|---|
+| **Transaction pooler** | `6543` | Vercel `DATABASE_URL` — 런타임 |
+| **Direct connection** | `5432` | 로컬 마이그레이션 전용. DDL은 pooler로 돌리지 않는다 |
 
 **② Clerk 애플리케이션 생성**
 - Publishable key / Secret key 확보
-- Organizations 기능 활성화 (Phase 1-B에서 필요)
+- **Organizations 기능 활성화** (Phase 1-B에서 필요)
+- Webhook 엔드포인트는 배포 URL이 나온 뒤 등록한다 → `CLERK_WEBHOOK_SECRET`
 
 **③ 최초 마이그레이션 (로컬에서 direct 연결로)**
+
+마이그레이션 파일은 이미 준비돼 있다.
+
+| 파일 | 내용 |
+|---|---|
+| `0000_init-db.sql` | 보일러플레이트 `counter` 테이블 |
+| `0001_org_billing_system.sql` | **organizations · users · memberships · projects · subscriptions · credit_ledger · plan_limits · webhook_events · notifications · audit_logs** + `plan_limits` 시드 4행 |
+
 ```bash
 DATABASE_URL="<direct 5432 URL>" npm run db:migrate
 ```
+
+적용 후 Supabase Table Editor에서 `plan_limits`에 free/standard/pro/agency 4행이 들어갔는지 확인한다.
 
 ### 3-2. Vercel 프로젝트 생성 및 연결
 
