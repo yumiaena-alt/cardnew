@@ -56,14 +56,27 @@ Toneflow는 같은 문제(카드뉴스 생성)를 먼저 푼 우리 프로젝트
 
 `import * as React`는 제거했다. 원본 가이드가 패키지 경계를 넘을 때 필요하다고 경고한 것인데, 단일 Next 앱에서는 최신 JSX 변환이 처리한다.
 
-## 3단계 이후 — 예정
+## 3단계 — 완료 (템플릿 엔진)
+
+`types` · `covers` · `bodies` · `registry` · `compose`를 `src/lib/renderer/`로. **`compose.test.ts`의 84개 비율 조합 검증이 수정 없이 통과.**
+
+> ⚠️ 이 단계에서 용어를 과잉 정정했다가 되돌렸다. `SlideDoc`·`CardnewsPlan` 같은 이름을 `PanelDoc`·`DeckPlan`으로 바꿨는데, '슬라이드'·'카드뉴스'는 업계 공통 기능 명사이지 타사 브랜드가 아니다. `CLAUDE.md` §1에 경계를 명시해 뒀다.
+
+> ⚠️ **포매터가 동작을 바꾼 사례.** 템플릿 선택 해시(FNV-1a)의 `charCodeAt`이 `codePointAt`으로 자동 변환됐다. 서로게이트 페어에서 해시가 달라져 같은 시드가 다른 템플릿을 고른다. 테스트로는 안 잡힌다. 되돌리고 주석을 남겼다. 린트가 제안한 `Math.trunc`도 `>>> 0`과 동등하지 않다.
+
+## 4단계 — 완료 (JSONL 스트리밍 파서)
+
+`src/lib/plan/schema.ts`(도메인 스키마) + `src/lib/plan/plan-parser.ts`. **테스트 11건 통과.**
+
+파서는 **제공사 무관**이다. 남은 것은 Gemini 어댑터를 붙여 `parser.push(delta)`로 흘려 넣는 일뿐이다.
+
+## 5단계 이후 — 예정
 
 | 단계 | 내용 | 새 패키지 | 비고 |
 |---|---|---|---|
-| 3 | `templates/` (covers·bodies·registry·compose) | 없음 | `compose.test.ts` 629줄에 84개 조합 검증 |
-| 4 | JSONL 스트리밍 파서 + Gemini 연결 | 없음 (zod) | 아래 참조 |
-| 5 | 스톡 이미지 조달 + 저작권 원장 | **sharp, Unsplash 키** | 승인 필요 |
-| 6 | 렌더 서비스 (SlideDoc → PNG) | **Playwright 런타임, 별도 배포 단위** | 승인 필요 |
+| 5 | **Gemini 어댑터** — 파서에 스트림 연결 | **`@google/genai` (승인 필요)** | `LLM_API_KEY`는 `Env.ts`에 이미 있음 |
+| 6 | 스톡 이미지 조달 + 저작권 원장 | **sharp, Unsplash 키** | 승인 필요 |
+| 7 | 렌더 서비스 (SlideDoc → PNG) | **Playwright 런타임, 별도 배포 단위** | 승인 필요 |
 
 ### 4단계에서 반드시 챙길 것 — 스트리밍 방식
 

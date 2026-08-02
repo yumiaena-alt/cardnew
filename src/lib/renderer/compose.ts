@@ -1,4 +1,4 @@
-import type { CardnewsPlan, SlidePlan } from '@/lib/deckplan/schema';
+import type { CardnewsPlan, SlidePlan } from '@/lib/plan/schema';
 import { SLIDEDOC_VERSION, parseSlideDoc } from '@/lib/slidedoc/doc';
 import type { SlideDoc } from '@/lib/slidedoc/doc';
 import type { Layer } from '@/lib/slidedoc/layers';

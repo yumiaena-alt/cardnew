@@ -1,4 +1,4 @@
-import type { ImageMood, SlidePlan } from '@/lib/deckplan/schema';
+import type { ImageMood, SlidePlan } from '@/lib/plan/schema';
 import type { SlideRole } from '@/lib/slidedoc/doc';
 import type { Layer } from '@/lib/slidedoc/layers';
 import type { AspectRatio } from '@/lib/slidedoc/primitives';

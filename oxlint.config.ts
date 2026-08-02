@@ -37,7 +37,7 @@ export default defineConfig({
       // house documentation and ordering conventions differ. Rules are relaxed
       // per directory and re-enabled as each module gets integrated and
       // reviewed, so the port stays reviewable as a straight copy for now.
-      files: ['src/lib/slidedoc/**', 'src/lib/deckplan/**', 'src/lib/renderer/**'],
+      files: ['src/lib/slidedoc/**', 'src/lib/plan/**', 'src/lib/renderer/**'],
       rules: {
         'jsdoc/require-param': 'off',
         'jsdoc/require-param-description': 'off',
@@ -59,6 +59,9 @@ export default defineConfig({
         'unicorn/no-array-reduce': 'off',
         'unicorn/no-array-for-each': 'off',
         'unicorn/consistent-function-scoping': 'off',
+        'max-classes-per-file': 'off',
+        'typescript/parameter-properties': 'off',
+        'require-unicode-regexp': 'off',
         'typescript/no-non-null-assertion': 'off',
         'vitest/no-conditional-expect': 'off',
         'vitest/max-expects': 'off',

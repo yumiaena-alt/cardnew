@@ -3,9 +3,8 @@
 // restructured to house test conventions. See docs/07-PORTED-MODULES.md.
 // oxlint-disable vitest/prefer-each
 // oxlint-disable vitest/no-conditional-expect
-// oxlint-disable eslint/require-unicode-regexp
 import { describe, expect, test } from 'vitest';
-import type { CardnewsPlan, SlidePlan } from '@/lib/deckplan/schema';
+import type { CardnewsPlan, SlidePlan } from '@/lib/plan/schema';
 import type { SlideRole } from '@/lib/slidedoc/doc';
 import type { AspectRatio } from '@/lib/slidedoc/primitives';
 import { composeCardnews, composeSlide, placeholderImage } from './compose';
