@@ -10,9 +10,10 @@ import {
 } from 'drizzle-orm/pg-core';
 import { boardRows, boards } from './Board';
 import { decks } from './Deck';
-import { channelEnum, runScopeKindEnum, runStatusEnum } from './Enums';
+import { channelEnum, ratioEnum, runScopeKindEnum, runStatusEnum } from './Enums';
 import { cardnews } from './Namespace';
 import { organizations, users } from './Org';
+import { templateVersions } from './Template';
 
 /**
  * One generation execution, and the only unit credits are charged against.
@@ -75,6 +76,15 @@ export const runItems = cardnews.table(
     rowId: uuid('row_id').references(() => boardRows.id, { onDelete: 'set null' }),
     deckId: uuid('deck_id').references(() => decks.id, { onDelete: 'set null' }),
     channel: channelEnum('channel').notNull(),
+    /**
+     * What to generate. Stored on the item rather than read back from the board
+     * row, so a run started outside a board is still self-describing and a
+     * worker retry does not depend on the sheet being unchanged.
+     */
+    topic: text('topic').notNull(),
+    ratio: ratioEnum('ratio').notNull(),
+    /** Pins a template. Null lets the template engine pick from the topic. */
+    templateVersionId: uuid('template_version_id').references(() => templateVersions.id),
     isOrigin: boolean('is_origin').notNull(),
     estimatedCredits: integer('estimated_credits').notNull(),
     status: runStatusEnum('status').notNull().default('queued'),

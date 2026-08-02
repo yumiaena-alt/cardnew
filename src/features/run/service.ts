@@ -7,6 +7,7 @@ import type { CreateRunInput } from '@/validations/RunValidation';
 import { createRunSchema } from '@/validations/RunValidation';
 import type { RunEstimate } from './estimate';
 import { estimateRun } from './estimate';
+import { enqueueRun } from './queue';
 import {
   findRunByIdempotencyKey,
   insertRunWithItems,
@@ -79,6 +80,28 @@ async function chargeAndQueue(scope: Scope, run: Run): Promise<Run> {
     chargedCredits: run.estimatedCredits,
   });
 
+  try {
+    await enqueueRun({ runId: run.id, orgId: scope.orgId, userId: scope.userId });
+  } catch (error) {
+    // The charge landed but nothing will ever pick the run up. Returning the
+    // credits here is what keeps the invariant that a charge always buys either
+    // the cards or a refund — without it the user pays for silence.
+    await refundCredits(scope, {
+      amount: run.estimatedCredits,
+      reason: 'refund.run_failed',
+      idempotencyKey: `${spendKey}:refund`,
+      ref: { type: 'run', id: run.id },
+    });
+
+    await updateRun(scope, run.id, {
+      status: 'failed',
+      refundedCredits: run.estimatedCredits,
+      finishedAt: new Date(),
+    });
+
+    throw error;
+  }
+
   return queued ?? run;
 }
 
@@ -131,7 +154,10 @@ export async function createRun(scope: Scope, input: CreateRunInput): Promise<Cr
     },
     estimate.cuts.map((cut) => ({
       rowId: cut.sourceRowId,
+      topic: cut.topic,
       channel: cut.channel,
+      ratio: cut.ratio,
+      templateVersionId: cut.templateVersionId,
       isOrigin: cut.isOrigin,
       estimatedCredits: cut.credits,
     })),
@@ -156,7 +182,7 @@ export async function createRun(scope: Scope, input: CreateRunInput): Promise<Cr
  * attempted because the run aborted before reaching it, which is what happens
  * when the very first cut fails.
  */
-type RunItemOutcome = {
+export type RunItemOutcome = {
   itemId: string;
   status: 'done' | 'failed' | 'canceled';
   deckId?: string;

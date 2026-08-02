@@ -18,8 +18,7 @@ const config: KnipConfig = {
     // Separate process with its own entry point (services/render/README.md);
     // the Next app never imports it, so knip cannot see how it is reached.
     'services/**',
-    // Queue config. Read by the Trigger.dev CLI, not by the app. Remove this
-    // and the SDK entry below once the first task lands in `src/trigger/`.
+    // Queue config. Read by the Trigger.dev CLI, not by the app.
     'trigger.config.ts',
   ],
   // Dependencies to ignore during analysis
@@ -29,11 +28,6 @@ const config: KnipConfig = {
     // real form ships; the boilerplate counter form that used them is gone.
     'react-hook-form',
     '@hookform/resolvers',
-    // Read only by the ported planner under `src/lib/plan/**`, which is
-    // excluded above until a route consumes it. Drop these two then.
-    'ai',
-    '@ai-sdk/anthropic',
-    '@trigger.dev/sdk',
     '@swc/helpers', // Avoid error in CI: "`npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync."
   ],
   // Include custom Playwright test file suffixes

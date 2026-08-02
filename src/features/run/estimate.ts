@@ -11,11 +11,14 @@ import type { CreateRunInput, RunItemInput, RunScopeInput } from '@/validations/
 /** One generated cut, priced. Becomes exactly one `run_items` row. */
 type RunCutEstimate = {
   itemIndex: number;
+  topic: string;
   channel: RunItemInput['targets'][number]['channel'];
   ratio: RunItemInput['targets'][number]['ratio'];
   isOrigin: boolean;
   credits: number;
   sourceRowId?: string;
+  /** Target-level pin wins over the item-level one; both may be absent. */
+  templateVersionId?: string;
 };
 
 export type RunEstimate = {
@@ -62,11 +65,13 @@ export function estimateRun(input: Pick<CreateRunInput, 'items' | 'scope'>): Run
     for (const target of item.targets) {
       cuts.push({
         itemIndex,
+        topic: item.topic,
         channel: target.channel,
         ratio: target.ratio,
         isOrigin: target.isOrigin,
         credits: priceCut(input.scope, target.isOrigin),
         sourceRowId: item.sourceRowId,
+        templateVersionId: target.templateVersionId ?? item.templateVersionId,
       });
     }
   }

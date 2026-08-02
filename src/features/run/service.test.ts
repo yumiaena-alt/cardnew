@@ -58,17 +58,21 @@ vi.mock(import('./repository'), () => ({
     store.runs.push(inserted);
 
     const insertedItems = items.map(
-      (item, index) =>
-        ({
-          ...item,
-          id: `item_${store.items.length + index + 1}`,
-          runId: inserted.id,
-          rowId: item.rowId ?? null,
-          deckId: null,
-          status: 'queued',
-          attempts: 0,
-          errorMessage: null,
-        }) as RunItem,
+      (item, index): RunItem => ({
+        id: `item_${store.items.length + index + 1}`,
+        runId: inserted.id,
+        rowId: item.rowId ?? null,
+        deckId: null,
+        channel: item.channel,
+        topic: item.topic,
+        ratio: item.ratio,
+        templateVersionId: item.templateVersionId ?? null,
+        isOrigin: item.isOrigin,
+        estimatedCredits: item.estimatedCredits,
+        status: 'queued',
+        attempts: 0,
+        errorMessage: null,
+      }),
     );
 
     store.items.push(...insertedItems);
@@ -107,6 +111,21 @@ vi.mock(import('./repository'), () => ({
   },
 
   updateRunItemStatuses: async () => [],
+}));
+
+// The queue is stubbed rather than exercised: it is a network call to
+// Trigger.dev, and what these tests are about is what happens to the ledger on
+// either side of it. `queueFailure` lets a test make the hand-off fail.
+const queue = vi.hoisted(() => ({ enqueued: [] as string[], failure: null as Error | null }));
+
+vi.mock(import('./queue'), () => ({
+  enqueueRun: async (payload: { runId: string }) => {
+    if (queue.failure) {
+      throw queue.failure;
+    }
+
+    queue.enqueued.push(payload.runId);
+  },
 }));
 
 vi.mock(import('@/features/credit/repository'), () => ({
@@ -222,6 +241,8 @@ function resetStore() {
   store.runs = [];
   store.items = [];
   store.ledger = [];
+  queue.enqueued = [];
+  queue.failure = null;
 }
 
 describe(createRun, () => {
@@ -300,6 +321,43 @@ describe(createRun, () => {
       await createRun(ownerScope, runInput()).catch(() => null);
 
       expect(store.runs[0]).toMatchObject({ status: 'canceled', chargedCredits: 0 });
+    });
+
+    it('hands the charged run to the queue', async () => {
+      fund(100);
+
+      const result = receipt(await createRun(ownerScope, runInput()));
+
+      expect(queue.enqueued).toStrictEqual([result.run.id]);
+    });
+  });
+
+  // A charge that buys neither cards nor a refund is the one outcome the ledger
+  // must never show, so the hand-off failing is treated as the run failing.
+  describe('queue hand-off failure', () => {
+    it('returns the credits when the run cannot be queued', async () => {
+      fund(100);
+      queue.failure = new Error('Trigger.dev unreachable');
+
+      await createRun(ownerScope, runInput()).catch(() => null);
+
+      await expect(getBalance(ownerScope)).resolves.toBe(100);
+    });
+
+    it('marks the run failed rather than leaving it queued', async () => {
+      fund(100);
+      queue.failure = new Error('Trigger.dev unreachable');
+
+      await createRun(ownerScope, runInput()).catch(() => null);
+
+      expect(store.runs[0]).toMatchObject({ status: 'failed', refundedCredits: 15 });
+    });
+
+    it('surfaces the failure instead of reporting a started run', async () => {
+      fund(100);
+      queue.failure = new Error('Trigger.dev unreachable');
+
+      await expect(createRun(ownerScope, runInput())).rejects.toThrow('Trigger.dev unreachable');
     });
   });
 
