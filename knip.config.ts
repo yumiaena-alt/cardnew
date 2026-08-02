@@ -14,6 +14,7 @@ const config: KnipConfig = {
     'src/lib/slidedoc/**',
     'src/lib/plan/**',
     'src/lib/renderer/**',
+    'src/lib/images/**',
   ],
   // Dependencies to ignore during analysis
   ignoreDependencies: [
