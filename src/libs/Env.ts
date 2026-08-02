@@ -19,6 +19,11 @@ export const Env = createEnv({
     UNSPLASH_ACCESS_KEY: z.string().optional(),
     // Generative imagery, `<uuid>:<secret>`.
     FAL_KEY: z.string().includes(':').optional(),
+    // Batch generation queue. Deploys carry this; local dev runs tasks inline.
+    TRIGGER_SECRET_KEY: z.string().startsWith('tr_').optional(),
+    // Render service, a separate process on its own host.
+    RENDER_SERVICE_URL: z.url().optional(),
+    RENDER_SERVICE_TOKEN: z.string().min(32).optional(),
     RESEND_API_KEY: z.string().optional(),
   },
   client: {
@@ -48,6 +53,9 @@ export const Env = createEnv({
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY,
     FAL_KEY: process.env.FAL_KEY,
+    TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
+    RENDER_SERVICE_URL: process.env.RENDER_SERVICE_URL,
+    RENDER_SERVICE_TOKEN: process.env.RENDER_SERVICE_TOKEN,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
