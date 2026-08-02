@@ -1,9 +1,10 @@
+import { sql } from 'drizzle-orm';
 import { boolean, index, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { memberRoleEnum } from './Enums';
 import { cardnews } from './Namespace';
 
 /**
- * A Clerk Organization mirrored into our database. Every row that belongs to a
+ * A Clerk Organization replicated into our database. Every row that belongs to a
  * tenant carries `orgId` directly so isolation filters never need a join.
  */
 export const organizations = cardnews.table('organizations', {
@@ -70,7 +71,14 @@ export const projects = cardnews.table(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
-  (t) => [index('projects_org_idx').on(t.orgId)],
+  (t) => [
+    index('projects_org_idx').on(t.orgId),
+    // One default project per organization. Enforced in the database so a
+    // redelivered `organization.created` webhook cannot create a second one.
+    uniqueIndex('projects_org_default_uq')
+      .on(t.orgId)
+      .where(sql`${t.isDefault}`),
+  ],
 );
 
 export type Organization = typeof organizations.$inferSelect;

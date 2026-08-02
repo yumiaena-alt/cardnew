@@ -15,6 +15,13 @@
       "when": 1785646862107,
       "tag": "0001_org_billing_system",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785648693220,
+      "tag": "0002_default_project_unique",
+      "breakpoints": true
     }
   ]
 }

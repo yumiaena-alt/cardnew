@@ -12,7 +12,8 @@ export const webhookEvents = cardnews.table(
     id: uuid('id').defaultRandom().primaryKey(),
     provider: text('provider').notNull(),
     externalEventId: text('external_event_id').notNull(),
-    payload: jsonb('payload').notNull(),
+    /** The validated subset of the provider payload. Raw bodies are not stored. */
+    payload: jsonb('payload').$type<Record<string, unknown>>().notNull(),
     processedAt: timestamp('processed_at', { withTimezone: true }),
     receivedAt: timestamp('received_at', { withTimezone: true }).defaultNow().notNull(),
   },

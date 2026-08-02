@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "projects_org_default_uq" ON "cardnews"."projects" USING btree ("org_id") WHERE "cardnews"."projects"."is_default";
