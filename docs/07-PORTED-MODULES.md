@@ -93,24 +93,47 @@ house rule 대응: `unsplash.ts`가 `process.env`를 직접 읽던 것을 `Env.t
 
 > **Unsplash 이용약관상 `reportUsage()`(다운로드 트리거) 호출은 의무다.** 지우지 말 것.
 
-## 7단계 — 착수 전 결정 필요 (렌더 서비스)
+## 7단계 — 호스팅 확정, 착수 대기 (렌더 서비스)
 
-**패키지 승인만으로는 부족한 단계다.** 이건 라이브러리가 아니라 **새 프로덕션 서비스**를 세우는 일이다.
+**호스팅: RackNerd VPS (4GB) 확정.** Chromium + sharp에 4GB면 충분하다. 상시 구동 요금이 이미 지불된 자원이라 추가 비용도 없다.
 
-원본이 이걸 별도 앱(`apps/render-service/`)으로 만든 이유는 명확하다 — **Next.js 서버리스 함수에 Chromium을 넣을 수 없고, 장시간 실행에도 부적합하다.** 로컬에서 되더라도 Vercel 배포에서 갈린다.
+### 남은 설계 결정 하나 — 공유 코드 접근 방식
 
-따라서 결정할 것:
+원본은 모노레포라 렌더 서비스가 `@toneflow/renderer`·`@toneflow/shared`를 워크스페이스 의존성으로 가져간다. **우리는 단일 Next 앱**이고 그 코드는 `src/lib/renderer`·`src/lib/slidedoc`에 있다. 별도 프로세스가 이걸 어떻게 참조할지 셋 중 하나를 골라야 한다.
 
-| 항목 | 내용 |
-|---|---|
-| **호스팅** | Vercel 불가. Railway / Fly.io / Render / 컨테이너 중 선택 |
-| **비용** | 상시 구동 인스턴스 요금이 새로 발생 |
-| **인증** | 웹 앱 ↔ 렌더 서비스 간 공유 시크릿 |
-| **대안** | Vercel에서 `@sparticuz/chromium` 같은 서버리스 Chromium을 시도할 수는 있으나, 콜드스타트와 50MB 번들 제한 문제가 따로 붙는다 |
+| 방안 | 장점 | 단점 |
+|---|---|---|
+| **A. `services/render/`에 두고 상대경로 import** | 코드 1벌, 변경이 즉시 반영 | 서비스 빌드가 앱 소스 트리에 의존. Docker 컨텍스트가 리포 전체 |
+| **B. npm 워크스페이스로 전환** | 경계가 명확, 원본 구조와 동일 | `package.json`·CI·knip 설정 손봐야 함 |
+| **C. 렌더 코드를 서비스로 옮기고 앱은 HTTP만 호출** | 서비스가 완전 독립, Docker 가벼움 | 앱에서 미리보기 렌더를 못 함 |
 
-**이식 자체는 `apps/render-service/` 통째로 복사라 가장 깔끔한 단위다.** 막힌 건 코드가 아니라 어디에 띄울지다.
+**A를 권한다.** 지금 필요한 건 서버 사이드 PNG 생성 하나뿐이고, 워크스페이스 전환은 CI·린트·knip을 전부 건드리는 별개 작업이다. 나중에 B로 옮기는 비용도 크지 않다.
 
-챙길 디테일(원본 가이드):
+### 배포 절차 (RackNerd)
+
+1. Node 24 + `npx playwright install --with-deps chromium` (Chromium 의존 라이브러리까지)
+2. `services/render/`를 systemd 서비스로 등록하거나 Docker로 구동
+3. **HTTPS 필수** — Caddy로 서브도메인(예: `render.<도메인>`) 리버스 프록시 + 자동 인증서
+4. **인증은 공유 시크릿.** Vercel의 egress IP는 고정이 아니라 IP allowlist가 불가능하다. `RENDER_SERVICE_TOKEN`을 양쪽 `Env.ts`/`.env`에 두고 헤더로 검증
+5. Vercel 환경변수에 `RENDER_SERVICE_URL`·`RENDER_SERVICE_TOKEN` 등록
+
+> 원본 가이드가 이 토큰에서 실제로 데인 적이 있다. `.env`에 `RENDER_SERVICE_TOKEN=""   # 주석`처럼 쓰면 순진한 파서가 주석까지 값에 넣어 HTTP 헤더가 깨진다. 우리는 `Env.ts` + Zod를 쓰므로 형식 검증을 걸어두면 된다.
+
+### 이식할 파일
+
+```
+src/server.ts        192줄  /render /inspect /health
+src/render.ts        166줄  Playwright 스크린샷 + sharp 변환 + docHash 캐시키
+src/browser-pool.ts  125줄  브라우저 재사용
+src/html.tsx          85줄  SSR → HTML
+```
+
+`cli-*.ts`와 `demo-doc.ts`는 데모용이라 이식하지 않는다.
+
+### 반드시 챙길 것
+
+
+
 - 스크린샷 전에 `document.fonts.ready`와 **모든 이미지 로드 완료**를 기다린다. 빠뜨리면 폴백 폰트로 렌더되거나 빈칸이 남는다
 - `computeDocHash()`에 결과 픽셀에 영향을 주는 **모든** 입력을 넣는다. 하나라도 빠지면 바뀐 문서에 옛 이미지가 나간다
 
