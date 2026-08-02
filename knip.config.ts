@@ -15,6 +15,9 @@ const config: KnipConfig = {
     'src/lib/plan/**',
     'src/lib/renderer/**',
     'src/lib/images/**',
+    // Separate process with its own entry point (services/render/README.md);
+    // the Next app never imports it, so knip cannot see how it is reached.
+    'services/**',
   ],
   // Dependencies to ignore during analysis
   ignoreDependencies: [

@@ -37,7 +37,13 @@ export default defineConfig({
       // house documentation and ordering conventions differ. Rules are relaxed
       // per directory and re-enabled as each module gets integrated and
       // reviewed, so the port stays reviewable as a straight copy for now.
-      files: ['src/lib/slidedoc/**', 'src/lib/plan/**', 'src/lib/renderer/**', 'src/lib/images/**'],
+      files: [
+        'src/lib/slidedoc/**',
+        'src/lib/plan/**',
+        'src/lib/renderer/**',
+        'src/lib/images/**',
+        'services/**',
+      ],
       rules: {
         'jsdoc/require-param': 'off',
         'jsdoc/require-param-description': 'off',
@@ -70,6 +76,11 @@ export default defineConfig({
         // The provider contract declares these as instance methods; making one
         // static because it happens not to read state would break the interface.
         'class-methods-use-this': 'off',
+        'typescript/return-await': 'off',
+        'unicorn/custom-error-definition': 'off',
+        'typescript/use-unknown-in-catch-callback-variable': 'off',
+        'promise/prefer-await-to-callbacks': 'off',
+        'no-param-reassign': 'off',
         'typescript/no-non-null-assertion': 'off',
         'vitest/no-conditional-expect': 'off',
         'vitest/max-expects': 'off',
