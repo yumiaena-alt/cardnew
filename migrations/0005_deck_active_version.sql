@@ -1,0 +1,1 @@
+ALTER TABLE "cardnews"."decks" ADD CONSTRAINT "decks_active_version_id_deck_versions_id_fk" FOREIGN KEY ("active_version_id") REFERENCES "cardnews"."deck_versions"("id") ON DELETE set null ON UPDATE no action;

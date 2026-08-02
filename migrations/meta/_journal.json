@@ -22,6 +22,34 @@
       "when": 1785648693220,
       "tag": "0002_default_project_unique",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785673132091,
+      "tag": "0003_template",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1785673167659,
+      "tag": "0004_deck",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785673188881,
+      "tag": "0005_deck_active_version",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785673253093,
+      "tag": "0006_board_and_run",
+      "breakpoints": true
     }
   ]
 }
