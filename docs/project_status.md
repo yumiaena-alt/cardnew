@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-03** · 문서 버전 **1.6** · 기준 커밋 `7b6f4a8`
+최종 갱신: **2026-08-03** · 문서 버전 **1.7** · 기준 커밋 `94997c2`
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -94,8 +94,11 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 | `Sidebar` / `Topbar` / `DashboardShell` | ✅ 완료 |
 | `navData` (Phase 게이팅 포함) | ✅ 완료 |
 | `Modal` (Base UI Dialog 래퍼) | ✅ 완료 |
-| Input / Select / Chip / Toast / Tabs | ⬜ 미착수 |
-| Deck 에디터 (Panel 캔버스 · Slot 편집) | ⬜ 미착수 |
+| `Textarea` / `Select` / `Field` / `StatusChip` | ✅ 완료 |
+| Toast / Tabs | ⬜ 미착수 |
+| **Deck 뷰어** (목록 + 상세) | ✅ 완료 — 서명 URL · 상태 칩 · 저작권 표기 |
+| **단건 생성 폼** (`/dashboard/deck/new`) | ✅ 완료 — Board와 같은 진입점(1건짜리 Run) |
+| Deck 에디터 (Slot 편집·부분 재생성) | ⬜ 미착수 |
 | **Board 상호작용 코어** (`src/lib/sheet/`) | ✅ 완료 — clipboard · selection · history, 단위 테스트 39건 |
 | **Board 시트 UI** (`BoardGrid` · `BoardCell` · `FanoutCell` · `BoardCardList` · `useBoardSheet`) | ✅ 완료 — `role="grid"`, 키보드·클립보드·필 핸들, 1024px 미만 카드 폴백 |
 | **크레딧 견적** (`features/credit/estimate.ts`) | ✅ 완료 — 단위 테스트 6건 |
@@ -397,6 +400,10 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `e28e8e9` | **생성 진입점 배선** — `submitRun()` 액션 · `Modal` · `DryRunPanel` · 시트 변환 |
 | `6c4e0c6` | **생성 파이프라인** — Trigger 태스크 · `pipeline.ts` · `Storage` · `RenderService` · `0007` |
 | `7b6f4a8` | 파이프라인 미설정 시 차감 거부 (`readiness.ts`) |
+| `da251af` | **Deck 뷰어 + 스톡 이미지** — 목록·상세·서명 URL · 저작권 표기 |
+| `0cb725e` | 실행 후 피드백 — 시작 상태 · `StatusChip` |
+| `7de50f1` | **단건 생성 폼** (`/dashboard/deck/new`) + `Field`/`Select`/`Textarea` |
+| `94997c2` | **Board 영속화** — 월간 보드 자동 생성 · 편집마다 저장 |
 | (미커밋) | **Phase 1-B 인증·테넌트** — Clerk 웹훅 · `scope`/`permissions`/`orgScope` · `0002` |
 
 **Phase 1-B 산출물 (신규 파일)**
@@ -448,7 +455,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 - `next-env.d.ts` 생성 → 이미지 모듈 타입 오류 13건 해소
 - Playwright chromium 설치 → `npm run test`의 browser 프로젝트 동작
 
-### 검증 상태 (커밋 `7b6f4a8` 기준, 전부 실측)
+### 검증 상태 (커밋 `94997c2` 기준, 전부 실측)
 
 | 검사 | 결과 |
 |---|---|
@@ -497,18 +504,16 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
    → 확인할 것: runs/run_items 상태 전이 · panels.render_path · 원장 -15
    → 실패 시 환불이 도는지, 첫 장 실패 시 나머지가 canceled 로 남는지
 
-2. Deck 뷰어 (생성 결과를 볼 화면이 없다)
-   → /dashboard/deck 목록 + 상세. 서명 URL 로 PNG 노출
-   → Storage.createSignedUrl() 은 소비자가 없어 knip 이 잡길래 지웠다. 이때 되살린다
+2. Stripe Checkout (Standard 단일 플랜) + 웹훅
+   ※ stripe 패키지 설치가 필요하다
 
-3. 스톡 이미지 연결
-   → 지금 파이프라인은 composeCardnews 에 images 를 넘기지 않아 사진 없이 조판된다
-   → src/lib/images/source.ts 는 이식돼 있고 knip 예외에 남아 있다
+3. Deck 에디터 — Slot 편집과 부분 재생성 (1cr / 3cr)
+   → panels.slots 에 기획 문구가 이미 저장돼 있어 편집 대상은 준비됐다
+   → createRun 의 scope: {kind:'slot'|'panel'} 경로가 아직 UI 없이 비어 있다
 
-4. Stripe Checkout (Standard 단일 플랜) + 웹훅
-   ※ stripe 패키지 설치 승인 필요
+4. 폰트 (R2) — Pretendard 만 남았다. npm 패키지 설치 승인 필요
 
-5. 폰트 (R2) — Pretendard 만 남았다. npm 패키지 설치 승인 필요
+5. 예약 발행 (Phase 3) — schedules/publications 테이블부터
 
 6. Board 마무리 — Storybook 스토리 + a11y 스캔, 브라우저 실동작 확인 (R8)
 ```
