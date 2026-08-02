@@ -37,7 +37,7 @@ export default defineConfig({
       // house documentation and ordering conventions differ. Rules are relaxed
       // per directory and re-enabled as each module gets integrated and
       // reviewed, so the port stays reviewable as a straight copy for now.
-      files: ['src/lib/slidedoc/**', 'src/lib/renderer/**'],
+      files: ['src/lib/slidedoc/**', 'src/lib/deckplan/**', 'src/lib/renderer/**'],
       rules: {
         'jsdoc/require-param': 'off',
         'jsdoc/require-param-description': 'off',
@@ -51,6 +51,14 @@ export default defineConfig({
         'typescript/consistent-return': 'off',
         'default-case': 'off',
         'jsdoc/check-tag-names': 'off',
+        // FNV-1a is bitwise by definition, and `Math.trunc` is not a
+        // substitute for `>>> 0` — it does not coerce to unsigned 32-bit.
+        'no-bitwise': 'off',
+        'unicorn/prefer-math-trunc': 'off',
+        'prefer-destructuring': 'off',
+        'unicorn/no-array-reduce': 'off',
+        'unicorn/no-array-for-each': 'off',
+        'unicorn/consistent-function-scoping': 'off',
         'typescript/no-non-null-assertion': 'off',
         'vitest/no-conditional-expect': 'off',
         'vitest/max-expects': 'off',

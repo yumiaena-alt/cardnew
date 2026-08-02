@@ -12,6 +12,7 @@ const config: KnipConfig = {
     // templates, the renderer — arrive in the next stage, so most exports read
     // as unused until then. Remove these two entries once that lands.
     'src/lib/slidedoc/**',
+    'src/lib/deckplan/**',
     'src/lib/renderer/**',
   ],
   // Dependencies to ignore during analysis

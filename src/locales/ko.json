@@ -8,8 +8,8 @@
     "meta_description": "Effortlessly create an account through our intuitive sign-up process."
   },
   "DashboardLayout": {
-    "meta_title": "Dashboard",
-    "meta_description": "Manage your account from the dashboard."
+    "meta_title": "대시보드",
+    "meta_description": "카드뉴스 제작과 예약 발행을 한곳에서 관리해요."
   },
   "LocaleSwitcher": {
     "change_language": "Change language"
@@ -18,10 +18,10 @@
     "brand_name": "Panelo",
     "primary_navigation": "주요 메뉴",
     "close_sidebar": "사이드바 닫기",
-    "board": "보드",
-    "deck": "덱",
+    "board": "월간 보드",
+    "deck": "카드뉴스",
     "deck_new": "새로 만들기",
-    "deck_list": "내 덱",
+    "deck_list": "내 카드뉴스",
     "template": "템플릿",
     "template_gallery": "갤러리",
     "template_learn": "디자인 학습",
@@ -41,13 +41,13 @@
     "estimate_label": "예상 사용량"
   },
   "DeckListPage": {
-    "empty_title": "아직 덱이 없어요",
-    "empty_description": "소재 하나를 카드 묶음으로 만들고, 채널마다 다시 쓰세요.",
-    "create_action": "첫 덱 만들기"
+    "empty_title": "아직 만든 카드뉴스가 없어요",
+    "empty_description": "소재 하나로 카드뉴스를 만들고, 채널마다 다시 쓰세요.",
+    "create_action": "첫 카드뉴스 만들기"
   },
   "DeckNewPage": {
-    "scaffold_title": "덱 생성 화면을 만들고 있어요",
-    "scaffold_description": "생성 폼은 Phase 1-D에 들어옵니다. 라우팅과 레이아웃은 준비됐어요."
+    "scaffold_title": "카드뉴스 만들기 화면을 준비하고 있어요",
+    "scaffold_description": "생성 폼은 곧 들어옵니다. 화면 이동과 레이아웃은 준비됐어요."
   },
   "TemplateGalleryPage": {
     "scaffold_title": "템플릿 갤러리를 만들고 있어요",
@@ -59,8 +59,8 @@
   },
   "BoardPage": {
     "title": "이번 달 배치",
-    "summary": "{rows}행 · 파생 컷 {cuts}개",
-    "grid_label": "보드 시트",
+    "summary": "{rows}건 · 채널별 추가본 {cuts}장",
+    "grid_label": "월간 보드 표",
     "row_number": "{index}행",
     "column_topic": "소재",
     "column_fanout": "채널",
@@ -73,7 +73,7 @@
     "undo": "실행 취소",
     "redo": "다시 실행",
     "fill_handle": "끌어서 아래로 채우기",
-    "run": "{count}건 생성",
+    "run": "{count}건 만들기",
     "keyboard_hint": "방향키로 이동 · Enter로 편집 · Esc로 취소 · Cmd+V로 범위 붙여넣기 · Cmd+Z로 실행 취소"
   },
   "MarketingHeader": {
@@ -95,14 +95,14 @@
     "cta_secondary": "어떻게 쓰는지 보기",
     "trust_note": "가입하면 50크레딧 · 카드 등록 안 해도 돼요",
     "fanout_visual_heading": "주제 하나가 채널별 컷으로 나뉘는 방식",
-    "visual_source_label": "주제 1개",
+    "visual_source_label": "소재 1개",
     "visual_generated_label": "AI 생성",
     "channel_instagram": "인스타그램",
     "channel_reels": "릴스",
     "channel_threads": "스레드",
     "features_heading": "채널이 늘어도 일은 안 늘어요",
     "feature_fanout_title": "채널별로 알아서 나뉘어요",
-    "feature_fanout_body": "한 번만 만들면 비율과 말투를 채널에 맞춰 다시 잡아드려요. 원본 15크레딧, 추가 컷은 5크레딧이에요.",
+    "feature_fanout_body": "한 번만 만들면 비율과 말투를 채널에 맞춰 다시 잡아드려요. 카드뉴스 한 건 15크레딧, 채널 추가본은 5크레딧이에요.",
     "feature_batch_title": "한 달치를 한 번에",
     "feature_batch_body": "캘린더에서 빈 날짜를 찾아 표로 펼쳐드려요. 붙여넣고 드래그하면 한 달이 채워져요.",
     "feature_dryrun_title": "쓰기 전에 얼마인지 알려드려요",
@@ -120,10 +120,10 @@
   "DashboardPage": {
     "heading": "오늘은 뭘 만들까요?",
     "subheading": "한 건만 만들어도 되고, 한 달치를 한 번에 만들어도 돼요.",
-    "shortcut_board_title": "Board 열기",
-    "shortcut_board_body": "표에서 여러 건을 한 번에 만들어요.",
-    "shortcut_deck_title": "새 Deck 만들기",
-    "shortcut_deck_body": "주제 하나로 카드뉴스 한 건을 만들어요.",
+    "shortcut_board_title": "월간 보드 열기",
+    "shortcut_board_body": "표에서 한 달치를 한 번에 만들어요.",
+    "shortcut_deck_title": "카드뉴스 만들기",
+    "shortcut_deck_body": "소재 하나로 카드뉴스 한 건을 만들어요.",
     "shortcut_template_title": "템플릿 둘러보기",
     "shortcut_template_body": "스타일을 고르거나, 내 레퍼런스로 새로 학습시켜요."
   }

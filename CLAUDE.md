@@ -24,7 +24,18 @@
 | **Run** | 생성 실행 1회 = 크레딧 차감 단위 | `runs` |
 | **Slot** | Panel 내 편집 최소 단위 | `panels.slots` |
 
-동의어 금지: 카드뉴스/슬라이드/카드 → **Panel** 또는 **Deck**으로 통일.
+**위 표는 코드 식별자·DB 테이블명에만 적용된다.** `panels`·`decks`는 이미 프로덕션에 마이그레이션된 테이블명이라 바꾸지 않는다.
+
+**사용자에게 보이는 한국어는 업계 표준 용어를 그대로 쓴다.** 이걸 영어나 억지 조어로 바꾸지 않는다.
+
+| 화면에 쓸 말 | 쓰지 말 것 |
+|---|---|
+| 카드뉴스, 슬라이드, 장 (10장 카드뉴스) | 덱, Deck, 패널, Panel |
+| 소재, 콘텐츠, 템플릿 | 애셋, Asset, 콘텐츠 박스 |
+| 예약 발행, 월간 보드 | Publishing Deck, Board |
+| 인스타, 릴스, 스레드, 숏폼, 크레딧 | (그대로 쓴다) |
+
+'카드뉴스'·'슬라이드'·'릴스'·'템플릿'은 **업계 공통 기능 명사**이지 타사 브랜드가 아니다. 배제 대상은 **벤치마킹 대상의 실제 상표명·회사명·고유 로고 문구뿐**이다.
 
 ### 기술 스택 (확정 · 변경 금지)
 Next.js 16 App Router · React 19 (Compiler) · TypeScript strict · Supabase(PostgreSQL) · **Drizzle ORM** · Clerk Auth(+Organizations) · Tailwind v4 · next-intl · Base UI + cva · Framer Motion(`motion`) · Arcjet · Sentry · Trigger.dev v3
