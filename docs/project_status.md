@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-02** · 문서 버전 **1.4** · 기준 커밋 `097bbc0` (로컬 main, 아직 미푸시)
+최종 갱신: **2026-08-02** · 문서 버전 **1.5** · 기준 커밋 `e28e8e9`
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -93,13 +93,13 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 | `EmptyState` | ✅ 완료 |
 | `Sidebar` / `Topbar` / `DashboardShell` | ✅ 완료 |
 | `navData` (Phase 게이팅 포함) | ✅ 완료 |
-| Input / Select / Chip / Modal / Toast / Tabs | ⬜ 미착수 |
-| `DryRunPanel` | ⬜ 미착수 |
+| `Modal` (Base UI Dialog 래퍼) | ✅ 완료 |
+| Input / Select / Chip / Toast / Tabs | ⬜ 미착수 |
 | Deck 에디터 (Panel 캔버스 · Slot 편집) | ⬜ 미착수 |
 | **Board 상호작용 코어** (`src/lib/sheet/`) | ✅ 완료 — clipboard · selection · history, 단위 테스트 39건 |
 | **Board 시트 UI** (`BoardGrid` · `BoardCell` · `FanoutCell` · `BoardCardList` · `useBoardSheet`) | ✅ 완료 — `role="grid"`, 키보드·클립보드·필 핸들, 1024px 미만 카드 폴백 |
 | **크레딧 견적** (`features/credit/estimate.ts`) | ✅ 완료 — 단위 테스트 6건 |
-| `DryRunPanel` (전용 모달) | ⬜ 미착수 — 현재는 헤더의 `CreditBadge` 인라인 견적만 |
+| `DryRunPanel` (전용 모달) | ✅ 완료 — 서버 견적 → 확인 → 차감. 큐 미설정 시 실행 거부 |
 | Storybook 스토리 + a11y 스캔 | ⬜ 미착수 |
 
 ### 🔄 Phase 4: 외부 오픈소스 이식 및 모듈화 — **부분 진행**
@@ -134,7 +134,7 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 | 항목 | 상태 |
 |---|---|
 | Supabase | ✅ `cardnews` 스키마 · 테이블 10 · enum 4 · `plan_limits` 시드 4행 · `0002` 인덱스 |
-| Vercel 프로젝트 | ✅ `limigogos-projects/cardnews` (GitHub 연결됨) |
+| Vercel 프로젝트 | ✅ `limigogos-projects/cardnews` — **2026-08-02 `yumiaena-alt/cardnew` 저장소로 Git 연결** (`vercel git connect`가 `Connected` 반환). 그전까지는 CLI 배포만 썼고 Git 연결이 없었다 |
 | 프로덕션 환경변수 | ✅ `DATABASE_URL`(6543 트랜잭션 풀러) · `CLERK_SECRET_KEY` · `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` · `CLERK_WEBHOOK_SECRET` |
 | Deployment Protection | ✅ 해제 (`ssoProtection: null`) — **켜져 있으면 Clerk 웹훅이 Vercel 로그인벽에 막힌다** |
 | 프로덕션 스모크 | ✅ `<html lang="ko">` · `/sign-in` Clerk 렌더 · 웹훅 서명 없음→400 / 잘못된 서명→400 |
@@ -152,7 +152,7 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 
 ### 배포 준비 이력 — **완료**
 
-- [x] GitHub 푸시 완료 (`yumiaena-alt/next-boilerplate-drizzle-clerk`, `main`)
+- [x] GitHub 푸시 완료 — **저장소를 `yumiaena-alt/cardnew`로 옮겼다** (2026-08-02). 로컬 `origin`도 이쪽을 가리킨다. 옛 저장소 `next-boilerplate-drizzle-clerk`는 GitHub에 남아 있지만 더 이상 쓰지 않는다
 - [x] `vercel.json` — 리전 `icn1`(서울), `buildCommand`를 `next build`로 오버라이드
 - [x] `docs/06-DEPLOYMENT.md` — 절차 · 필수 환경변수 · 리스크
 - [x] Vercel CLI 인증 확인 (`yumiaena-alt` / 팀 `limigogos-projects`)
@@ -324,7 +324,19 @@ R3(제공사 미선정)은 해결됐다 — Anthropic(기획) · Unsplash(스톡
 
 ### 다음 세션의 순서
 
-**1) `createRun()`을 부르는 Server Action + `DryRunPanel` 모달.** 서비스는 다 됐고, `getScope()` → `requirePermission()` → `createRun()`으로 잇는 진입점과 견적을 보여줄 UI가 없다. Trigger.dev 없이도 여기까지는 만들 수 있다.
+**1) ~~`createRun()`을 부르는 Server Action + `DryRunPanel` 모달~~ — 완료 (`e28e8e9`).**
+
+| 파일 | 역할 |
+|---|---|
+| `src/features/run/actions.ts` | `submitRun()` Server Action. 도메인 에러는 **메시지가 아니라 code로** 넘긴다(내부 id가 섞여 있어서) |
+| `src/components/ui/Modal.tsx` | Base UI Dialog 래퍼 — 첫 모달 프리미티브 |
+| `src/components/board/DryRunPanel.tsx` | 견적 모달. 확인을 눌러야 크레딧이 빠진다 |
+| `src/components/board/runInput.ts` | 시트 행 → `RunItemInput[]`. 소재 없거나 채널 0개인 행은 여기서 버린다 |
+
+- **견적은 서버가 준 값을 쓴다.** 시트가 헤더에 계산해 둔 합계를 그대로 청구하면 "본 금액 ≠ 청구 금액"이 생길 수 있다. `runInput.test.ts`가 두 계산을 서로 맞춰 고정한다.
+- **`TRIGGER_SECRET_KEY`가 없으면 실제 실행을 거부한다** (R13 대응). 액션에서 `createRun()` **이전에** 막아 원장에 아무것도 안 남는다.
+- Board의 플레이스홀더 잔액(50)을 실제 원장 `SUM`으로 교체했다.
+- `templateVersionId`를 **선택**으로 바꿨다. 이식한 템플릿 엔진이 이미 주제로 템플릿을 고르는데, 필수로 두면 템플릿 선택 UI가 생길 때까지 아무도 호출할 수 없다.
 
 **2) Trigger.dev 태스크 (계정 확보 후).** §5-2 8단계. 태스크가 들어오면 `knip.config.ts`의 `trigger.config.ts`·`@trigger.dev/sdk` 예외 두 줄을 지운다. 태스크는 Run을 `running`으로 올리고, 끝나면 `finalizeRun()`에 Cut별 결과를 넘긴다.
 
@@ -368,6 +380,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `7c1f59a` | **전용 스키마 `cardnews`로 전환** + `0001` 재생성 |
 | `41f2868` | **마이그레이션 `0003`~`0006`** — template · deck · 순환 FK · board+run |
 | `097bbc0` | **`createRun()` / `finalizeRun()`** + 부분 환불 `refundCredits()` |
+| `e28e8e9` | **생성 진입점 배선** — `submitRun()` 액션 · `Modal` · `DryRunPanel` · 시트 변환 |
 | (미커밋) | **Phase 1-B 인증·테넌트** — Clerk 웹훅 · `scope`/`permissions`/`orgScope` · `0002` |
 
 **Phase 1-B 산출물 (신규 파일)**
@@ -419,7 +432,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 - `next-env.d.ts` 생성 → 이미지 모듈 타입 오류 13건 해소
 - Playwright chromium 설치 → `npm run test`의 browser 프로젝트 동작
 
-### 검증 상태 (커밋 `097bbc0` 기준, 전부 실측)
+### 검증 상태 (커밋 `e28e8e9` 기준, 전부 실측)
 
 | 검사 | 결과 |
 |---|---|
@@ -427,7 +440,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `npm run lint` | ✅ **error 0건** (Board a11y 4건 · `SlideRenderer` img 3건은 기존 warning) |
 | `npm run check:i18n` | ✅ exit 0 |
 | `npm run check:deps` (knip) | ✅ 통과 |
-| `npm run test` | ✅ **322건 통과** (298 → run 견적 6건 + run 서비스 18건) |
+| `npm run test` | ✅ **332건 통과** (298 → run 견적 6 · run 서비스 18 · 시트 변환 10) |
 | `npm run build-local` | ✅ **통과** |
 | 마이그레이션 `0000`~`0006` | ✅ 빈 PGlite에 전부 적용 성공 |
 | 생성 SQL 파괴적 구문 검사 | ✅ `0003`~`0006`에 `DROP`·`ALTER COLUMN`·`DELETE` **0건** |
@@ -530,7 +543,7 @@ Server Action 과 DryRunPanel 로 잇기만 하면 된다.
 |---|---|---|
 | R1 | **상표 미검증** — `Panelo`의 `panel`은 일반명사라 식별력이 약하다. KIPRIS(35·42·9류) / USPTO / EUIPO 검색과 `panelo.app` 도메인 확보가 아직 안 됐다 | **브랜드 에셋 제작 전.** 현재 브랜드명은 i18n 키(`DashboardNav.brand_name`)로만 노출되므로 교체 비용은 낮다 |
 | R12 | **마이그레이션 `0003`~`0006`이 프로덕션에 미적용.** 로컬 PGlite에만 올라가 있어 로컬과 Supabase의 스키마가 갈라져 있다. 전부 추가 전용이라 위험은 낮지만, 적용 전까지 프로덕션에서 Run·Deck·Board를 쓰는 코드는 런타임에 죽는다 | **사용자 확인 후 적용.** 5432(세션 풀러)로 붙어야 DDL이 된다 |
-| R13 | Run이 `queued`에 쌓이기만 하고 아무도 집어가지 않는다. Trigger.dev 태스크가 없어서다. `createRun()`을 부르는 진입점을 만들기 전이라 아직 실해가 없지만, 진입점이 먼저 나가면 크레딧만 빠지고 결과가 안 나온다 | 생성 진입점 배선과 **같은 시점**에 큐가 있어야 한다 |
+| ~~R13~~ | ~~Run이 `queued`에 쌓이기만 하고 아무도 안 집어간다~~ → **막아 뒀다.** `submitRun()`이 `TRIGGER_SECRET_KEY` 없이는 실제 실행을 거부한다(`error_queue_unavailable`). 견적까지는 정상 동작하고 크레딧은 안 빠진다. 키가 들어오는 순간 자동으로 열리므로 **태스크를 먼저 만들어야 한다** | Trigger.dev 계정 확보 시 |
 | R2 | 폰트 미적용 — `global.css`에 패밀리명만 정의, 실제 파일 없음 → 현재 시스템 폰트로 렌더 | 다음 세션 |
 | ~~R7~~ | ~~`build-local` 실패~~ → **해결됨** (`7c1f59a`). 두 단계 문제였다: ① 작은따옴표를 Windows가 못 넘김 ② 고친 뒤엔 `spawn npm ENOENT`(Windows는 `npm.cmd`라 shell 없이 spawn 불가). `node`로 직접 실행해 해결. **당초 "CI 게이트가 막혔다"고 기록한 것은 과장이었다** — CI는 `ubuntu-latest`라 원래 정상이었고 Windows 로컬 전용 문제였다 | 완료 |
 | ~~R11~~ | ~~Clerk 시크릿 키 미설정~~ → **해결됨.** 사용자가 `.env.local`에 실제 키를 넣었는데도 같은 에러가 났는데, 원인은 **`.env.local` 안에 `CLERK_SECRET_KEY`가 두 번 정의**된 것이었다(10행 실제 키, 36행 `your_clerk_secret_key` placeholder). **dotenv는 나중 값이 이긴다** → placeholder가 승리. 36행 제거로 해결. 이제 `/sign-in`·`/dashboard/*`가 로컬에서 정상 렌더되므로 **R8(Board UI 브라우저 검증)도 착수 가능** | 완료 |
