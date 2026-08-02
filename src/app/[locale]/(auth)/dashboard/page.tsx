@@ -33,7 +33,7 @@ export default async function DashboardPage(props: { params: Promise<{ locale: s
             <li key={shortcut.key}>
               <Link
                 href={shortcut.href}
-                className="flex h-full flex-col gap-3 rounded-lg border border-border bg-card p-5 transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                className="flex h-full flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <Icon className="size-5 text-muted-foreground" aria-hidden="true" />
                 <span className="text-base font-semibold text-foreground">{label.title}</span>

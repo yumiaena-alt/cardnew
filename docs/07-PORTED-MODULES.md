@@ -43,11 +43,23 @@ Toneflow는 같은 문제(카드뉴스 생성)를 먼저 푼 우리 프로젝트
 
 ---
 
-## 2단계 이후 — 예정
+## 2단계 — 완료 (조판 레이어)
+
+| 이식 모듈 | 위치 | 줄 수 |
+|---|---|---|
+| 조판 + 레이어 충돌 감지 | `src/lib/renderer/typeset.ts` | 154 |
+| 수직 스택 해석 (실측 y 배치) | `src/lib/renderer/stack.ts` | 144 |
+| SlideDoc → CSS | `src/lib/renderer/css.ts` | 211 |
+| SlideDoc → React 렌더 | `src/lib/renderer/SlideRenderer.tsx` | 294 |
+
+**배럴 파일을 쓰지 않는다.** 원본은 `@toneflow/shared/slidedoc` 배럴로 가져왔지만, 우리 린트(`oxc/no-barrel-file`)가 이를 막는다. 각 심볼이 실제로 선언된 모듈(`layers` / `doc` / `geometry` / `primitives`)에서 직접 가져오도록 바꿨다.
+
+`import * as React`는 제거했다. 원본 가이드가 패키지 경계를 넘을 때 필요하다고 경고한 것인데, 단일 Next 앱에서는 최신 JSX 변환이 처리한다.
+
+## 3단계 이후 — 예정
 
 | 단계 | 내용 | 새 패키지 | 비고 |
 |---|---|---|---|
-| 2 | `typeset` · `stack` · `css` · `SlideRenderer` | 없음 (zod·react) | 조판 + 충돌 감지 |
 | 3 | `templates/` (covers·bodies·registry·compose) | 없음 | `compose.test.ts` 629줄에 84개 조합 검증 |
 | 4 | JSONL 스트리밍 파서 + Gemini 연결 | 없음 (zod) | 아래 참조 |
 | 5 | 스톡 이미지 조달 + 저작권 원장 | **sharp, Unsplash 키** | 승인 필요 |

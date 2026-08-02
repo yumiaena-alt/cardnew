@@ -46,7 +46,7 @@ export default async function HomePage(props: HomePageProps) {
 
         <h1
           id="hero-heading"
-          className="mt-5 max-w-3xl font-display text-[clamp(2.5rem,1.4rem+4.4vw,5rem)] leading-[1.05] font-normal tracking-tight text-balance text-foreground"
+          className="mt-5 max-w-3xl font-display text-[clamp(2.5rem,1.4rem+4.4vw,5rem)] leading-[1.08] font-normal tracking-tight whitespace-pre-line text-foreground"
         >
           {t('headline')}
         </h1>
@@ -79,7 +79,7 @@ export default async function HomePage(props: HomePageProps) {
         <h2 id="fanout-heading" className="sr-only">
           {t('fanout_visual_heading')}
         </h2>
-        <div className="rounded-xl border border-border bg-muted/40 p-5 md:p-8">
+        <div className="rounded-2xl border border-border bg-muted/50 p-5 md:p-8">
           <PanelStack
             sourceLabel={t('visual_source_label')}
             generatedLabel={t('visual_generated_label')}
@@ -94,7 +94,7 @@ export default async function HomePage(props: HomePageProps) {
 
       <section
         aria-labelledby="features-heading"
-        className="border-y border-border bg-card/60 py-16 md:py-20"
+        className="border-y border-border bg-muted/40 py-16 md:py-20"
       >
         <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
           <h2
@@ -104,9 +104,12 @@ export default async function HomePage(props: HomePageProps) {
             {t('features_heading')}
           </h2>
 
-          <ul className="mt-10 grid gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-3">
+          <ul className="mt-10 grid gap-4 md:grid-cols-3">
             {features.map((feature, index) => (
-              <li key={feature.key} className="bg-background p-6 md:p-7">
+              <li
+                key={feature.key}
+                className="rounded-2xl border border-border bg-card p-6 shadow-sm md:p-7"
+              >
                 <span className="font-mono text-xs text-muted-foreground tabular-nums">
                   {String(index + 1).padStart(2, '0')}
                 </span>
@@ -127,9 +130,9 @@ export default async function HomePage(props: HomePageProps) {
             {t('how_heading')}
           </h2>
 
-          <ol className="mt-10 grid gap-8 md:grid-cols-3 md:gap-10">
+          <ol className="mt-10 grid gap-4 md:grid-cols-3">
             {steps.map((step, index) => (
-              <li key={step.key} className="border-t border-border pt-5">
+              <li key={step.key} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                 <span className="font-mono text-xs text-muted-foreground tabular-nums">
                   {t('step_label', { index: index + 1 })}
                 </span>
@@ -143,7 +146,7 @@ export default async function HomePage(props: HomePageProps) {
 
       <section aria-labelledby="cta-heading" className="pb-24">
         <div className="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
-          <div className="flex flex-col items-start gap-6 rounded-xl border border-border bg-secondary px-6 py-10 md:flex-row md:items-center md:justify-between md:px-10">
+          <div className="flex flex-col items-start gap-6 rounded-2xl border border-border bg-secondary px-6 py-10 shadow-sm md:flex-row md:items-center md:justify-between md:px-10">
             <h2
               id="cta-heading"
               className="max-w-lg font-display text-[clamp(1.5rem,1.1rem+1.6vw,2.25rem)] leading-tight font-normal text-secondary-foreground"

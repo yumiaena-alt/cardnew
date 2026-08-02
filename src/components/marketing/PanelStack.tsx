@@ -22,7 +22,7 @@ function Cut(props: CutProps) {
   return (
     <figure
       className={cn(
-        'flex w-full flex-col gap-2 rounded-lg border border-border bg-card p-3',
+        'flex w-full flex-col gap-2 rounded-2xl border border-border bg-card shadow-sm p-3',
         'transition-transform duration-500 ease-out',
         props.className,
       )}
@@ -47,7 +47,7 @@ type PanelStackProps = {
 export function PanelStack(props: PanelStackProps) {
   return (
     <div className="grid w-full gap-5 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1.6fr)] sm:items-center">
-      <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
+      <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4 shadow-sm">
         <span className="font-mono text-[0.65rem] tracking-wider text-muted-foreground uppercase">
           {props.sourceLabel}
         </span>

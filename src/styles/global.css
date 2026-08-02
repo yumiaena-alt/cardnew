@@ -181,8 +181,10 @@
   --color-status-fail-foreground: var(--status-fail-foreground);
 
   --font-sans: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  /* Hangul has no Instrument Serif coverage, so the tail is the sans stack
-     rather than a generic serif — a system serif reads dated in Korean. */
+  /* Hangul sets loose by default; pulling it in reads tighter and more modern. */
+  --tracking-korean: -0.02em;
+  /* Latin runs in Instrument Serif; Hangul has no coverage there and falls
+     through to Pretendard, which is now actually loaded. */
   --font-display:
     var(--font-instrument-serif), 'Pretendard Variable', -apple-system, BlinkMacSystemFont,
     'Segoe UI', sans-serif;
@@ -198,6 +200,16 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
+    letter-spacing: var(--tracking-korean);
+  }
+
+  /* Monospace columns must keep their default spacing to stay aligned. */
+  .tabular,
+  code,
+  kbd,
+  pre,
+  samp {
+    letter-spacing: normal;
   }
 
   /* Numeric columns must not jitter — credits, counts, board cells. */
