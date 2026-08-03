@@ -1,9 +1,10 @@
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { orgScoped } from '@/features/shared/orgScope';
 import type { OrgScope } from '@/features/shared/scope';
 import { db } from '@/libs/DB';
-import type { DmAutomation, NewDmAutomation, SocialAccount } from '@/models/Social';
-import { dmAutomations, socialAccounts } from '@/models/Social';
+import type { Channel } from '@/models/Enums';
+import type { DmAutomation, DmSend, NewDmAutomation, SocialAccount } from '@/models/Social';
+import { dmAutomations, dmSends, socialAccounts } from '@/models/Social';
 
 /**
  * Connected accounts and their automations.
@@ -86,6 +87,119 @@ export async function upsertSocialAccount(
     .returning();
 
   return row ?? null;
+}
+
+export type AccountCredential = {
+  id: string;
+  orgId: string;
+  externalId: string;
+  accessTokenCipher: string | null;
+  isActive: boolean;
+};
+
+/**
+ * Resolves the account a webhook delivery is about.
+ *
+ * Deliberately not scoped: this is the step that *establishes* the tenant. A
+ * webhook arrives with the network's account id and nothing else, and the row
+ * it finds is what every scoped query after it is filtered by.
+ *
+ * The token comes back here because this is the one path that has to use it.
+ *
+ * @param channel - Which network the delivery came from.
+ * @param externalId - The network's own account id.
+ * @returns The account and its stored credential, or null when it is unknown.
+ */
+export async function findAccountByExternalId(
+  channel: Channel,
+  externalId: string,
+): Promise<AccountCredential | null> {
+  const [row] = await db
+    .select({
+      id: socialAccounts.id,
+      orgId: socialAccounts.orgId,
+      externalId: socialAccounts.externalId,
+      accessTokenCipher: socialAccounts.accessTokenCipher,
+      isActive: socialAccounts.isActive,
+    })
+    .from(socialAccounts)
+    .where(and(eq(socialAccounts.channel, channel), eq(socialAccounts.externalId, externalId)))
+    .limit(1);
+
+  return row ?? null;
+}
+
+/**
+ * Lists the automations that are switched on for one account.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param accountId - The account the comment landed on.
+ * @returns The active automations, oldest first so the first rule a user wrote wins.
+ */
+export async function listActiveAutomations(
+  scope: OrgScope,
+  accountId: string,
+): Promise<DmAutomation[]> {
+  return await db
+    .select()
+    .from(dmAutomations)
+    .where(
+      orgScoped(
+        scope,
+        dmAutomations,
+        eq(dmAutomations.accountId, accountId),
+        eq(dmAutomations.isActive, true),
+      ),
+    )
+    .orderBy(dmAutomations.createdAt);
+}
+
+/**
+ * Claims the right to answer one comment.
+ *
+ * Written before the reply is sent, not after. The network redelivers a webhook
+ * it did not hear back from, and a record written afterwards would leave a
+ * window where the same person is messaged twice — the one failure mode of this
+ * feature a user would notice and never forgive.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param input - The automation that matched and the comment it matched.
+ * @returns The claim, or null when this comment was already answered.
+ */
+export async function claimDmSend(
+  scope: OrgScope,
+  input: { automationId: string; externalCommentId: string },
+): Promise<DmSend | null> {
+  const [row] = await db
+    .insert(dmSends)
+    .values({
+      orgId: scope.orgId,
+      automationId: input.automationId,
+      externalCommentId: input.externalCommentId,
+      status: 'sending',
+    })
+    .onConflictDoNothing({ target: dmSends.externalCommentId })
+    .returning();
+
+  return row ?? null;
+}
+
+/**
+ * Records how a claimed send turned out.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param sendId - The claim to update.
+ * @param outcome - The final status and, when it failed, the provider's reason.
+ */
+export async function settleDmSend(
+  scope: OrgScope,
+  sendId: string,
+  outcome: { status: 'sent' | 'failed'; errorMessage?: string },
+): Promise<void> {
+  await db
+    .update(dmSends)
+    .set({ status: outcome.status, errorMessage: outcome.errorMessage ?? null })
+    .where(orgScoped(scope, dmSends, eq(dmSends.id, sendId)));
 }
 
 /**

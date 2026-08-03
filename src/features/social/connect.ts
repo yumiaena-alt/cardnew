@@ -2,7 +2,7 @@ import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { OrgScope } from '@/features/shared/scope';
 import { isEncryptionConfigured } from '@/libs/Crypto';
 import { Env } from '@/libs/Env';
-import { logger } from '@/libs/Logger';
+import { GRAPH_BASE, getGraph } from './graph';
 
 /**
  * Connecting a publishing account.
@@ -15,10 +15,8 @@ import { logger } from '@/libs/Logger';
  */
 
 const AUTHORIZE_ENDPOINT = 'https://www.facebook.com/v21.0/dialog/oauth';
-const GRAPH_BASE = 'https://graph.facebook.com/v21.0';
 const TOKEN_ENDPOINT = `${GRAPH_BASE}/oauth/access_token`;
 const ACCOUNTS_ENDPOINT = `${GRAPH_BASE}/me/accounts`;
-const GRAPH_TIMEOUT_MS = 15_000;
 
 /** Read comments, reply to them, and publish. Nothing broader is requested. */
 const SCOPES = [
@@ -161,27 +159,6 @@ type IssuedToken = {
 };
 
 export type TokenResult = ({ ok: true } & IssuedToken) | { ok: false; reason: ConnectFailure };
-
-/**
- * Calls the Graph API and decodes the body.
- *
- * @param url - The fully built request URL, access token included.
- * @param label - What the call was for. Logged when it is refused.
- * @returns The decoded body, or null when the call did not succeed.
- */
-async function getGraph(url: string, label: string): Promise<unknown> {
-  const response = await fetch(url, { signal: AbortSignal.timeout(GRAPH_TIMEOUT_MS) }).catch(
-    () => null,
-  );
-
-  if (!response?.ok) {
-    logger.warn('Graph request failed', { label, status: response?.status ?? 0 });
-
-    return null;
-  }
-
-  return await response.json();
-}
 
 /**
  * Reads a token out of a Graph token response.

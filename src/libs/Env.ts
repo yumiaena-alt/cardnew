@@ -26,6 +26,8 @@ export const Env = createEnv({
     /** Meta app used for the account connection flow. */
     META_APP_ID: z.string().optional(),
     META_APP_SECRET: z.string().optional(),
+    /** Shared secret Meta echoes back when subscribing the webhook. */
+    META_WEBHOOK_VERIFY_TOKEN: z.string().optional(),
     // Generative imagery, `<uuid>:<secret>`.
     FAL_KEY: z.string().includes(':').optional(),
     // Batch generation queue. Deploys carry this; local dev runs tasks inline.
@@ -66,6 +68,7 @@ export const Env = createEnv({
     TOKEN_ENCRYPTION_KEY: process.env.TOKEN_ENCRYPTION_KEY,
     META_APP_ID: process.env.META_APP_ID,
     META_APP_SECRET: process.env.META_APP_SECRET,
+    META_WEBHOOK_VERIFY_TOKEN: process.env.META_WEBHOOK_VERIFY_TOKEN,
     FAL_KEY: process.env.FAL_KEY,
     TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
     RENDER_SERVICE_URL: process.env.RENDER_SERVICE_URL,
