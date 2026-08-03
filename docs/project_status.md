@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-03** · 문서 버전 **2.3** · 기준 커밋 `d629e30` (작업 트리 깨끗)
+최종 갱신: **2026-08-03** · 문서 버전 **2.4** · 기준 커밋 `8589b3a` (작업 트리 깨끗)
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -103,6 +103,7 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 | 댓글 인박스 | `/dashboard/comments` | ✅ 최근 게시물의 **미답변** 댓글을 Graph 로 실시간 조회 |
 | 자동 DM | `/dashboard/automation` + 웹훅 | ✅ 규칙 편집 + `api/webhooks/instagram` 실행부 |
 | 예약 발행 | 카드뉴스 상세 안 패널 | ✅ 예약·취소 · 캘린더에 표시 · 5분 주기 폴러 |
+| 릴스 영상 | 카드뉴스 상세 안 패널 | ✅ 렌더된 카드 이어붙이기(ffmpeg) · 무료 |
 | 플랜 | `/dashboard/settings/plan` | ✅ Stripe 체크아웃 |
 | 템플릿 갤러리 · 디자인 학습 | `/dashboard/templates*` | ⬜ 스텁 그대로 |
 
@@ -119,7 +120,7 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 - [x] LLM 어댑터 — Anthropic 플래너 이식 (`src/lib/plan/planner.ts`)
 - [x] 스톡 이미지 어댑터 — Unsplash + 저작권 원장 (`src/lib/images/`)
 - [ ] fal 생성 이미지 — 키만 있고 미구현
-- [ ] 비디오 생성 — 백엔드 미결정 (모션그래픽 vs 생성 API). §6 R18
+- [x] **비디오 생성 — 모션그래픽으로 확정.** 렌더 서비스 `/video`(ffmpeg)로 카드 이어붙이기. VPS 에 ffmpeg 설치는 사용자 작업
 - [ ] Framer Motion 프리셋 모듈 — **`motion` 패키지는 knip이 미사용으로 잡아 제거했다.** 실제로 쓸 때 재설치한다
 
 ### 🎨 마케팅 페이지 — **신규 구축 (2026-08-02)**
@@ -283,9 +284,9 @@ Board ⭐      boards, board_rows, board_row_outputs, series_templates
 
 ### 현재 멈춘 위치
 
-**SNS 연동 3종(계정 연동 · 자동 DM 실행부 · 댓글 인박스)과 예약 발행까지 코드로 끝났다. 남은 것은 전부 외부 설정에 막혀 있다 — 렌더 서비스 · Supabase Storage · Trigger.dev 키 · Meta 앱 자격증명.**
+**SNS 연동 3종 · 예약 발행 · 릴스 영상 · Board 브라우저 검증까지 코드로 끝났다. 남은 것은 전부 외부 설정에 막혀 있다 — 렌더 서비스 · Supabase Storage · Trigger.dev 키 · Meta 앱 자격증명.**
 
-코드로 더 나아갈 수 있는 다음 갈래는 **비디오 생성 방향 결정(R18)** 과 **Board 브라우저 검증(R8)** 뿐이고, 그 앞의 항목(생성 경로 실동작 검증 · 발행 실동작)은 §4 0번이 풀려야 시작된다.
+**§4 의 1~3·5·6·7번이 모두 끝났다.** 남은 4번(생성 경로 실동작 검증)은 §4 0번 사용자 작업이 풀려야 시작된다 — 렌더 서비스 · Supabase Storage · Trigger.dev 키 · Meta 앱 자격증명. 그 넷이 들어오면 생성 · 발행 · 영상 · 자동 DM 이 한꺼번에 실동작 검증 단계로 들어간다.
 
 R3(제공사 미선정)은 해결됐다 — Anthropic(기획) · Unsplash(스톡) · fal(생성 이미지), 키 전부 `.env.local`에 있고 `Env.ts`에서 검증한다.
 
@@ -428,6 +429,8 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `fe76f71` | **자동 DM 실행부** — 댓글 웹훅(서명 검증) · 규칙 매칭 · private reply · 발송 선점 |
 | `92774fe` | **댓글 인박스 실제 목록** — 미답변 댓글 실시간 조회 |
 | `d629e30` | **예약 발행** — `schedules`/`publications` (`0012`) · 예약 UI · 캘린더 표시 · 폴러 |
+| `a2d4618` | **릴스 영상** — 렌더 서비스 `/video`(ffmpeg) · 카드뉴스 상세 패널 (`0013`) |
+| `8589b3a` | **필 핸들 버그 수정** + Board 브라우저 테스트 9건 |
 | (미커밋) | **Phase 1-B 인증·테넌트** — Clerk 웹훅 · `scope`/`permissions`/`orgScope` · `0002` |
 
 **Phase 1-B 산출물 (신규 파일)**
@@ -479,7 +482,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 - `next-env.d.ts` 생성 → 이미지 모듈 타입 오류 13건 해소
 - Playwright chromium 설치 → `npm run test`의 browser 프로젝트 동작
 
-### 검증 상태 (커밋 `d629e30` 기준, 전부 실측)
+### 검증 상태 (커밋 `8589b3a` 기준, 전부 실측)
 
 | 검사 | 결과 |
 |---|---|
@@ -487,7 +490,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `npm run lint` | ✅ **error 0건** (Board a11y 4건 · `SlideRenderer` img 3건은 기존 warning) |
 | `npm run check:i18n` | ✅ exit 0 |
 | `npm run check:deps` (knip) | ✅ 통과 |
-| `npm run test` | ✅ **438건 통과** (33개 파일) |
+| `npm run test` | ✅ **447건 통과** (34개 파일) — Board 브라우저 테스트 9건 포함 |
 | `npm run build-local` | ✅ **통과** |
 | 마이그레이션 `0000`~`0006` | ✅ 빈 PGlite에 전부 적용 성공 |
 | 생성 SQL 파괴적 구문 검사 | ✅ `0003`~`0006`에 `DROP`·`ALTER COLUMN`·`DELETE` **0건** |
@@ -526,6 +529,8 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
      Meta 웹훅 URL: {APP_URL}/api/webhooks/instagram  (구독 필드: comments)
      ※ 연동하려는 인스타 계정은 **프로 계정 + 페이스북 페이지 연결**이 되어 있어야 한다.
        개인 계정은 댓글·발행 API 자체가 없어서 프로필 조회가 no_business_account 로 끝난다
+   → [사용자] 렌더 VPS 에 ffmpeg 설치 (릴스 영상용). apt-get install -y ffmpeg
+     확인: GET /health 의 ffmpeg: true
    → [사용자] (선택) META_AD_LIBRARY_TOKEN — 레퍼런스 리서치용
    → [사용자] (선택) STRIPE_STANDARD_PRICE_ID — 결제용
    ※ 큐·렌더·스토리지 중 하나라도 비면 submitRun 이 차감 전에 거부한다. 크레딧은 안전하다
@@ -553,9 +558,15 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
    → 확인: runs/run_items 상태 전이 · panels.render_path · 원장 -15
    → 실패 시 환불, 첫 장 실패 시 나머지 canceled 인지
 
-5. 비디오 생성 (R18 — 방향 결정 먼저)
-   → 모션그래픽(ffmpeg로 우리 슬라이드 이어붙이기) vs 영상 생성 API(fal)
-   → 렌더 서비스가 정지 이미지 전용이라 어느 쪽이든 서버 작업이 따라온다
+5. ~~비디오 생성~~ — 완료 (`a2d4618`). **모션그래픽으로 확정**
+   → 생성 API는 우리 카드와 무관한 영상을 만든다. 그러면 팬아웃(소재 1개 →
+     채널별 변형)이라는 축 자체가 성립하지 않는다. 이미 렌더된 PNG를 재사용하니
+     추가 원가도 0이다
+   → 렌더 서비스에 `POST /video`(ffmpeg). **VPS 에 ffmpeg 설치 필요** —
+     `GET /health` 의 `ffmpeg: true` 로 확인한다
+   → 과금하지 않는다. 픽셀 값은 생성할 때 이미 냈고, 재인코딩에 값을 매기면
+     작업이 아니라 포맷에 값을 매기는 것이 된다
+   → 장면 전환은 컷 전환뿐. `xfade` 는 입력 수만큼 필터 체인이 필요해 미뤘다
 
 6. ~~예약 발행~~ — 완료 (`d629e30`)
    → `0012_schedule_publish` (추가 전용, 파괴적 구문 0건). **프로덕션 미적용** —
@@ -566,7 +577,14 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
      그 뒤엔 failed 로 남는다(조용히 영원히 재시도하지 않게)
    → **실제 발행은 미검증** — Meta 앱 자격증명과 Trigger.dev 키가 둘 다 필요하다
 
-7. Board 마무리 — Storybook 스토리 + a11y 스캔, 브라우저 실동작 확인 (R8)
+7. ~~Board 브라우저 검증~~ — 완료 (`8589b3a`). **Storybook 대신 vitest 브라우저 모드**
+   (chromium)로 했다. 이미 설정돼 있어 새 패키지가 0개고, Board 는 로그인 뒤라
+   Playwright e2e 로는 자격증명 없이 닿을 수 없다
+   → **실제 버그를 하나 찾았다.** 필 핸들 드래그가 하이라이트만 보여주고 아무것도
+     쓰지 않고 있었다. 드래그가 리스너를 한 번만 등록하는데 `applyFill` 이
+     그 시점 렌더의 `fillPreview`(=null)를 읽고 있었다
+   → 검증 항목: 방향키 이동 · 셀 위 타이핑 · Escape · 실행취소 · Delete ·
+     TSV 붙여넣기 · 필 드래그
 ```
 
 **다음 세션 시작 프롬프트**
@@ -574,9 +592,8 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 ```
 docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 줘. 전부 읽지는 말고.
 
-§4 '다음 세션에서 바로 실행할 작업'의 1~3번과 6번은 끝났다. 4번(생성 경로 실동작
-검증)은 0번 사용자 작업에 막혀 있으니, 0번이 아직 안 풀렸으면 5번(비디오 방향 결정)
-이나 7번(Board 브라우저 검증)부터 진행해 줘. 무엇부터 할지 먼저 물어봐도 된다.
+§4 '다음 세션에서 바로 실행할 작업'은 4번만 남았고, 그건 0번 사용자 작업에 막혀
+있다. 0번이 풀렸는지 먼저 확인하고, 아직이면 무엇을 할지 물어봐 줘.
 
 - 이미 있는 것을 다시 만들지 말 것: createRun/finalizeRun, 견적, Board 영속화,
   Deck 뷰어·편집·부분 재생성, 블로그, 캘린더, 성과, 기획, 레퍼런스, 링크 변환,
@@ -584,7 +601,8 @@ docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 �
   계정 연동 전체(features/social/connect.ts · repository.ts),
   자동 DM 실행부(features/social/service.ts · signature.ts · reply.ts),
   댓글 인박스(features/social/comments.ts),
-  예약 발행 전체(features/publish/* · models/Publish.ts · trigger/publishDue.ts).
+  예약 발행 전체(features/publish/* · models/Publish.ts · trigger/publishDue.ts),
+  릴스 영상(features/deck/video.ts · services/render/src/video.ts).
 
 작업 방식:
 - 머지 게이트 전부 통과 후 커밋: lint → check:types → check:i18n → check:deps
@@ -618,7 +636,8 @@ docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 �
 | # | 리스크 | 조치 필요 시점 |
 |---|---|---|
 | R1 | **상표 미검증** — `Panelo`의 `panel`은 일반명사라 식별력이 약하다. KIPRIS(35·42·9류) / USPTO / EUIPO 검색과 `panelo.app` 도메인 확보가 아직 안 됐다 | **브랜드 에셋 제작 전.** 현재 브랜드명은 i18n 키(`DashboardNav.brand_name`)로만 노출되므로 교체 비용은 낮다 |
-| R18 | **비디오 생성 백엔드 미결정.** 렌더 서비스는 Playwright 스크린샷 기반이라 정지 이미지 전용이다. 모션그래픽(우리 슬라이드를 ffmpeg로 이어붙임)은 기존 자산 재사용이 가능하고 원가도 예측되지만 렌더 서버에 ffmpeg가 필요하다. 영상 생성 API(fal 등)는 원가 구조가 완전히 다르다 | 착수 전 방향 확정 |
+| ~~R18~~ | ~~비디오 생성 백엔드 미결정~~ → **모션그래픽으로 확정 (2026-08-03).** 렌더 서비스에 `/video`(ffmpeg) 구현. 남은 것은 VPS 에 ffmpeg 설치(사용자 작업)와 실동작 확인 | 완료 |
+| ~~R8~~ | ~~Board UI 브라우저 미검증~~ → **해결됨.** vitest 브라우저 모드로 9건. 그 과정에서 필 핸들이 아무것도 쓰지 않던 버그를 찾아 고쳤다 | 완료 |
 | ~~R19~~ | ~~SNS 계정 연동이 없다~~ → **코드는 완료 (2026-08-03).** 테이블(`0011`) · OAuth · 장기 토큰 · 암호화 저장 · 댓글 웹훅 · 자동 DM 발송 · 댓글 인박스가 전부 있다. **남은 것은 Meta 앱 자격증명 4개(사용자 작업)** 와, 실제 Meta 트래픽으로의 검증이다 | 자격증명 입력 시 |
 | R20 | **자동 DM·댓글 인박스가 실제 Meta 트래픽으로 미검증.** 서명 검증·중복 방지·매칭은 단위 테스트로 고정했지만, 실물 웹훅 페이로드와 private reply 발송은 아직 돌려보지 않았다. Meta 앱 검수(App Review)에서 `instagram_manage_comments` 승인도 필요하다 | 자격증명이 들어온 직후 |
 | R22 | **예약 발행이 실제로 나가본 적이 없다.** 컨테이너 생성 → 발행 2단계는 Meta 문서대로 짰지만 실물 호출은 안 해봤다. 이미지 URL 은 Supabase 서명 URL이라 **버킷·서명이 동작해야** Meta 가 받아갈 수 있다(R16 과 묶여 있다). `0012` 는 프로덕션 미적용 | 자격증명·스토리지가 들어온 직후 |
@@ -633,7 +652,6 @@ docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 �
 | ~~R7~~ | ~~`build-local` 실패~~ → **해결됨** (`7c1f59a`). 두 단계 문제였다: ① 작은따옴표를 Windows가 못 넘김 ② 고친 뒤엔 `spawn npm ENOENT`(Windows는 `npm.cmd`라 shell 없이 spawn 불가). `node`로 직접 실행해 해결. **당초 "CI 게이트가 막혔다"고 기록한 것은 과장이었다** — CI는 `ubuntu-latest`라 원래 정상이었고 Windows 로컬 전용 문제였다 | 완료 |
 | ~~R11~~ | ~~Clerk 시크릿 키 미설정~~ → **해결됨.** 사용자가 `.env.local`에 실제 키를 넣었는데도 같은 에러가 났는데, 원인은 **`.env.local` 안에 `CLERK_SECRET_KEY`가 두 번 정의**된 것이었다(10행 실제 키, 36행 `your_clerk_secret_key` placeholder). **dotenv는 나중 값이 이긴다** → placeholder가 승리. 36행 제거로 해결. 이제 `/sign-in`·`/dashboard/*`가 로컬에서 정상 렌더되므로 **R8(Board UI 브라우저 검증)도 착수 가능** | 완료 |
 | R10 | **Clerk 웹훅이 실제 Clerk 트래픽으로는 미검증.** 자체 서명 Playwright 테스트 7건(서명 위조·멱등·순서역전)은 실서버+PGlite 대상으로 전부 통과했다. 남은 것은 Clerk 대시보드에서 엔드포인트 등록 후 "Send test event"로 실물 페이로드 확인 | Clerk Organizations 활성화 직후 |
-| R8 | Board UI 브라우저 미검증 — 타입·린트·빌드·테스트는 통과했지만 키보드 이동·붙여넣기·필 핸들의 실제 동작은 아직 눈으로 확인하지 않았다 | Storybook/E2E 작성 시 |
 | R9 | `counter` 테이블만 `public` 스키마에 남아 있다 (보일러플레이트 데모, `0000`에서 생성). 나머지는 전부 `cardnews` | 마케팅 페이지 정리 시 테이블째 제거 |
 | R3 | LLM·이미지 API 제공사 미선정 → 크레딧 단가(15cr/5cr)의 원가 검증 안 됨 | 로드맵 1-D 착수 전 |
 | ~~R2~~ | ~~폰트 미적용~~ → **부분 해결.** Instrument Serif(디스플레이) · JetBrains Mono(수치)를 `next/font/google`로 빌드 타임 셀프호스팅. **Pretendard는 아직 미적용** — Google Fonts에 없어 npm 패키지(`pretendard`) 설치 승인이 필요하다. 그때까지 한글은 시스템 sans로 렌더된다 (`--font-display` 폴백 꼬리를 `serif`에서 sans 스택으로 바꿨다 — 한글 시스템 serif는 낡아 보인다) | Pretendard 설치 승인 시 |
