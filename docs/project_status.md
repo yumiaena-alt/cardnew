@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-03** · 문서 버전 **2.6** · 기준 커밋 `27f12df` (작업 트리 깨끗)
+최종 갱신: **2026-08-03** · 문서 버전 **2.7** · 기준 커밋 `e8aa22d` (작업 트리 깨끗)
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -525,8 +525,15 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
    → [x] Meta 앱 4종 완료 — META_APP_ID / META_APP_SECRET /
      META_WEBHOOK_VERIFY_TOKEN / TOKEN_ENCRYPTION_KEY(32바이트 검증).
      isConnectConfigured() = true
-   → [사용자] **RENDER_SERVICE_URL 을 Caddy 도메인으로 바꿔야 한다** ← 지금 여기서 막힘
-     https://<도메인> 형태. IP:3000 은 외부에 열려 있지 않다(R14)
+   → [x] RENDER_SERVICE_URL = https://cardnews.imgmap.shop (로컬·Vercel 모두 반영)
+   → [사용자] **Caddy 인증서 발급이 실패하고 있다** ← 지금 여기서 막힘 (R14)
+     ACME 챌린지 경로까지 https 로 리다이렉트되는 게 원인. Caddyfile 을
+     사이트 블록 하나로 두고 수동 :80 redir 블록을 지운다:
+       cardnews.imgmap.shop {
+         reverse_proxy localhost:3000
+       }
+     그다음: sudo systemctl reload caddy · sudo journalctl -u caddy -n 50
+   → [x] Vercel 환경변수 동기화 완료 (17개). TRIGGER_SECRET_KEY 만 제외 — 로컬이 dev 키다
    → [사용자] Vercel 환경변수에도 SUPABASE_* · SUPABASE_STORAGE_BUCKET ·
      TRIGGER_SECRET_KEY 를 추가해야 한다 (지금 4개만 등록돼 있다)
    → [사용자] 계정 연동용 4개: META_APP_ID / META_APP_SECRET / TOKEN_ENCRYPTION_KEY
@@ -649,9 +656,10 @@ docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 �
 | R20 | **자동 DM·댓글 인박스가 실제 Meta 트래픽으로 미검증.** 서명 검증·중복 방지·매칭은 단위 테스트로 고정했지만, 실물 웹훅 페이로드와 private reply 발송은 아직 돌려보지 않았다. Meta 앱 검수(App Review)에서 `instagram_manage_comments` 승인도 필요하다 | 자격증명이 들어온 직후 |
 | R22 | **예약 발행이 실제로 나가본 적이 없다.** 컨테이너 생성 → 발행 2단계는 Meta 문서대로 짰지만 실물 호출은 안 해봤다. 이미지 URL 은 Supabase 서명 URL이라 **버킷·서명이 동작해야** Meta 가 받아갈 수 있다(R16 과 묶여 있다). `0012` 는 프로덕션 미적용 | 자격증명·스토리지가 들어온 직후 |
 | R21 | **저장된 액세스 토큰이 약 60일 뒤 만료된다.** 갱신 잡이 없다. 지금은 만료되면 댓글 인박스가 해당 계정을 "불러오지 못함"으로 표시하고 사용자가 재연동해야 한다. `tokenExpiresAt` 은 이미 저장하므로 갱신 잡을 붙일 자리는 있다 | 첫 계정 연동 후 50일 이내 |
-| R14 | **렌더 서비스 주소가 틀렸다.** `http://155.94.154.102:3000` 은 여전히 `HTTP 000` (4000 도 동일). 그런데 **80 번은 308 로 응답하고 `Server: Caddy`** 이며 `https://155.94.154.102/health` 로 리다이렉트한다 — 즉 **Caddy 리버스 프록시는 떠 있고 3000 은 외부에 열려 있지 않다**(의도한 구성이다). 서비스는 도메인 뒤 HTTPS 로 서비스되고 있을 것이고, `.env.local` 의 `RENDER_SERVICE_URL` 만 옛 주소를 가리키고 있다. **필요한 것: Caddy 에 설정한 도메인.** IP 로는 TLS 핸드셰이크가 거부되어(SNI 불일치) 외부에서 도메인을 알아낼 수 없다 | **생성 실동작 전.** `RENDER_SERVICE_URL=https://<도메인>` 로 바꾸면 풀린다 |
+| R14 | **렌더 서비스에 인증서가 없다.** 도메인 `cardnews.imgmap.shop` 은 DNS 가 `155.94.154.102` 로 정상 해석되고 80 번은 Caddy 가 308 로 응답한다. 그런데 **어떤 SNI 로도 TLS 핸드셰이크가 alert 80(internal error)으로 끊긴다** — Caddy 가 그 이름의 인증서를 못 내놓는다는 뜻이다. 원인은 확인됐다: **`/.well-known/acme-challenge/*` 까지 https 로 308 리다이렉트되고 있다.** Let's Encrypt 의 HTTP-01 검증이 그 경로를 평문 80 에서 읽어야 하는데 리다이렉트에 막혀 발급이 영원히 실패한다. Caddyfile 에 수동 `:80 { redir … }` 블록이 있으면 이렇게 된다 — 사이트 블록만 두면 Caddy 가 챌린지 경로만 빼고 알아서 리다이렉트한다 | **생성 실동작 전.** 인증서가 발급되면 바로 풀린다 |
 | R15 | **렌더 서비스가 HTTPS 가 아니다** → Caddy 가 확인되어 사실상 해소된 것으로 보이나, `RENDER_SERVICE_URL` 이 https 로 바뀌기 전까지는 유효하다. `RENDER_SERVICE_TOKEN`(공유 시크릿)이 `Authorization: Bearer` 헤더로 **평문**으로 공용 인터넷을 건넌다. 경로상 누구든 토큰을 주워 우리 Chromium 을 마음대로 돌리고 카드 내용을 볼 수 있다. `docs/07-PORTED-MODULES.md` §7 이 Caddy 리버스 프록시 + 자동 인증서를 요구한 이유가 이것이다 | **토큰이 이미 평문으로 나갔다면 교체가 필요하다.** HTTPS 적용과 함께 |
 | ~~R16~~ | ~~Supabase Storage 미설정~~ → **해결됨 (2026-08-03).** 버킷 `cardnews`(`SUPABASE_STORAGE_BUCKET`), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`(신형 `sb_secret_`) 전부 설정. **업로드 → 서명 URL 발급 → 읽기 → 삭제 한 바퀴를 실제로 돌려 확인**했다. 처음에 공개 버킷이었으나 **비공개로 전환**했고, 전환 후에도 서명 URL 은 200, 서명 없는 공개 접근은 400 으로 차단되는 것을 확인했다 | 완료 |
+| ~~R17-env~~ | ~~Vercel 환경변수 미동기화~~ → **해결됨 (2026-08-03).** 프로덕션에 17개 등록: Supabase 3 · Meta 4 · 렌더 2 · AI 3 · `NEXT_PUBLIC_APP_URL` · 기존 Clerk/DB 4. **`TRIGGER_SECRET_KEY` 는 일부러 뺐다** — 로컬 값이 `tr_dev_` 라 그대로 올리면 프로덕션 Run 이 개발 큐로 들어간다. 프로덕션 키를 따로 발급해 넣어야 한다 | 프로덕션 큐 키 발급 시 |
 | R17 | **Vercel 자동 배포가 안 걸린다.** `vercel git connect` 는 `Connected` 를 반환했지만 `main` 푸시 후 새 배포가 생기지 않았다(전부 CLI 배포). GitHub App 이 `cardnew` 저장소 접근 권한을 못 받은 것으로 보인다. 지금은 `npx vercel --prod` 로 수동 배포 중 | 배포 자동화가 필요할 때 |
 | ~~R12~~ | ~~마이그레이션 미적용~~ → **해결됨 (2026-08-03).** `0003`~`0007` 을 프로덕션 Supabase 에 적용했다. 테이블 22개 · enum 9개, 기존 데이터(조직 2 · 원장 2행) 보존 확인 | 완료 |
 | ~~R13~~ | ~~Run이 `queued`에 쌓이기만 하고 아무도 안 집어간다~~ → **해결됨 (2026-08-03).** `TRIGGER_SECRET_KEY`(`tr_dev_…`)와 `TRIGGER_PROJECT_REF` 가 `.env.local` 에 들어왔다. 태스크는 이미 있다. **배포 환경에는 프로덕션 키가 따로 필요하다** | 완료(로컬) |
