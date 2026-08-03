@@ -24,6 +24,8 @@ function useNavLabels(): NavLabels {
 
   return {
     planning: t('planning'),
+    planning_ideas: t('planning_ideas'),
+    planning_reference: t('planning_reference'),
     board: t('board'),
     deck: t('deck'),
     deck_new: t('deck_new'),

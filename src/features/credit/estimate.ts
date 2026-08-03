@@ -17,6 +17,8 @@ export const CREDIT_RATES = {
   slot: 1,
   /** Reference images turned into a reusable template. */
   designLearning: 5,
+  /** One ad-library search. Charged once per query per day, not per attempt. */
+  referenceSearch: 1,
 } as const;
 
 export type BoardRowEstimateInput = {

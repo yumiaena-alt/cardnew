@@ -19,6 +19,8 @@ export const Env = createEnv({
     ANTHROPIC_API_KEY: z.string().startsWith('sk-ant-').optional(),
     // Stock photography. Unsplash terms require the download trigger to fire.
     UNSPLASH_ACCESS_KEY: z.string().optional(),
+    /** Graph API token with ads_read, for the public Ad Library search. */
+    META_AD_LIBRARY_TOKEN: z.string().optional(),
     // Generative imagery, `<uuid>:<secret>`.
     FAL_KEY: z.string().includes(':').optional(),
     // Batch generation queue. Deploys carry this; local dev runs tasks inline.
@@ -55,6 +57,7 @@ export const Env = createEnv({
     STRIPE_STANDARD_PRICE_ID: process.env.STRIPE_STANDARD_PRICE_ID,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY,
+    META_AD_LIBRARY_TOKEN: process.env.META_AD_LIBRARY_TOKEN,
     FAL_KEY: process.env.FAL_KEY,
     TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
     RENDER_SERVICE_URL: process.env.RENDER_SERVICE_URL,

@@ -66,6 +66,7 @@ export const creditReasonEnum = cardnews.enum('credit_reason', [
   'grant.promo',
   'spend.run',
   'spend.learn',
+  'spend.search',
   'refund.run_failed',
   'refund.manual',
   'expire.monthly',

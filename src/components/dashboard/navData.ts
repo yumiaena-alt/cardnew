@@ -4,6 +4,8 @@ import { Calendar, Images, LayoutGrid, LineChart, Palette, Sparkles } from 'luci
 /** Keys available in the `DashboardNav` i18n namespace. Keeps `t()` type-safe. */
 export type NavLabelKey =
   | 'planning'
+  | 'planning_ideas'
+  | 'planning_reference'
   | 'board'
   | 'deck'
   | 'deck_new'
@@ -41,8 +43,15 @@ const navGroups: NavGroup[] = [
     id: 'planning',
     labelKey: 'planning',
     icon: Sparkles,
-    href: '/dashboard/planning',
     phase: 1,
+    children: [
+      { id: 'planning-ideas', labelKey: 'planning_ideas', href: '/dashboard/planning' },
+      {
+        id: 'planning-reference',
+        labelKey: 'planning_reference',
+        href: '/dashboard/planning/reference',
+      },
+    ],
   },
   {
     id: 'board',

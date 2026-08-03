@@ -29,7 +29,9 @@
     "analytics": "Performance",
     "credits_left": "{count} left",
     "upgrade": "Upgrade plan",
-    "planning": "Content planning"
+    "planning": "Content planning",
+    "planning_ideas": "Content planning",
+    "planning_reference": "Reference research"
   },
   "DashboardTopbar": {
     "open_sidebar": "Open sidebar",
@@ -68,6 +70,34 @@
     "error_insufficient_credits": "Not enough credits.",
     "error_invalid_input": "Check your input.",
     "error_planner_unavailable": "The planning service is not connected yet."
+  },
+  "ReferencePage": {
+    "eyebrow": "Reference search",
+    "title": "Find references worth borrowing from",
+    "subtitle": "Search ads that actually ran and study how they are put together.",
+    "back_to_planning": "Back to planning",
+    "kind_ad": "Ads",
+    "kind_viral": "Viral content",
+    "query_label": "Search",
+    "query_placeholder": "A keyword, topic, or brand",
+    "search_with_cost": "Search · {count} credit",
+    "searching": "Searching",
+    "window_days": "Last {count} days",
+    "cost_note": "The same search costs {count} credit once a day.",
+    "unavailable_note": "The ad library is not connected yet. Search stays disabled until it is.",
+    "empty_title": "Nothing searched yet",
+    "empty_description": "Try a keyword or a competitor name to see published ads.",
+    "select_title": "Pick a result",
+    "select_description": "Study how it is structured, then write your own version.",
+    "platforms": "Ran on · {list}",
+    "open_original": "Open the original",
+    "error_unauthorized": "Sign in to continue.",
+    "error_forbidden": "Your role cannot do this.",
+    "error_not_found": "Not found.",
+    "error_conflict": "This request was already handled.",
+    "error_insufficient_credits": "Not enough credits.",
+    "error_invalid_input": "Check your search terms.",
+    "error_search_unavailable": "The ad library is not connected yet."
   },
   "PlanPage": {
     "title": "Plan",

@@ -1,0 +1,1 @@
+ALTER TYPE "cardnews"."credit_reason" ADD VALUE 'spend.search' BEFORE 'refund.run_failed';
