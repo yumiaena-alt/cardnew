@@ -311,7 +311,10 @@
     "unconnected_title": "SNS 계정을 연동해 주세요",
     "unconnected_description": "댓글은 계정에서 직접 읽어옵니다. 연동 전에는 보여드릴 것이 없습니다.",
     "empty_title": "답변이 필요한 댓글이 없어요",
-    "empty_description": "아직 답변하지 않은 댓글이 생기면 여기에 모입니다."
+    "empty_description": "아직 답변하지 않은 댓글이 생기면 여기에 모입니다.",
+    "unreachable": "{handles} 계정의 댓글을 불러오지 못했습니다. 연동을 다시 하면 해결됩니다.",
+    "unknown_author": "작성자 비공개",
+    "open_post": "게시물에서 답글 달기"
   },
   "DryRunPanel": {
     "title": "만들기 전에 확인",

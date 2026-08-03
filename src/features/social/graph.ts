@@ -16,14 +16,17 @@ export const GRAPH_TIMEOUT_MS = 15_000;
 /**
  * Calls the Graph API and decodes the body.
  *
- * @param url - The fully built request URL, access token included.
+ * @param url - The fully built request URL.
  * @param label - What the call was for. Logged when it is refused.
+ * @param accessToken - Sent as a bearer header when given. A stored token goes
+ * here rather than in the query string, which would put it in proxy logs.
  * @returns The decoded body, or null when the call did not succeed.
  */
-export async function getGraph(url: string, label: string): Promise<unknown> {
-  const response = await fetch(url, { signal: AbortSignal.timeout(GRAPH_TIMEOUT_MS) }).catch(
-    () => null,
-  );
+export async function getGraph(url: string, label: string, accessToken?: string): Promise<unknown> {
+  const response = await fetch(url, {
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    signal: AbortSignal.timeout(GRAPH_TIMEOUT_MS),
+  }).catch(() => null);
 
   if (!response?.ok) {
     logger.warn('Graph request failed', { label, status: response?.status ?? 0 });

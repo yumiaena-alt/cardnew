@@ -129,6 +129,34 @@ export async function findAccountByExternalId(
   return row ?? null;
 }
 
+export type AccountWithCredential = AccountCredential & { handle: string };
+
+/**
+ * Lists the organization's active accounts with their stored credentials.
+ *
+ * The one read path that needs the tokens: the comment inbox asks the network
+ * for comments on every connected account, and it cannot do that without them.
+ * Kept separate from `listSocialAccounts` so the screen that only shows handles
+ * cannot accidentally pull credentials into a rendered payload.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @returns The active accounts, credentials included.
+ */
+export async function listAccountCredentials(scope: OrgScope): Promise<AccountWithCredential[]> {
+  return await db
+    .select({
+      id: socialAccounts.id,
+      orgId: socialAccounts.orgId,
+      externalId: socialAccounts.externalId,
+      handle: socialAccounts.handle,
+      accessTokenCipher: socialAccounts.accessTokenCipher,
+      isActive: socialAccounts.isActive,
+    })
+    .from(socialAccounts)
+    .where(orgScoped(scope, socialAccounts, eq(socialAccounts.isActive, true)))
+    .orderBy(desc(socialAccounts.connectedAt));
+}
+
 /**
  * Lists the automations that are switched on for one account.
  *

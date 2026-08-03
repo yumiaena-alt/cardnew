@@ -311,7 +311,10 @@
     "unconnected_title": "Connect a social account",
     "unconnected_description": "Comments are read from the account itself. There is nothing to show until one is connected.",
     "empty_title": "Nothing waiting for a reply",
-    "empty_description": "Unanswered comments show up here as they arrive."
+    "empty_description": "Unanswered comments show up here as they arrive.",
+    "unreachable": "Could not read comments for {handles}. Reconnecting the account fixes this.",
+    "unknown_author": "Author withheld",
+    "open_post": "Reply on the post"
   },
   "DryRunPanel": {
     "title": "Check before generating",
