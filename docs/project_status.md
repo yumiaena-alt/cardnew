@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-03** · 문서 버전 **2.4** · 기준 커밋 `8589b3a` (작업 트리 깨끗)
+최종 갱신: **2026-08-03** · 문서 버전 **2.5** · 기준 커밋 `5be4393` (작업 트리 깨끗)
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -492,7 +492,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `npm run check:deps` (knip) | ✅ 통과 |
 | `npm run test` | ✅ **447건 통과** (34개 파일) — Board 브라우저 테스트 9건 포함 |
 | `npm run build-local` | ✅ **통과** |
-| 마이그레이션 `0000`~`0006` | ✅ 빈 PGlite에 전부 적용 성공 |
+| 마이그레이션 `0000`~`0013` | ✅ 빈 PGlite에 전부 적용 · **프로덕션 Supabase 적용 확인** (마이그레이션 14건 · 테이블 28 · enum 10 · `deck_versions.video_path` 존재 · 기존 데이터 보존: 조직 2 · 사용자 2 · 원장 2행) |
 | 생성 SQL 파괴적 구문 검사 | ✅ `0003`~`0006`에 `DROP`·`ALTER COLUMN`·`DELETE` **0건** |
 | `grep -ri mirr src/ tests/` | ✅ **0건** |
 | `npm run test:e2e` | ✅ **15건 전부 통과** — 웹훅 보안 7건 포함 |
@@ -520,8 +520,12 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 0. 사용자 작업 — 코드로는 못 푼다 (§6 R14~R17, R19)
    → [사용자] 렌더 서비스가 외부에서 안 열린다. 155.94.154.102:3000 연결 거부
      (방화벽/포트 미개방, 또는 127.0.0.1 바인딩 의심) · 게다가 http 라 토큰이 평문으로 나간다
-   → [사용자] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 를 .env.local 에
-   → [사용자] Supabase Storage 에 'renders' 버킷(비공개) 생성
+   → [사용자] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 를 .env.local 에  ← 아직 없음
+     Supabase 대시보드 → Project Settings → API 의 Project URL / service_role
+   → [x] Supabase 버킷 생성 완료 (이름 'cardnews'). 버킷 이름은 이제
+     SUPABASE_STORAGE_BUCKET 환경변수로 지정한다(기본값 'renders')
+   → [사용자] Vercel 환경변수에도 SUPABASE_* · SUPABASE_STORAGE_BUCKET ·
+     TRIGGER_SECRET_KEY 를 추가해야 한다 (지금 4개만 등록돼 있다)
    → [사용자] 계정 연동용 4개: META_APP_ID / META_APP_SECRET / TOKEN_ENCRYPTION_KEY
      / META_WEBHOOK_VERIFY_TOKEN (자동 DM 웹훅 구독용 · 임의 문자열)
      키 생성: node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
@@ -644,10 +648,10 @@ docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 �
 | R21 | **저장된 액세스 토큰이 약 60일 뒤 만료된다.** 갱신 잡이 없다. 지금은 만료되면 댓글 인박스가 해당 계정을 "불러오지 못함"으로 표시하고 사용자가 재연동해야 한다. `tokenExpiresAt` 은 이미 저장하므로 갱신 잡을 붙일 자리는 있다 | 첫 계정 연동 후 50일 이내 |
 | R14 | **렌더 서비스가 외부에서 닿지 않는다.** `http://155.94.154.102:3000/health` 연결 거부(`HTTP 000`). 같은 환경에서 GitHub·Vercel 은 200 이라 우리 쪽 아웃바운드 문제가 아니다. 서비스 미기동 · 방화벽에서 3000 미개방 · `127.0.0.1` 바인딩 중 하나로 보인다 | **생성 실동작 전.** 이게 막혀 있으면 워커가 `Render service is unreachable` 로 즉시 실패한다 |
 | R15 | **렌더 서비스가 HTTPS 가 아니다.** `RENDER_SERVICE_TOKEN`(공유 시크릿)이 `Authorization: Bearer` 헤더로 **평문**으로 공용 인터넷을 건넌다. 경로상 누구든 토큰을 주워 우리 Chromium 을 마음대로 돌리고 카드 내용을 볼 수 있다. `docs/07-PORTED-MODULES.md` §7 이 Caddy 리버스 프록시 + 자동 인증서를 요구한 이유가 이것이다 | **토큰이 이미 평문으로 나갔다면 교체가 필요하다.** HTTPS 적용과 함께 |
-| R16 | **Supabase Storage 미설정.** `SUPABASE_URL`·`SUPABASE_SERVICE_ROLE_KEY` 가 `.env.local` 에 없고 `renders` 버킷도 확인되지 않았다. 렌더된 PNG 를 올릴 곳이 없다 | 생성 실동작 전 |
+| R16 | **Supabase Storage 절반만 설정됐다.** 버킷은 만들어졌고(`cardnews`, `SUPABASE_STORAGE_BUCKET` 로 지정) 마이그레이션도 끝났지만, **`SUPABASE_URL`·`SUPABASE_SERVICE_ROLE_KEY` 가 아직 `.env.local` 에 없다.** 이게 없으면 렌더된 PNG 를 올릴 곳이 없어 `submitRun` 이 차감 전에 거부한다 | 생성 실동작 전 |
 | R17 | **Vercel 자동 배포가 안 걸린다.** `vercel git connect` 는 `Connected` 를 반환했지만 `main` 푸시 후 새 배포가 생기지 않았다(전부 CLI 배포). GitHub App 이 `cardnew` 저장소 접근 권한을 못 받은 것으로 보인다. 지금은 `npx vercel --prod` 로 수동 배포 중 | 배포 자동화가 필요할 때 |
 | ~~R12~~ | ~~마이그레이션 미적용~~ → **해결됨 (2026-08-03).** `0003`~`0007` 을 프로덕션 Supabase 에 적용했다. 테이블 22개 · enum 9개, 기존 데이터(조직 2 · 원장 2행) 보존 확인 | 완료 |
-| ~~R13~~ | ~~Run이 `queued`에 쌓이기만 하고 아무도 안 집어간다~~ → **막아 뒀다.** `submitRun()`이 `TRIGGER_SECRET_KEY` 없이는 실제 실행을 거부한다(`error_queue_unavailable`). 견적까지는 정상 동작하고 크레딧은 안 빠진다. 키가 들어오는 순간 자동으로 열리므로 **태스크를 먼저 만들어야 한다** | Trigger.dev 계정 확보 시 |
+| ~~R13~~ | ~~Run이 `queued`에 쌓이기만 하고 아무도 안 집어간다~~ → **해결됨 (2026-08-03).** `TRIGGER_SECRET_KEY`(`tr_dev_…`)와 `TRIGGER_PROJECT_REF` 가 `.env.local` 에 들어왔다. 태스크는 이미 있다. **배포 환경에는 프로덕션 키가 따로 필요하다** | 완료(로컬) |
 | R2 | 폰트 미적용 — `global.css`에 패밀리명만 정의, 실제 파일 없음 → 현재 시스템 폰트로 렌더 | 다음 세션 |
 | ~~R7~~ | ~~`build-local` 실패~~ → **해결됨** (`7c1f59a`). 두 단계 문제였다: ① 작은따옴표를 Windows가 못 넘김 ② 고친 뒤엔 `spawn npm ENOENT`(Windows는 `npm.cmd`라 shell 없이 spawn 불가). `node`로 직접 실행해 해결. **당초 "CI 게이트가 막혔다"고 기록한 것은 과장이었다** — CI는 `ubuntu-latest`라 원래 정상이었고 Windows 로컬 전용 문제였다 | 완료 |
 | ~~R11~~ | ~~Clerk 시크릿 키 미설정~~ → **해결됨.** 사용자가 `.env.local`에 실제 키를 넣었는데도 같은 에러가 났는데, 원인은 **`.env.local` 안에 `CLERK_SECRET_KEY`가 두 번 정의**된 것이었다(10행 실제 키, 36행 `your_clerk_secret_key` placeholder). **dotenv는 나중 값이 이긴다** → placeholder가 승리. 36행 제거로 해결. 이제 `/sign-in`·`/dashboard/*`가 로컬에서 정상 렌더되므로 **R8(Board UI 브라우저 검증)도 착수 가능** | 완료 |
