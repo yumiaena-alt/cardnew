@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-03** · 문서 버전 **2.7** · 기준 커밋 `e8aa22d` (작업 트리 깨끗)
+최종 갱신: **2026-08-03** · 문서 버전 **2.8** · 기준 커밋 `2360f21` (작업 트리 깨끗)
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -526,13 +526,13 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
      META_WEBHOOK_VERIFY_TOKEN / TOKEN_ENCRYPTION_KEY(32바이트 검증).
      isConnectConfigured() = true
    → [x] RENDER_SERVICE_URL = https://cardnews.imgmap.shop (로컬·Vercel 모두 반영)
-   → [사용자] **Caddy 인증서 발급이 실패하고 있다** ← 지금 여기서 막힘 (R14)
-     ACME 챌린지 경로까지 https 로 리다이렉트되는 게 원인. Caddyfile 을
-     사이트 블록 하나로 두고 수동 :80 redir 블록을 지운다:
-       cardnews.imgmap.shop {
-         reverse_proxy localhost:3000
-       }
-     그다음: sudo systemctl reload caddy · sudo journalctl -u caddy -n 50
+   → [x] Caddy + Let's Encrypt 인증서 발급 완료 (TLS authorized)
+   → [사용자] **렌더 프로세스가 안 떠 있다 — 502** ← 지금 여기서 막힘 (R14)
+     Caddy 는 localhost:3000 으로 넘기는데 서비스 기본 포트는 4000 이다.
+       sudo ss -ltnp | grep -E ':(3000|4000)'
+       PORT=3000 RENDER_SERVICE_TOKEN=<토큰> \
+         node --experimental-strip-types services/render/src/server.ts
+     토큰은 .env.local 의 RENDER_SERVICE_TOKEN 과 같아야 한다
    → [x] Vercel 환경변수 동기화 완료 (17개). TRIGGER_SECRET_KEY 만 제외 — 로컬이 dev 키다
    → [사용자] Vercel 환경변수에도 SUPABASE_* · SUPABASE_STORAGE_BUCKET ·
      TRIGGER_SECRET_KEY 를 추가해야 한다 (지금 4개만 등록돼 있다)
@@ -656,7 +656,7 @@ docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 �
 | R20 | **자동 DM·댓글 인박스가 실제 Meta 트래픽으로 미검증.** 서명 검증·중복 방지·매칭은 단위 테스트로 고정했지만, 실물 웹훅 페이로드와 private reply 발송은 아직 돌려보지 않았다. Meta 앱 검수(App Review)에서 `instagram_manage_comments` 승인도 필요하다 | 자격증명이 들어온 직후 |
 | R22 | **예약 발행이 실제로 나가본 적이 없다.** 컨테이너 생성 → 발행 2단계는 Meta 문서대로 짰지만 실물 호출은 안 해봤다. 이미지 URL 은 Supabase 서명 URL이라 **버킷·서명이 동작해야** Meta 가 받아갈 수 있다(R16 과 묶여 있다). `0012` 는 프로덕션 미적용 | 자격증명·스토리지가 들어온 직후 |
 | R21 | **저장된 액세스 토큰이 약 60일 뒤 만료된다.** 갱신 잡이 없다. 지금은 만료되면 댓글 인박스가 해당 계정을 "불러오지 못함"으로 표시하고 사용자가 재연동해야 한다. `tokenExpiresAt` 은 이미 저장하므로 갱신 잡을 붙일 자리는 있다 | 첫 계정 연동 후 50일 이내 |
-| R14 | **렌더 서비스에 인증서가 없다.** 도메인 `cardnews.imgmap.shop` 은 DNS 가 `155.94.154.102` 로 정상 해석되고 80 번은 Caddy 가 308 로 응답한다. 그런데 **어떤 SNI 로도 TLS 핸드셰이크가 alert 80(internal error)으로 끊긴다** — Caddy 가 그 이름의 인증서를 못 내놓는다는 뜻이다. 원인은 확인됐다: **`/.well-known/acme-challenge/*` 까지 https 로 308 리다이렉트되고 있다.** Let's Encrypt 의 HTTP-01 검증이 그 경로를 평문 80 에서 읽어야 하는데 리다이렉트에 막혀 발급이 영원히 실패한다. Caddyfile 에 수동 `:80 { redir … }` 블록이 있으면 이렇게 된다 — 사이트 블록만 두면 Caddy 가 챌린지 경로만 빼고 알아서 리다이렉트한다 | **생성 실동작 전.** 인증서가 발급되면 바로 풀린다 |
+| R14 | **Caddy 는 살았고 그 뒤가 죽어 있다.** 인증서 문제는 해결됐다 — `cardnews.imgmap.shop` 에 Let's Encrypt 인증서가 발급돼 TLS 가 `authorized: true` 로 붙는다(2026-11-01 만료). 그런데 `/health` 가 **502 Bad Gateway** 다. Caddy 가 `localhost:3000` 으로 넘기는데 그 자리에 아무도 없다는 뜻이다. 렌더 프로세스가 안 떠 있거나, **기본 포트가 4000 이라**(`services/render/src/server.ts`) 다른 포트에 떠 있을 가능성이 크다 | **생성 실동작 전.** `PORT=3000` 으로 렌더 서비스를 띄우면 풀린다 |
 | R15 | **렌더 서비스가 HTTPS 가 아니다** → Caddy 가 확인되어 사실상 해소된 것으로 보이나, `RENDER_SERVICE_URL` 이 https 로 바뀌기 전까지는 유효하다. `RENDER_SERVICE_TOKEN`(공유 시크릿)이 `Authorization: Bearer` 헤더로 **평문**으로 공용 인터넷을 건넌다. 경로상 누구든 토큰을 주워 우리 Chromium 을 마음대로 돌리고 카드 내용을 볼 수 있다. `docs/07-PORTED-MODULES.md` §7 이 Caddy 리버스 프록시 + 자동 인증서를 요구한 이유가 이것이다 | **토큰이 이미 평문으로 나갔다면 교체가 필요하다.** HTTPS 적용과 함께 |
 | ~~R16~~ | ~~Supabase Storage 미설정~~ → **해결됨 (2026-08-03).** 버킷 `cardnews`(`SUPABASE_STORAGE_BUCKET`), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`(신형 `sb_secret_`) 전부 설정. **업로드 → 서명 URL 발급 → 읽기 → 삭제 한 바퀴를 실제로 돌려 확인**했다. 처음에 공개 버킷이었으나 **비공개로 전환**했고, 전환 후에도 서명 URL 은 200, 서명 없는 공개 접근은 400 으로 차단되는 것을 확인했다 | 완료 |
 | ~~R17-env~~ | ~~Vercel 환경변수 미동기화~~ → **해결됨 (2026-08-03).** 프로덕션에 17개 등록: Supabase 3 · Meta 4 · 렌더 2 · AI 3 · `NEXT_PUBLIC_APP_URL` · 기존 Clerk/DB 4. **`TRIGGER_SECRET_KEY` 는 일부러 뺐다** — 로컬 값이 `tr_dev_` 라 그대로 올리면 프로덕션 Run 이 개발 큐로 들어간다. 프로덕션 키를 따로 발급해 넣어야 한다 | 프로덕션 큐 키 발급 시 |
