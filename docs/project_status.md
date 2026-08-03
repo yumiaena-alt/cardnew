@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-03** · 문서 버전 **2.1** · 기준 커밋 `2626c89` (origin/main 동기화됨 · 작업 트리 깨끗)
+최종 갱신: **2026-08-03** · 문서 버전 **2.2** · 기준 커밋 `92774fe` (작업 트리 깨끗)
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -84,7 +84,7 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 - [ ] 남은 마이그레이션 (`brand` · `publish`) — 쓰는 코드가 생길 때 만든다
 - [x] **`0003`~`0010` 프로덕션(Supabase) 적용 완료** — 매번 추가 전용, 기존 데이터 보존 확인
 
-### ✅ Phase 3: 화면 — **메뉴 전 구간 구축 완료** (자동 DM · 댓글 · 비디오 제외)
+### ✅ Phase 3: 화면 — **메뉴 전 구간 구축 완료** (비디오 제외)
 
 | 화면 | 경로 | 상태 |
 |---|---|---|
@@ -99,6 +99,9 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 | 블로그 초안 | `/dashboard/blog` | ✅ 5크레딧 · 인라인 실행 |
 | 발행 캘린더 | `/dashboard/calendar` | ✅ 보드에서 생성. 빈 날짜 강조 |
 | 성과 | `/dashboard/analytics` | ✅ 우리 생산량만. 도달·저장은 연동 후 |
+| 계정 연동 | `/dashboard/settings/accounts` | ✅ OAuth → 장기 토큰 → 프로필 조회 → 암호화 저장 · 결과 배너 |
+| 댓글 인박스 | `/dashboard/comments` | ✅ 최근 게시물의 **미답변** 댓글을 Graph 로 실시간 조회 |
+| 자동 DM | `/dashboard/automation` + 웹훅 | ✅ 규칙 편집 + `api/webhooks/instagram` 실행부 |
 | 플랜 | `/dashboard/settings/plan` | ✅ Stripe 체크아웃 |
 | 템플릿 갤러리 · 디자인 학습 | `/dashboard/templates*` | ⬜ 스텁 그대로 |
 
@@ -279,7 +282,9 @@ Board ⭐      boards, board_rows, board_row_outputs, series_templates
 
 ### 현재 멈춘 위치
 
-**Phase 1-B·1-C 완료 · 마케팅 페이지 구축 · Toneflow 이식 1~7단계 완료 · 마이그레이션 `0003`~`0006` + `createRun()` 완료 → 남은 건 실제 생성 실행(8단계)뿐이고, 그건 Trigger.dev 계정에 막혀 있다.**
+**SNS 연동 3종(계정 연동 · 자동 DM 실행부 · 댓글 인박스)까지 코드로 끝났다. 남은 것은 전부 외부 설정에 막혀 있다 — 렌더 서비스 · Supabase Storage · Trigger.dev 키 · Meta 앱 자격증명.**
+
+코드로 더 나아갈 수 있는 다음 갈래는 **비디오 생성 방향 결정(R18)** 과 **예약 발행 테이블**뿐이고, 그 앞의 항목(생성 경로 실동작 검증)은 §4 0번이 풀려야 시작된다.
 
 R3(제공사 미선정)은 해결됐다 — Anthropic(기획) · Unsplash(스톡) · fal(생성 이미지), 키 전부 `.env.local`에 있고 `Env.ts`에서 검증한다.
 
@@ -418,6 +423,9 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `4ee21f3` | **부분 재생성** — 카드 1장 다시 그리기 (`0010`) |
 | `b93e9c3` | **자동 DM · 댓글 인박스** — `social_accounts`/`dm_automations`/`dm_sends` (`0011`) |
 | `2626c89` | **계정 연동 + 토큰 암호화** — AES-256-GCM · 서명된 OAuth state |
+| `4b0e67f` | **계정 연동 완결** — 장기 토큰 교환 · Graph 프로필 조회 · 암호화 저장 · 결과 배너 |
+| `fe76f71` | **자동 DM 실행부** — 댓글 웹훅(서명 검증) · 규칙 매칭 · private reply · 발송 선점 |
+| `92774fe` | **댓글 인박스 실제 목록** — 미답변 댓글 실시간 조회 |
 | (미커밋) | **Phase 1-B 인증·테넌트** — Clerk 웹훅 · `scope`/`permissions`/`orgScope` · `0002` |
 
 **Phase 1-B 산출물 (신규 파일)**
@@ -469,7 +477,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 - `next-env.d.ts` 생성 → 이미지 모듈 타입 오류 13건 해소
 - Playwright chromium 설치 → `npm run test`의 browser 프로젝트 동작
 
-### 검증 상태 (커밋 `2626c89` 기준, 전부 실측)
+### 검증 상태 (커밋 `92774fe` 기준, 전부 실측)
 
 | 검사 | 결과 |
 |---|---|
@@ -477,7 +485,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `npm run lint` | ✅ **error 0건** (Board a11y 4건 · `SlideRenderer` img 3건은 기존 warning) |
 | `npm run check:i18n` | ✅ exit 0 |
 | `npm run check:deps` (knip) | ✅ 통과 |
-| `npm run test` | ✅ **408건 통과** (29개 파일) |
+| `npm run test` | ✅ **436건 통과** (33개 파일) |
 | `npm run build-local` | ✅ **통과** |
 | 마이그레이션 `0000`~`0006` | ✅ 빈 PGlite에 전부 적용 성공 |
 | 생성 SQL 파괴적 구문 검사 | ✅ `0003`~`0006`에 `DROP`·`ALTER COLUMN`·`DELETE` **0건** |
@@ -509,26 +517,36 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
      (방화벽/포트 미개방, 또는 127.0.0.1 바인딩 의심) · 게다가 http 라 토큰이 평문으로 나간다
    → [사용자] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 를 .env.local 에
    → [사용자] Supabase Storage 에 'renders' 버킷(비공개) 생성
-   → [사용자] 계정 연동용 3개: META_APP_ID / META_APP_SECRET / TOKEN_ENCRYPTION_KEY
+   → [사용자] 계정 연동용 4개: META_APP_ID / META_APP_SECRET / TOKEN_ENCRYPTION_KEY
+     / META_WEBHOOK_VERIFY_TOKEN (자동 DM 웹훅 구독용 · 임의 문자열)
      키 생성: node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
      Meta 콜백 URL: {APP_URL}/api/oauth/instagram/callback
+     Meta 웹훅 URL: {APP_URL}/api/webhooks/instagram  (구독 필드: comments)
+     ※ 연동하려는 인스타 계정은 **프로 계정 + 페이스북 페이지 연결**이 되어 있어야 한다.
+       개인 계정은 댓글·발행 API 자체가 없어서 프로필 조회가 no_business_account 로 끝난다
    → [사용자] (선택) META_AD_LIBRARY_TOKEN — 레퍼런스 리서치용
    → [사용자] (선택) STRIPE_STANDARD_PRICE_ID — 결제용
    ※ 큐·렌더·스토리지 중 하나라도 비면 submitRun 이 차감 전에 거부한다. 크레딧은 안전하다
 
-1. 계정 연동 마무리  ← 코드 작업은 여기부터
-   → 지금 OAuth 콜백은 토큰 교환까지만 하고 버린다(평문 보관 회피).
-     남은 것: Graph 로 프로필(id·handle) 조회 → encryptSecret() → socialAccounts 저장
-   → 그러면 댓글 인박스·자동 DM·성과 도달 지표가 한꺼번에 열린다
+1. ~~계정 연동 마무리~~ — 완료 (`4b0e67f`)
+   → 장기 토큰 교환(약 1시간짜리를 60일짜리로) → Graph `/me/accounts` 프로필 조회
+     → encryptSecret() → socialAccounts upsert. 재연동은 같은 행을 갱신하되
+     **다른 조직이 쥔 계정은 빼앗지 않는다**(unique 는 전역이라 setWhere 로 막았다)
+   → 콜백 결과를 계정 화면이 배너로 읽는다. 그전엔 리다이렉트만 하고 아무도 안 봤다
 
-2. 자동 DM 실행부
-   → 댓글 웹훅 수신 → findTriggerKeyword() → private reply 발송 → dmSends 기록
-   → 매칭 로직과 멱등 인덱스는 이미 있다. 없는 건 웹훅 라우트와 발송 호출뿐
+2. ~~자동 DM 실행부~~ — 완료 (`fe76f71`)
+   → `api/webhooks/instagram` (GET 핸드셰이크 · POST 처리). 서명은 **원본 바디**에
+     대해 검증한 뒤에야 파싱한다
+   → 발송은 **보내기 전에** 댓글 id 로 선점한다. 재전송이 같은 사람에게 두 번
+     보내는 것이 이 기능의 유일한 치명적 실패다. 실패한 발송은 사유를 남기고
+     선점을 유지한다(재시도로 다시 나가지 않게)
+   → 계정 주인 본인의 댓글은 건너뛴다. 같은 웹훅으로 되돌아와 자기 자신과 대화한다
 
-3. 댓글 인박스 실제 목록
-   → 지금은 빈 상태 화면만 있다. Graph 로 미답변 댓글을 읽어 렌더
+3. ~~댓글 인박스 실제 목록~~ — 완료 (`92774fe`)
+   → 최근 게시물 12건의 댓글 중 **답글이 하나도 없는 것**만. DB 미러링 없이 실시간
+   → 토큰이 만료된 계정은 조용히 빈 목록이 되지 않고 이름이 뜬다
 
-4. 생성 경로 실동작 검증 (0번이 풀린 뒤)
+4. 생성 경로 실동작 검증 (0번이 풀린 뒤)  ← **코드 작업은 여기부터, 단 0번에 막힘**
    → 보드 1행 · 인스타 1채널로 15cr Run 을 실제로 돌려본다
    → 확인: runs/run_items 상태 전이 · panels.render_path · 원장 -15
    → 실패 시 환불, 첫 장 실패 시 나머지 canceled 인지
@@ -547,12 +565,16 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 ```
 docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 줘. 전부 읽지는 말고.
 
-그다음 §4 '다음 세션에서 바로 실행할 작업' 1번(계정 연동 마무리)부터 이어서 진행해 줘.
-- OAuth 콜백(src/app/api/oauth/instagram/callback)은 토큰 교환까지 되어 있다.
-  남은 것은 Graph 프로필 조회 → encryptSecret() → socialAccounts 저장뿐이다.
+§4 '다음 세션에서 바로 실행할 작업'의 1~3번은 끝났다. 4번(생성 경로 실동작 검증)은
+0번 사용자 작업에 막혀 있으니, 0번이 아직 안 풀렸으면 5번(비디오 방향 결정)이나
+6번(예약 발행 테이블)부터 진행해 줘. 무엇부터 할지 먼저 물어봐도 된다.
+
 - 이미 있는 것을 다시 만들지 말 것: createRun/finalizeRun, 견적, Board 영속화,
   Deck 뷰어·편집·부분 재생성, 블로그, 캘린더, 성과, 기획, 레퍼런스, 링크 변환,
-  Stripe, 암호화(libs/Crypto.ts), 키워드 매칭(features/social/matching.ts).
+  Stripe, 암호화(libs/Crypto.ts), 키워드 매칭(features/social/matching.ts),
+  계정 연동 전체(features/social/connect.ts · repository.ts),
+  자동 DM 실행부(features/social/service.ts · signature.ts · reply.ts),
+  댓글 인박스(features/social/comments.ts).
 
 작업 방식:
 - 머지 게이트 전부 통과 후 커밋: lint → check:types → check:i18n → check:deps
@@ -587,7 +609,9 @@ docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 �
 |---|---|---|
 | R1 | **상표 미검증** — `Panelo`의 `panel`은 일반명사라 식별력이 약하다. KIPRIS(35·42·9류) / USPTO / EUIPO 검색과 `panelo.app` 도메인 확보가 아직 안 됐다 | **브랜드 에셋 제작 전.** 현재 브랜드명은 i18n 키(`DashboardNav.brand_name`)로만 노출되므로 교체 비용은 낮다 |
 | R18 | **비디오 생성 백엔드 미결정.** 렌더 서비스는 Playwright 스크린샷 기반이라 정지 이미지 전용이다. 모션그래픽(우리 슬라이드를 ffmpeg로 이어붙임)은 기존 자산 재사용이 가능하고 원가도 예측되지만 렌더 서버에 ffmpeg가 필요하다. 영상 생성 API(fal 등)는 원가 구조가 완전히 다르다 | 착수 전 방향 확정 |
-| R19 | **SNS 계정 연동이 없다.** `social_accounts` 설계는 `docs/03-DATA-MODEL.md` §12에 있지만 테이블이 없고 OAuth 연동도 없다. 성과 화면의 도달·저장, 댓글 관리, 자동 DM이 전부 여기에 걸린다 | 댓글·DM 실동작 전 |
+| ~~R19~~ | ~~SNS 계정 연동이 없다~~ → **코드는 완료 (2026-08-03).** 테이블(`0011`) · OAuth · 장기 토큰 · 암호화 저장 · 댓글 웹훅 · 자동 DM 발송 · 댓글 인박스가 전부 있다. **남은 것은 Meta 앱 자격증명 4개(사용자 작업)** 와, 실제 Meta 트래픽으로의 검증이다 | 자격증명 입력 시 |
+| R20 | **자동 DM·댓글 인박스가 실제 Meta 트래픽으로 미검증.** 서명 검증·중복 방지·매칭은 단위 테스트로 고정했지만, 실물 웹훅 페이로드와 private reply 발송은 아직 돌려보지 않았다. Meta 앱 검수(App Review)에서 `instagram_manage_comments` 승인도 필요하다 | 자격증명이 들어온 직후 |
+| R21 | **저장된 액세스 토큰이 약 60일 뒤 만료된다.** 갱신 잡이 없다. 지금은 만료되면 댓글 인박스가 해당 계정을 "불러오지 못함"으로 표시하고 사용자가 재연동해야 한다. `tokenExpiresAt` 은 이미 저장하므로 갱신 잡을 붙일 자리는 있다 | 첫 계정 연동 후 50일 이내 |
 | R14 | **렌더 서비스가 외부에서 닿지 않는다.** `http://155.94.154.102:3000/health` 연결 거부(`HTTP 000`). 같은 환경에서 GitHub·Vercel 은 200 이라 우리 쪽 아웃바운드 문제가 아니다. 서비스 미기동 · 방화벽에서 3000 미개방 · `127.0.0.1` 바인딩 중 하나로 보인다 | **생성 실동작 전.** 이게 막혀 있으면 워커가 `Render service is unreachable` 로 즉시 실패한다 |
 | R15 | **렌더 서비스가 HTTPS 가 아니다.** `RENDER_SERVICE_TOKEN`(공유 시크릿)이 `Authorization: Bearer` 헤더로 **평문**으로 공용 인터넷을 건넌다. 경로상 누구든 토큰을 주워 우리 Chromium 을 마음대로 돌리고 카드 내용을 볼 수 있다. `docs/07-PORTED-MODULES.md` §7 이 Caddy 리버스 프록시 + 자동 인증서를 요구한 이유가 이것이다 | **토큰이 이미 평문으로 나갔다면 교체가 필요하다.** HTTPS 적용과 함께 |
 | R16 | **Supabase Storage 미설정.** `SUPABASE_URL`·`SUPABASE_SERVICE_ROLE_KEY` 가 `.env.local` 에 없고 `renders` 버킷도 확인되지 않았다. 렌더된 PNG 를 올릴 곳이 없다 | 생성 실동작 전 |
