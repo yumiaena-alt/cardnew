@@ -228,6 +228,22 @@
     "keyboard_hint": "방향키로 이동 · Enter로 편집 · Esc로 취소 · Cmd+V로 범위 붙여넣기 · Cmd+Z로 실행 취소",
     "saving": "저장 중"
   },
+  "CalendarPage": {
+    "title": "{year}년 {month}월 발행 계획",
+    "summary": "예정 {scheduled}건 · 빈 날짜 {empty}일",
+    "fill_action": "보드에서 채우기",
+    "unscheduled_note": "날짜가 없는 소재가 {count}건 있어요. 보드에서 발행일을 정해주세요.",
+    "day_empty": "비어 있음",
+    "empty_title": "아직 계획이 없어요",
+    "empty_description": "보드에서 소재와 발행일을 정하면 여기에 달력으로 보입니다.",
+    "weekday_sun": "일",
+    "weekday_mon": "월",
+    "weekday_tue": "화",
+    "weekday_wed": "수",
+    "weekday_thu": "목",
+    "weekday_fri": "금",
+    "weekday_sat": "토"
+  },
   "DryRunPanel": {
     "title": "만들기 전에 확인",
     "description": "크레딧은 확인을 누른 다음에 빠집니다.",

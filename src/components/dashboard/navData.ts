@@ -95,7 +95,7 @@ const navGroups: NavGroup[] = [
     labelKey: 'calendar',
     icon: Calendar,
     href: '/dashboard/calendar',
-    phase: 3,
+    phase: 2,
   },
   {
     id: 'analytics',

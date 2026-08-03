@@ -228,6 +228,22 @@
     "keyboard_hint": "Arrow keys move · Enter edits · Esc cancels · Cmd+V pastes a range · Cmd+Z undoes",
     "saving": "Saving"
   },
+  "CalendarPage": {
+    "title": "{month}/{year} publishing plan",
+    "summary": "{scheduled} scheduled · {empty} empty days",
+    "fill_action": "Fill from the board",
+    "unscheduled_note": "{count} topics have no date yet. Set one on the board.",
+    "day_empty": "Empty",
+    "empty_title": "Nothing planned yet",
+    "empty_description": "Set topics and dates on the board and they show up here.",
+    "weekday_sun": "Sun",
+    "weekday_mon": "Mon",
+    "weekday_tue": "Tue",
+    "weekday_wed": "Wed",
+    "weekday_thu": "Thu",
+    "weekday_fri": "Fri",
+    "weekday_sat": "Sat"
+  },
   "DryRunPanel": {
     "title": "Check before generating",
     "description": "Credits are spent after you confirm.",
