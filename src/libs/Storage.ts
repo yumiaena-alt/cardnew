@@ -1,4 +1,5 @@
 import { Env } from './Env';
+import { PANEL_EXTENSION } from './RenderService';
 
 /**
  * Supabase Storage access over the REST API.
@@ -44,6 +45,36 @@ function requireConfig(): StorageConfig {
   return { url: Env.SUPABASE_URL, key: Env.SUPABASE_SERVICE_ROLE_KEY };
 }
 
+/**
+ * Builds the headers that authenticate a storage call.
+ *
+ * `apikey` is not redundant with the bearer token. Supabase's newer secret keys
+ * (`sb_secret_…`) are opaque rather than JWTs, and the storage API only accepts
+ * them when they also arrive in this header — with the bearer alone it tries to
+ * parse the value as a JWT and answers "Invalid Compact JWS".
+ *
+ * @param key - The service role key.
+ * @returns The authentication headers.
+ */
+function authHeaders(key: string): Record<string, string> {
+  return { authorization: `Bearer ${key}`, apikey: key };
+}
+
+/**
+ * Reads the provider's own reason out of a failed response.
+ *
+ * The status alone is not enough to act on: storage answers 400 for a bad key,
+ * a missing bucket and an oversized object alike.
+ *
+ * @param response - The failed response.
+ * @returns A short reason, or the status when the body says nothing.
+ */
+async function readFailure(response: Response): Promise<string> {
+  const text = await response.text().catch(() => '');
+
+  return text.trim() === '' ? `status ${response.status}` : text.slice(0, 200);
+}
+
 export type UploadInput = {
   bucket: string;
   /** Object path inside the bucket. Built from server-resolved ids only. */
@@ -69,7 +100,7 @@ export async function uploadObject(input: UploadInput): Promise<string> {
   const response = await fetch(`${config.url}/storage/v1/object/${input.bucket}/${input.path}`, {
     method: 'POST',
     headers: {
-      authorization: `Bearer ${config.key}`,
+      ...authHeaders(config.key),
       'content-type': input.contentType,
       'x-upsert': 'true',
     },
@@ -80,7 +111,7 @@ export async function uploadObject(input: UploadInput): Promise<string> {
   });
 
   if (!response.ok) {
-    throw new Error(`Storage upload failed with ${response.status}`);
+    throw new Error(`Storage upload failed: ${await readFailure(response)}`);
   }
 
   return input.path;
@@ -112,7 +143,7 @@ export async function createSignedUrl(
   const response = await fetch(`${config.url}/storage/v1/object/sign/${bucket}/${path}`, {
     method: 'POST',
     headers: {
-      authorization: `Bearer ${config.key}`,
+      ...authHeaders(config.key),
       'content-type': 'application/json',
     },
     body: JSON.stringify({ expiresIn: expiresInSeconds }),
@@ -120,7 +151,7 @@ export async function createSignedUrl(
   });
 
   if (!response.ok) {
-    throw new Error(`Storage sign failed with ${response.status}`);
+    throw new Error(`Storage sign failed: ${await readFailure(response)}`);
   }
 
   const payload: unknown = await response.json();
@@ -151,7 +182,7 @@ export function panelRenderPath(input: {
   versionId: string;
   index: number;
 }): string {
-  return `${input.orgId}/${input.versionId}/${input.index}.png`;
+  return `${input.orgId}/${input.versionId}/${input.index}.${PANEL_EXTENSION}`;
 }
 
 /**

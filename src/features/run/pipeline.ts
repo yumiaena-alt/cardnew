@@ -5,7 +5,7 @@ import type { CardnewsPlan } from '@/lib/plan/schema';
 import type { ComposedCardnews } from '@/lib/renderer/compose';
 import { composeCardnews } from '@/lib/renderer/compose';
 import { logger } from '@/libs/Logger';
-import { renderPanel } from '@/libs/RenderService';
+import { PANEL_CONTENT_TYPE, renderPanel } from '@/libs/RenderService';
 import { panelRenderPath, RENDER_BUCKET, uploadObject } from '@/libs/Storage';
 import type { NewPanel, PanelSlotValue, SlotProvenance } from '@/models/Deck';
 import type { RunItem } from '@/models/Run';
@@ -157,7 +157,7 @@ async function renderAndStore(input: {
       bucket: RENDER_BUCKET,
       path,
       body: rendered.bytes,
-      contentType: 'image/png',
+      contentType: PANEL_CONTENT_TYPE,
     });
 
     warnings.push(...rendered.overflows.map((layer) => `overflow:${index}:${layer}`));

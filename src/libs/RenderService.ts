@@ -13,6 +13,18 @@ import { Env } from './Env';
 /** One panel is a single browser screenshot; a slow one is still under a minute. */
 const RENDER_TIMEOUT_MS = 60_000;
 
+/**
+ * High enough that type edges stay clean, low enough that a photographic card
+ * lands around 300KB instead of the 10MB the same card costs as a PNG.
+ */
+const JPEG_QUALITY = 88;
+
+export type PanelFormat = 'png' | 'jpeg';
+
+/** What a rendered panel is stored as. Instagram only accepts JPEG. */
+export const PANEL_CONTENT_TYPE = 'image/jpeg';
+export const PANEL_EXTENSION = 'jpg';
+
 export type RenderedPanel = {
   bytes: ArrayBuffer;
   /** Cache key covering every input that changes the pixels. */
@@ -57,7 +69,12 @@ function parseWarningHeader(value: string | null): string[] {
 }
 
 /**
- * Renders one slide document to a PNG.
+ * Renders one slide document to an image.
+ *
+ * JPEG by default, not PNG. A card carrying a photograph costs about 10MB as a
+ * PNG and a few hundred KB as a JPEG, and Instagram refuses both an image over
+ * 8MB and any format other than JPEG — so a PNG card is one that cannot be
+ * published at all.
  *
  * Typesetting warnings come back alongside the image rather than as failures:
  * a panel whose headline overflows is still a panel, and the caller decides
@@ -65,10 +82,15 @@ function parseWarningHeader(value: string | null): string[] {
  *
  * @param doc - The slide document to render.
  * @param scale - Render multiplier over the 1080px logical width.
+ * @param format - Output format. JPEG unless a caller needs losslessness.
  * @returns The image bytes, its hash, and any typesetting warnings.
  * @throws Error when the service is unconfigured, unreachable, or rejects the document.
  */
-export async function renderPanel(doc: SlideDoc, scale = 1): Promise<RenderedPanel> {
+export async function renderPanel(
+  doc: SlideDoc,
+  scale = 1,
+  format: PanelFormat = 'jpeg',
+): Promise<RenderedPanel> {
   const config = requireConfig();
 
   const response = await fetch(`${config.url}/render`, {
@@ -77,7 +99,12 @@ export async function renderPanel(doc: SlideDoc, scale = 1): Promise<RenderedPan
       authorization: `Bearer ${config.token}`,
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ doc, format: 'png', scale }),
+    body: JSON.stringify({
+      doc,
+      format,
+      scale,
+      ...(format === 'jpeg' ? { quality: JPEG_QUALITY } : {}),
+    }),
     signal: AbortSignal.timeout(RENDER_TIMEOUT_MS),
   });
 

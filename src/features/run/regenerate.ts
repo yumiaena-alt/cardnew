@@ -4,7 +4,7 @@ import { cardnewsPlanSchema, slidePlanSchema } from '@/lib/plan/schema';
 import type { SlidePlan } from '@/lib/plan/schema';
 import { composeCardnews } from '@/lib/renderer/compose';
 import { logger } from '@/libs/Logger';
-import { renderPanel } from '@/libs/RenderService';
+import { PANEL_CONTENT_TYPE, renderPanel } from '@/libs/RenderService';
 import { panelRenderPath, RENDER_BUCKET, uploadObject } from '@/libs/Storage';
 import type { Panel, PanelPlan } from '@/models/Deck';
 import type { RunItem } from '@/models/Run';
@@ -132,7 +132,7 @@ export async function regeneratePanels(
     bucket: RENDER_BUCKET,
     path,
     body: image.bytes,
-    contentType: 'image/png',
+    contentType: PANEL_CONTENT_TYPE,
   });
 
   // Every panel is rewritten because `replacePanels` owns the whole version;
