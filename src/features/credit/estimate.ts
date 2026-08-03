@@ -19,6 +19,11 @@ export const CREDIT_RATES = {
   designLearning: 5,
   /** One ad-library search. Charged once per query per day, not per attempt. */
   referenceSearch: 1,
+  /**
+   * One long-form draft. Priced at the derived-cut rate because that is what it
+   * is: the same thinking as a deck, written out long instead of laid out.
+   */
+  blogPost: 5,
 } as const;
 
 export type BoardRowEstimateInput = {

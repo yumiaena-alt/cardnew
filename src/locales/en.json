@@ -32,7 +32,8 @@
     "planning": "Content planning",
     "planning_ideas": "Content planning",
     "planning_reference": "Reference research",
-    "deck_link": "From a link"
+    "deck_link": "From a link",
+    "blog": "Blog posts"
   },
   "DashboardTopbar": {
     "open_sidebar": "Open sidebar",
@@ -122,6 +123,25 @@
     "status_scheduled": "Scheduled",
     "status_published": "Published",
     "status_archived": "Archived"
+  },
+  "BlogPage": {
+    "title": "Write a blog post",
+    "subtitle": "Give it a topic and it drafts something you can paste as it is.",
+    "topic_label": "Topic",
+    "topic_hint": "What the post should cover. The more specific, the more usable the draft.",
+    "topic_placeholder": "e.g. three common mistakes storing coffee beans at home",
+    "write": "Write a draft · {count} credits",
+    "writing": "Writing",
+    "drafts_heading": "{count} drafts",
+    "status_ready": "Ready",
+    "draft_meta": "{count} characters · {credits} credits",
+    "error_unauthorized": "Sign in to continue.",
+    "error_forbidden": "Your role cannot do this.",
+    "error_not_found": "No project found.",
+    "error_conflict": "This request was already handled.",
+    "error_insufficient_credits": "Not enough credits.",
+    "error_invalid_input": "Check the topic.",
+    "error_writer_unavailable": "The writing service is not connected yet."
   },
   "DeckLinkPage": {
     "title": "Card news from a link",

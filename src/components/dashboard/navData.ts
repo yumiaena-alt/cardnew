@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Calendar, Images, LayoutGrid, LineChart, Palette, Sparkles } from 'lucide-react';
+import { Calendar, FileText, Images, LayoutGrid, LineChart, Palette, Sparkles } from 'lucide-react';
 
 /** Keys available in the `DashboardNav` i18n namespace. Keeps `t()` type-safe. */
 export type NavLabelKey =
@@ -11,6 +11,7 @@ export type NavLabelKey =
   | 'deck_link'
   | 'deck_new'
   | 'deck_list'
+  | 'blog'
   | 'template'
   | 'template_gallery'
   | 'template_learn'
@@ -71,6 +72,13 @@ const navGroups: NavGroup[] = [
       { id: 'deck-new', labelKey: 'deck_new', href: '/dashboard/deck/new' },
       { id: 'deck-list', labelKey: 'deck_list', href: '/dashboard/deck' },
     ],
+  },
+  {
+    id: 'blog',
+    labelKey: 'blog',
+    icon: FileText,
+    href: '/dashboard/blog',
+    phase: 1,
   },
   {
     id: 'template',

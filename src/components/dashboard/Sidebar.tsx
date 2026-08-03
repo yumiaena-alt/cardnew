@@ -31,6 +31,7 @@ function useNavLabels(): NavLabels {
     deck_link: t('deck_link'),
     deck_new: t('deck_new'),
     deck_list: t('deck_list'),
+    blog: t('blog'),
     template: t('template'),
     template_gallery: t('template_gallery'),
     template_learn: t('template_learn'),

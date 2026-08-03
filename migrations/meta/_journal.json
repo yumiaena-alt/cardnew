@@ -64,6 +64,13 @@
       "when": 1785716180819,
       "tag": "0008_search_credit_reason",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1785720610721,
+      "tag": "0009_blog_posts",
+      "breakpoints": true
     }
   ]
 }
