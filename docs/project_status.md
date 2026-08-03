@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-03** · 문서 버전 **2.5** · 기준 커밋 `5be4393` (작업 트리 깨끗)
+최종 갱신: **2026-08-03** · 문서 버전 **2.6** · 기준 커밋 `27f12df` (작업 트리 깨끗)
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -520,10 +520,13 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 0. 사용자 작업 — 코드로는 못 푼다 (§6 R14~R17, R19)
    → [사용자] 렌더 서비스가 외부에서 안 열린다. 155.94.154.102:3000 연결 거부
      (방화벽/포트 미개방, 또는 127.0.0.1 바인딩 의심) · 게다가 http 라 토큰이 평문으로 나간다
-   → [사용자] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 를 .env.local 에  ← 아직 없음
-     Supabase 대시보드 → Project Settings → API 의 Project URL / service_role
-   → [x] Supabase 버킷 생성 완료 (이름 'cardnews'). 버킷 이름은 이제
-     SUPABASE_STORAGE_BUCKET 환경변수로 지정한다(기본값 'renders')
+   → [x] Supabase Storage 완료 — 버킷 'cardnews'(비공개) · URL · service_role 키.
+     업로드→서명→읽기→삭제 한 바퀴 실측 확인. 버킷 이름은 SUPABASE_STORAGE_BUCKET
+   → [x] Meta 앱 4종 완료 — META_APP_ID / META_APP_SECRET /
+     META_WEBHOOK_VERIFY_TOKEN / TOKEN_ENCRYPTION_KEY(32바이트 검증).
+     isConnectConfigured() = true
+   → [사용자] **RENDER_SERVICE_URL 을 Caddy 도메인으로 바꿔야 한다** ← 지금 여기서 막힘
+     https://<도메인> 형태. IP:3000 은 외부에 열려 있지 않다(R14)
    → [사용자] Vercel 환경변수에도 SUPABASE_* · SUPABASE_STORAGE_BUCKET ·
      TRIGGER_SECRET_KEY 를 추가해야 한다 (지금 4개만 등록돼 있다)
    → [사용자] 계정 연동용 4개: META_APP_ID / META_APP_SECRET / TOKEN_ENCRYPTION_KEY
@@ -646,9 +649,9 @@ docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 �
 | R20 | **자동 DM·댓글 인박스가 실제 Meta 트래픽으로 미검증.** 서명 검증·중복 방지·매칭은 단위 테스트로 고정했지만, 실물 웹훅 페이로드와 private reply 발송은 아직 돌려보지 않았다. Meta 앱 검수(App Review)에서 `instagram_manage_comments` 승인도 필요하다 | 자격증명이 들어온 직후 |
 | R22 | **예약 발행이 실제로 나가본 적이 없다.** 컨테이너 생성 → 발행 2단계는 Meta 문서대로 짰지만 실물 호출은 안 해봤다. 이미지 URL 은 Supabase 서명 URL이라 **버킷·서명이 동작해야** Meta 가 받아갈 수 있다(R16 과 묶여 있다). `0012` 는 프로덕션 미적용 | 자격증명·스토리지가 들어온 직후 |
 | R21 | **저장된 액세스 토큰이 약 60일 뒤 만료된다.** 갱신 잡이 없다. 지금은 만료되면 댓글 인박스가 해당 계정을 "불러오지 못함"으로 표시하고 사용자가 재연동해야 한다. `tokenExpiresAt` 은 이미 저장하므로 갱신 잡을 붙일 자리는 있다 | 첫 계정 연동 후 50일 이내 |
-| R14 | **렌더 서비스가 외부에서 닿지 않는다.** `http://155.94.154.102:3000/health` 연결 거부(`HTTP 000`). 같은 환경에서 GitHub·Vercel 은 200 이라 우리 쪽 아웃바운드 문제가 아니다. 서비스 미기동 · 방화벽에서 3000 미개방 · `127.0.0.1` 바인딩 중 하나로 보인다 | **생성 실동작 전.** 이게 막혀 있으면 워커가 `Render service is unreachable` 로 즉시 실패한다 |
-| R15 | **렌더 서비스가 HTTPS 가 아니다.** `RENDER_SERVICE_TOKEN`(공유 시크릿)이 `Authorization: Bearer` 헤더로 **평문**으로 공용 인터넷을 건넌다. 경로상 누구든 토큰을 주워 우리 Chromium 을 마음대로 돌리고 카드 내용을 볼 수 있다. `docs/07-PORTED-MODULES.md` §7 이 Caddy 리버스 프록시 + 자동 인증서를 요구한 이유가 이것이다 | **토큰이 이미 평문으로 나갔다면 교체가 필요하다.** HTTPS 적용과 함께 |
-| R16 | **Supabase Storage 절반만 설정됐다.** 버킷은 만들어졌고(`cardnews`, `SUPABASE_STORAGE_BUCKET` 로 지정) 마이그레이션도 끝났지만, **`SUPABASE_URL`·`SUPABASE_SERVICE_ROLE_KEY` 가 아직 `.env.local` 에 없다.** 이게 없으면 렌더된 PNG 를 올릴 곳이 없어 `submitRun` 이 차감 전에 거부한다 | 생성 실동작 전 |
+| R14 | **렌더 서비스 주소가 틀렸다.** `http://155.94.154.102:3000` 은 여전히 `HTTP 000` (4000 도 동일). 그런데 **80 번은 308 로 응답하고 `Server: Caddy`** 이며 `https://155.94.154.102/health` 로 리다이렉트한다 — 즉 **Caddy 리버스 프록시는 떠 있고 3000 은 외부에 열려 있지 않다**(의도한 구성이다). 서비스는 도메인 뒤 HTTPS 로 서비스되고 있을 것이고, `.env.local` 의 `RENDER_SERVICE_URL` 만 옛 주소를 가리키고 있다. **필요한 것: Caddy 에 설정한 도메인.** IP 로는 TLS 핸드셰이크가 거부되어(SNI 불일치) 외부에서 도메인을 알아낼 수 없다 | **생성 실동작 전.** `RENDER_SERVICE_URL=https://<도메인>` 로 바꾸면 풀린다 |
+| R15 | **렌더 서비스가 HTTPS 가 아니다** → Caddy 가 확인되어 사실상 해소된 것으로 보이나, `RENDER_SERVICE_URL` 이 https 로 바뀌기 전까지는 유효하다. `RENDER_SERVICE_TOKEN`(공유 시크릿)이 `Authorization: Bearer` 헤더로 **평문**으로 공용 인터넷을 건넌다. 경로상 누구든 토큰을 주워 우리 Chromium 을 마음대로 돌리고 카드 내용을 볼 수 있다. `docs/07-PORTED-MODULES.md` §7 이 Caddy 리버스 프록시 + 자동 인증서를 요구한 이유가 이것이다 | **토큰이 이미 평문으로 나갔다면 교체가 필요하다.** HTTPS 적용과 함께 |
+| ~~R16~~ | ~~Supabase Storage 미설정~~ → **해결됨 (2026-08-03).** 버킷 `cardnews`(`SUPABASE_STORAGE_BUCKET`), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`(신형 `sb_secret_`) 전부 설정. **업로드 → 서명 URL 발급 → 읽기 → 삭제 한 바퀴를 실제로 돌려 확인**했다. 처음에 공개 버킷이었으나 **비공개로 전환**했고, 전환 후에도 서명 URL 은 200, 서명 없는 공개 접근은 400 으로 차단되는 것을 확인했다 | 완료 |
 | R17 | **Vercel 자동 배포가 안 걸린다.** `vercel git connect` 는 `Connected` 를 반환했지만 `main` 푸시 후 새 배포가 생기지 않았다(전부 CLI 배포). GitHub App 이 `cardnew` 저장소 접근 권한을 못 받은 것으로 보인다. 지금은 `npx vercel --prod` 로 수동 배포 중 | 배포 자동화가 필요할 때 |
 | ~~R12~~ | ~~마이그레이션 미적용~~ → **해결됨 (2026-08-03).** `0003`~`0007` 을 프로덕션 Supabase 에 적용했다. 테이블 22개 · enum 9개, 기존 데이터(조직 2 · 원장 2행) 보존 확인 | 완료 |
 | ~~R13~~ | ~~Run이 `queued`에 쌓이기만 하고 아무도 안 집어간다~~ → **해결됨 (2026-08-03).** `TRIGGER_SECRET_KEY`(`tr_dev_…`)와 `TRIGGER_PROJECT_REF` 가 `.env.local` 에 들어왔다. 태스크는 이미 있다. **배포 환경에는 프로덕션 키가 따로 필요하다** | 완료(로컬) |
@@ -658,7 +661,7 @@ docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 �
 | R10 | **Clerk 웹훅이 실제 Clerk 트래픽으로는 미검증.** 자체 서명 Playwright 테스트 7건(서명 위조·멱등·순서역전)은 실서버+PGlite 대상으로 전부 통과했다. 남은 것은 Clerk 대시보드에서 엔드포인트 등록 후 "Send test event"로 실물 페이로드 확인 | Clerk Organizations 활성화 직후 |
 | R9 | `counter` 테이블만 `public` 스키마에 남아 있다 (보일러플레이트 데모, `0000`에서 생성). 나머지는 전부 `cardnews` | 마케팅 페이지 정리 시 테이블째 제거 |
 | R3 | LLM·이미지 API 제공사 미선정 → 크레딧 단가(15cr/5cr)의 원가 검증 안 됨 | 로드맵 1-D 착수 전 |
-| ~~R2~~ | ~~폰트 미적용~~ → **부분 해결.** Instrument Serif(디스플레이) · JetBrains Mono(수치)를 `next/font/google`로 빌드 타임 셀프호스팅. **Pretendard는 아직 미적용** — Google Fonts에 없어 npm 패키지(`pretendard`) 설치 승인이 필요하다. 그때까지 한글은 시스템 sans로 렌더된다 (`--font-display` 폴백 꼬리를 `serif`에서 sans 스택으로 바꿨다 — 한글 시스템 serif는 낡아 보인다) | Pretendard 설치 승인 시 |
+| ~~R2~~ | ~~폰트 미적용~~ → **해결됨 (2026-08-03).** 로컬 브라우저에서 `document.fonts.check('16px \"Pretendard Variable\"')` = true, Instrument Serif 로드 확인. 아래 기록은 이전 상태다. **부분 해결.** Instrument Serif(디스플레이) · JetBrains Mono(수치)를 `next/font/google`로 빌드 타임 셀프호스팅. **Pretendard는 아직 미적용** — Google Fonts에 없어 npm 패키지(`pretendard`) 설치 승인이 필요하다. 그때까지 한글은 시스템 sans로 렌더된다 (`--font-display` 폴백 꼬리를 `serif`에서 sans 스택으로 바꿨다 — 한글 시스템 serif는 낡아 보인다) | Pretendard 설치 승인 시 |
 | ~~R6~~ | ~~보일러플레이트 잔재~~ → **해결됨.** `/about` `/portfolio` `/counter` `/api/counter` 라우트, `Counter*`·`Sponsors`·`Hello`·`Demo*`·`BaseTemplate` 컴포넌트, 관련 로케일 네임스페이스 10개, e2e 8건을 제거하고 Panelo 랜딩 페이지로 교체. 프로덕션에서 4개 경로 전부 404 확인 | 완료 |
 | ~~R9~~ | ~~`counter` 테이블이 `public`에 남음~~ → **코드에서는 제거됨**(`models/Schema.ts` 삭제). **테이블 자체는 DB에 그대로 둔다** — 파괴적 마이그레이션이라 사람이 리뷰 후 실행할 일이다. 아무것도 참조하지 않으므로 무해 | 스키마 정리 시 |
 | ~~R4~~ | ~~Supabase 미생성~~ → **해결됨.** 마이그레이션 3종 적용 완료. 로컬은 계속 PGlite, 프로덕션만 Supabase | 완료 |
