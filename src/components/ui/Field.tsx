@@ -1,5 +1,6 @@
 'use client';
 
+import { Input as InputBase } from '@base-ui/react/input';
 import { Select as SelectBase } from '@base-ui/react/select';
 import type * as React from 'react';
 import { cn } from '@/lib/utils';
@@ -14,6 +15,18 @@ import { cn } from '@/lib/utils';
 
 const fieldClass =
   'h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground transition-colors outline-none placeholder:text-muted-foreground hover:border-ring/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50';
+
+/**
+ * Single-line text input.
+ *
+ * @param props - Base UI input props.
+ * @returns The input element.
+ */
+export function Input(props: InputBase.Props) {
+  const { className, ...rest } = props;
+
+  return <InputBase data-slot="input" className={cn(fieldClass, className)} {...rest} />;
+}
 
 /**
  * Multi-line text input for topics long enough to need room.

@@ -28,7 +28,8 @@
     "calendar": "캘린더",
     "analytics": "성과",
     "credits_left": "{count} 남음",
-    "upgrade": "플랜 업그레이드"
+    "upgrade": "플랜 업그레이드",
+    "planning": "콘텐츠 기획"
   },
   "DashboardTopbar": {
     "open_sidebar": "사이드바 열기",
@@ -39,6 +40,34 @@
     "unit": "크레딧",
     "balance_label": "크레딧 잔액",
     "estimate_label": "예상 사용량"
+  },
+  "PlanningPage": {
+    "title": "콘텐츠 기획",
+    "subtitle": "무엇을 올릴지 먼저 정하고, 마음에 드는 것만 이번 달 보드로 넘기세요.",
+    "source_heading": "어디에서 소재를 찾아볼까요?",
+    "source_self": "자체 창작",
+    "source_web": "웹 검색",
+    "source_library": "내 자료 탐색",
+    "context_label": "어떤 일을 하시나요?",
+    "context_hint": "업종과 파는 것을 한 줄로 적어주세요. 구체적일수록 소재가 쓸 만해집니다.",
+    "context_placeholder": "예: 성수동에서 원두 로스팅하는 작은 카페",
+    "generate": "아이디어 받기",
+    "working": "생각하는 중",
+    "push": "{count}개 보드로 보내기",
+    "pushed": "{count}개를 이번 달 보드에 넣었어요.",
+    "column_ideas": "받은 아이디어 {count}",
+    "column_ideas_hint": "저장되지 않습니다. 마음에 안 들면 다시 받으세요.",
+    "column_kept": "고른 것 {count}",
+    "column_kept_hint": "체크를 풀면 보드로 넘어가지 않습니다.",
+    "column_board": "보드에 있는 소재 {count}",
+    "column_board_hint": "여기서부터 카드뉴스를 만듭니다.",
+    "error_unauthorized": "로그인이 필요합니다.",
+    "error_forbidden": "이 작업 권한이 없습니다.",
+    "error_not_found": "이번 달 보드를 찾지 못했습니다.",
+    "error_conflict": "이미 처리된 요청입니다.",
+    "error_insufficient_credits": "크레딧이 모자랍니다.",
+    "error_invalid_input": "입력을 확인해 주세요.",
+    "error_planner_unavailable": "기획 서버가 아직 연결되지 않았습니다."
   },
   "PlanPage": {
     "title": "플랜",

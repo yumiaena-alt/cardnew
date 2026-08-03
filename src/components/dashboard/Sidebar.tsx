@@ -23,6 +23,7 @@ function useNavLabels(): NavLabels {
   const t = useTranslations('DashboardNav');
 
   return {
+    planning: t('planning'),
     board: t('board'),
     deck: t('deck'),
     deck_new: t('deck_new'),

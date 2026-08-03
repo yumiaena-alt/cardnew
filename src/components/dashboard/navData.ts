@@ -1,8 +1,9 @@
 import type { LucideIcon } from 'lucide-react';
-import { Calendar, Images, LayoutGrid, LineChart, Palette } from 'lucide-react';
+import { Calendar, Images, LayoutGrid, LineChart, Palette, Sparkles } from 'lucide-react';
 
 /** Keys available in the `DashboardNav` i18n namespace. Keeps `t()` type-safe. */
 export type NavLabelKey =
+  | 'planning'
   | 'board'
   | 'deck'
   | 'deck_new'
@@ -36,6 +37,13 @@ export type NavGroup = {
  * sections never render as dead menu items.
  */
 const navGroups: NavGroup[] = [
+  {
+    id: 'planning',
+    labelKey: 'planning',
+    icon: Sparkles,
+    href: '/dashboard/planning',
+    phase: 1,
+  },
   {
     id: 'board',
     labelKey: 'board',

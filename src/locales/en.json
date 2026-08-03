@@ -28,7 +28,8 @@
     "calendar": "Calendar",
     "analytics": "Performance",
     "credits_left": "{count} left",
-    "upgrade": "Upgrade plan"
+    "upgrade": "Upgrade plan",
+    "planning": "Content planning"
   },
   "DashboardTopbar": {
     "open_sidebar": "Open sidebar",
@@ -39,6 +40,34 @@
     "unit": "cr",
     "balance_label": "Credit balance",
     "estimate_label": "Estimated cost"
+  },
+  "PlanningPage": {
+    "title": "Content planning",
+    "subtitle": "Decide what to post first, then send only the ideas you like to this month's board.",
+    "source_heading": "Where should the topics come from?",
+    "source_self": "Write my own",
+    "source_web": "Web search",
+    "source_library": "My material",
+    "context_label": "What do you do?",
+    "context_hint": "One line about your business. The more specific, the more usable the topics.",
+    "context_placeholder": "e.g. a small cafe roasting its own beans",
+    "generate": "Get ideas",
+    "working": "Thinking",
+    "push": "Send {count} to the board",
+    "pushed": "Added {count} to this month's board.",
+    "column_ideas": "Ideas {count}",
+    "column_ideas_hint": "Not saved. Ask again if none of these land.",
+    "column_kept": "Kept {count}",
+    "column_kept_hint": "Unchecked ideas are not sent.",
+    "column_board": "On the board {count}",
+    "column_board_hint": "This is where card news gets made.",
+    "error_unauthorized": "Sign in to continue.",
+    "error_forbidden": "Your role cannot do this.",
+    "error_not_found": "No board for this month.",
+    "error_conflict": "This request was already handled.",
+    "error_insufficient_credits": "Not enough credits.",
+    "error_invalid_input": "Check your input.",
+    "error_planner_unavailable": "The planning service is not connected yet."
   },
   "PlanPage": {
     "title": "Plan",
