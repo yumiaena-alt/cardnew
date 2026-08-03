@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-03** · 문서 버전 **1.8** · 기준 커밋 `4a71254`
+최종 갱신: **2026-08-03** · 문서 버전 **2.0** · 기준 커밋 `4ee21f3`
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -78,43 +78,44 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 - [x] `features/shared/scope.ts` — `getScope()` / `requirePermission()` / `mapClerkRole()`
 - [x] `features/shared/orgScope.ts` — `orgScoped()` 테넌트 필터 헬퍼 + 권한 카탈로그 `permissions.ts`
 - [x] 마이그레이션 `0002_default_project_unique` — 조직당 default 프로젝트 1개 부분 unique 인덱스
-- [x] 마이그레이션 `0003`~`0007` — `template` · `deck` · `deck_active_version` · `board`+`run` · `run_item_subject`
+- [x] 마이그레이션 `0003`~`0010` — template · deck · 순환 FK · board+run · run_item_subject · `spend.search` · `blog_posts` · `panels.plan`
 - [ ] **Clerk 대시보드에서 Organizations 활성화** ← 사용자 작업
 - [ ] 조직 간 접근 404 통합 테스트 — 조직 범위 엔드포인트가 생기는 1-D로 연기
 - [ ] 남은 마이그레이션 (`brand` · `publish`) — 쓰는 코드가 생길 때 만든다
-- [x] **`0003`~`0007` 프로덕션(Supabase) 적용 완료** — 테이블 22개 · enum 9개, 기존 데이터(조직 2 · 원장 2행) 보존 확인
+- [x] **`0003`~`0010` 프로덕션(Supabase) 적용 완료** — 매번 추가 전용, 기존 데이터 보존 확인
 
-### 🔄 Phase 3: 핵심 기능/UI 컴포넌트 — **부분 진행**
+### ✅ Phase 3: 화면 — **메뉴 전 구간 구축 완료** (자동 DM · 댓글 · 비디오 제외)
 
-| 항목 | 상태 |
-|---|---|
-| `Button` (+ `signal` variant) | ✅ 완료 |
-| `CreditBadge` | ✅ 완료 |
-| `EmptyState` | ✅ 완료 |
-| `Sidebar` / `Topbar` / `DashboardShell` | ✅ 완료 |
-| `navData` (Phase 게이팅 포함) | ✅ 완료 |
-| `Modal` (Base UI Dialog 래퍼) | ✅ 완료 |
-| `Textarea` / `Select` / `Field` / `StatusChip` | ✅ 완료 |
-| Toast / Tabs | ⬜ 미착수 |
-| **Deck 뷰어** (목록 + 상세) | ✅ 완료 — 서명 URL · 상태 칩 · 저작권 표기 |
-| **단건 생성 폼** (`/dashboard/deck/new`) | ✅ 완료 — Board와 같은 진입점(1건짜리 Run) |
-| **카드 문구 편집** (슬롯 텍스트) | ✅ 완료 — `isUserEdited` 표시 · 이미지는 재생성 때 반영 |
-| 부분 재생성 (1cr/3cr 실행 경로) | ⬜ 미착수 — 과금·스키마는 준비됨, 파이프라인 분기가 없다 |
-| **Board 상호작용 코어** (`src/lib/sheet/`) | ✅ 완료 — clipboard · selection · history, 단위 테스트 39건 |
-| **Board 시트 UI** (`BoardGrid` · `BoardCell` · `FanoutCell` · `BoardCardList` · `useBoardSheet`) | ✅ 완료 — `role="grid"`, 키보드·클립보드·필 핸들, 1024px 미만 카드 폴백 |
-| **크레딧 견적** (`features/credit/estimate.ts`) | ✅ 완료 — 단위 테스트 6건 |
-| `DryRunPanel` (전용 모달) | ✅ 완료 — 서버 견적 → 확인 → 차감. 큐 미설정 시 실행 거부 |
-| Storybook 스토리 + a11y 스캔 | ⬜ 미착수 |
+| 화면 | 경로 | 상태 |
+|---|---|---|
+| 콘텐츠 기획 | `/dashboard/planning` | ✅ 아이디어 생성 → 고른 것만 보드로. **무료** |
+| 레퍼런스 리서치 | `/dashboard/planning/reference` | ✅ 광고 라이브러리 검색. **검색어당 하루 1크레딧** · 토큰 없으면 비활성 |
+| 월간 보드 | `/dashboard/board` | ✅ 시트 + 영속화 + 견적 → 실행 |
+| 링크로 만들기 | `/dashboard/deck/link` | ✅ URL → 본문 추출 → 카드뉴스. **SSRF 차단** |
+| 카드뉴스 만들기 | `/dashboard/deck/new` | ✅ 단건 = 1건짜리 Run |
+| 내 카드뉴스 | `/dashboard/deck` · `/deck/[id]` | ✅ 목록 · 상세 · 서명 URL · 저작권 표기 |
+| 카드 문구 편집 | (상세 안 모달) | ✅ 상한 28/90자 · `isUserEdited` 기록 |
+| **부분 재생성** | (상세 안 모달) | ✅ 카드 1장 다시 그리기 · 견적 경유 |
+| 블로그 초안 | `/dashboard/blog` | ✅ 5크레딧 · 인라인 실행 |
+| 발행 캘린더 | `/dashboard/calendar` | ✅ 보드에서 생성. 빈 날짜 강조 |
+| 성과 | `/dashboard/analytics` | ✅ 우리 생산량만. 도달·저장은 연동 후 |
+| 플랜 | `/dashboard/settings/plan` | ✅ Stripe 체크아웃 |
+| 템플릿 갤러리 · 디자인 학습 | `/dashboard/templates*` | ⬜ 스텁 그대로 |
+
+**UI 프리미티브**: `Button` · `CreditBadge` · `EmptyState` · `Modal` · `Field`/`Input`/`Textarea`/`Select` · `StatusChip` · Board 시트 5종. Toast · Tabs 미착수.
+
+> **벤치마킹 관련 결정 (2026-08-03).** 사용자 요청으로 대상 제품의 **구조·레이아웃·색·기능 흐름은 맞추되, 긴 안내 문장은 우리 문구로 새로 썼다.** 짧은 기능 라벨(콘텐츠 기획·웹 검색·자체 창작 등)은 업계 공통어라 그대로 쓴다. `grep -ri mirr src/` 0건은 계속 유지한다.
 
 ### 🔄 Phase 4: 외부 오픈소스 이식 및 모듈화 — **부분 진행**
 
 - [x] **Board 상호작용 코어 자체 구현** (`src/lib/sheet/`) — 오픈소스 5종 검토 후 **의존성 0 추가**로 결론
 - [x] Trigger.dev v3 — `src/trigger/generateRun.ts` 태스크 완료. knip 예외 제거됨
 - [x] Supabase Storage 래퍼 (`libs/Storage.ts`) — REST 직접 호출, **의존성 추가 0**
-- [ ] Stripe Checkout
+- [x] Stripe Checkout + 웹훅 — 구독 metadata로 테넌트 확정, 기간별 멱등 지급
 - [x] LLM 어댑터 — Anthropic 플래너 이식 (`src/lib/plan/planner.ts`)
 - [x] 스톡 이미지 어댑터 — Unsplash + 저작권 원장 (`src/lib/images/`)
 - [ ] fal 생성 이미지 — 키만 있고 미구현
+- [ ] 비디오 생성 — 백엔드 미결정 (모션그래픽 vs 생성 API). §6 R18
 - [ ] Framer Motion 프리셋 모듈 — **`motion` 패키지는 knip이 미사용으로 잡아 제거했다.** 실제로 쓸 때 재설치한다
 
 ### 🎨 마케팅 페이지 — **신규 구축 (2026-08-02)**
@@ -406,6 +407,15 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `7de50f1` | **단건 생성 폼** (`/dashboard/deck/new`) + `Field`/`Select`/`Textarea` |
 | `94997c2` | **Board 영속화** — 월간 보드 자동 생성 · 편집마다 저장 |
 | `4a71254` | **카드 문구 편집** — `isUserEdited` 기록 · 이미지 불일치 배지 |
+| `843985c` | 보드 변환 계층 테스트 12건 |
+| `7a0a998` | **Stripe 체크아웃 + 웹훅** · Pretendard 셀프호스팅 · 편집 글자수 상한 수정 |
+| `168bb1a` | **콘텐츠 기획** — 아이디어 생성 → 보드로 |
+| `760d13e` | **레퍼런스 리서치** — 광고 라이브러리 검색 (`0008`) |
+| `fd61753` | **링크로 카드뉴스** — SSRF 차단 포함 |
+| `de1cfe2` | **블로그 초안** (`0009`) |
+| `0e534fa` | **발행 캘린더** |
+| `0d7ddea` | **성과 대시보드** |
+| `4ee21f3` | **부분 재생성** — 카드 1장 다시 그리기 (`0010`) |
 | (미커밋) | **Phase 1-B 인증·테넌트** — Clerk 웹훅 · `scope`/`permissions`/`orgScope` · `0002` |
 
 **Phase 1-B 산출물 (신규 파일)**
@@ -457,7 +467,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 - `next-env.d.ts` 생성 → 이미지 모듈 타입 오류 13건 해소
 - Playwright chromium 설치 → `npm run test`의 browser 프로젝트 동작
 
-### 검증 상태 (커밋 `4a71254` 기준, 전부 실측)
+### 검증 상태 (커밋 `4ee21f3` 기준, 전부 실측)
 
 | 검사 | 결과 |
 |---|---|
@@ -465,7 +475,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `npm run lint` | ✅ **error 0건** (Board a11y 4건 · `SlideRenderer` img 3건은 기존 warning) |
 | `npm run check:i18n` | ✅ exit 0 |
 | `npm run check:deps` (knip) | ✅ 통과 |
-| `npm run test` | ✅ **353건 통과** |
+| `npm run test` | ✅ **382건 통과** (26개 파일) |
 | `npm run build-local` | ✅ **통과** |
 | 마이그레이션 `0000`~`0006` | ✅ 빈 PGlite에 전부 적용 성공 |
 | 생성 SQL 파괴적 구문 검사 | ✅ `0003`~`0006`에 `DROP`·`ALTER COLUMN`·`DELETE` **0건** |
@@ -554,6 +564,8 @@ Server Action 과 DryRunPanel 로 잇기만 하면 된다.
 | # | 리스크 | 조치 필요 시점 |
 |---|---|---|
 | R1 | **상표 미검증** — `Panelo`의 `panel`은 일반명사라 식별력이 약하다. KIPRIS(35·42·9류) / USPTO / EUIPO 검색과 `panelo.app` 도메인 확보가 아직 안 됐다 | **브랜드 에셋 제작 전.** 현재 브랜드명은 i18n 키(`DashboardNav.brand_name`)로만 노출되므로 교체 비용은 낮다 |
+| R18 | **비디오 생성 백엔드 미결정.** 렌더 서비스는 Playwright 스크린샷 기반이라 정지 이미지 전용이다. 모션그래픽(우리 슬라이드를 ffmpeg로 이어붙임)은 기존 자산 재사용이 가능하고 원가도 예측되지만 렌더 서버에 ffmpeg가 필요하다. 영상 생성 API(fal 등)는 원가 구조가 완전히 다르다 | 착수 전 방향 확정 |
+| R19 | **SNS 계정 연동이 없다.** `social_accounts` 설계는 `docs/03-DATA-MODEL.md` §12에 있지만 테이블이 없고 OAuth 연동도 없다. 성과 화면의 도달·저장, 댓글 관리, 자동 DM이 전부 여기에 걸린다 | 댓글·DM 실동작 전 |
 | R14 | **렌더 서비스가 외부에서 닿지 않는다.** `http://155.94.154.102:3000/health` 연결 거부(`HTTP 000`). 같은 환경에서 GitHub·Vercel 은 200 이라 우리 쪽 아웃바운드 문제가 아니다. 서비스 미기동 · 방화벽에서 3000 미개방 · `127.0.0.1` 바인딩 중 하나로 보인다 | **생성 실동작 전.** 이게 막혀 있으면 워커가 `Render service is unreachable` 로 즉시 실패한다 |
 | R15 | **렌더 서비스가 HTTPS 가 아니다.** `RENDER_SERVICE_TOKEN`(공유 시크릿)이 `Authorization: Bearer` 헤더로 **평문**으로 공용 인터넷을 건넌다. 경로상 누구든 토큰을 주워 우리 Chromium 을 마음대로 돌리고 카드 내용을 볼 수 있다. `docs/07-PORTED-MODULES.md` §7 이 Caddy 리버스 프록시 + 자동 인증서를 요구한 이유가 이것이다 | **토큰이 이미 평문으로 나갔다면 교체가 필요하다.** HTTPS 적용과 함께 |
 | R16 | **Supabase Storage 미설정.** `SUPABASE_URL`·`SUPABASE_SERVICE_ROLE_KEY` 가 `.env.local` 에 없고 `renders` 버킷도 확인되지 않았다. 렌더된 PNG 를 올릴 곳이 없다 | 생성 실동작 전 |
