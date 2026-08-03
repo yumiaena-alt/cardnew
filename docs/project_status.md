@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-03** · 문서 버전 **2.2** · 기준 커밋 `92774fe` (작업 트리 깨끗)
+최종 갱신: **2026-08-03** · 문서 버전 **2.3** · 기준 커밋 `d629e30` (작업 트리 깨끗)
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -102,6 +102,7 @@ Next.js 16.2 App Router · React 19.2 (Compiler) · TypeScript strict · Supabas
 | 계정 연동 | `/dashboard/settings/accounts` | ✅ OAuth → 장기 토큰 → 프로필 조회 → 암호화 저장 · 결과 배너 |
 | 댓글 인박스 | `/dashboard/comments` | ✅ 최근 게시물의 **미답변** 댓글을 Graph 로 실시간 조회 |
 | 자동 DM | `/dashboard/automation` + 웹훅 | ✅ 규칙 편집 + `api/webhooks/instagram` 실행부 |
+| 예약 발행 | 카드뉴스 상세 안 패널 | ✅ 예약·취소 · 캘린더에 표시 · 5분 주기 폴러 |
 | 플랜 | `/dashboard/settings/plan` | ✅ Stripe 체크아웃 |
 | 템플릿 갤러리 · 디자인 학습 | `/dashboard/templates*` | ⬜ 스텁 그대로 |
 
@@ -282,9 +283,9 @@ Board ⭐      boards, board_rows, board_row_outputs, series_templates
 
 ### 현재 멈춘 위치
 
-**SNS 연동 3종(계정 연동 · 자동 DM 실행부 · 댓글 인박스)까지 코드로 끝났다. 남은 것은 전부 외부 설정에 막혀 있다 — 렌더 서비스 · Supabase Storage · Trigger.dev 키 · Meta 앱 자격증명.**
+**SNS 연동 3종(계정 연동 · 자동 DM 실행부 · 댓글 인박스)과 예약 발행까지 코드로 끝났다. 남은 것은 전부 외부 설정에 막혀 있다 — 렌더 서비스 · Supabase Storage · Trigger.dev 키 · Meta 앱 자격증명.**
 
-코드로 더 나아갈 수 있는 다음 갈래는 **비디오 생성 방향 결정(R18)** 과 **예약 발행 테이블**뿐이고, 그 앞의 항목(생성 경로 실동작 검증)은 §4 0번이 풀려야 시작된다.
+코드로 더 나아갈 수 있는 다음 갈래는 **비디오 생성 방향 결정(R18)** 과 **Board 브라우저 검증(R8)** 뿐이고, 그 앞의 항목(생성 경로 실동작 검증 · 발행 실동작)은 §4 0번이 풀려야 시작된다.
 
 R3(제공사 미선정)은 해결됐다 — Anthropic(기획) · Unsplash(스톡) · fal(생성 이미지), 키 전부 `.env.local`에 있고 `Env.ts`에서 검증한다.
 
@@ -426,6 +427,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `4b0e67f` | **계정 연동 완결** — 장기 토큰 교환 · Graph 프로필 조회 · 암호화 저장 · 결과 배너 |
 | `fe76f71` | **자동 DM 실행부** — 댓글 웹훅(서명 검증) · 규칙 매칭 · private reply · 발송 선점 |
 | `92774fe` | **댓글 인박스 실제 목록** — 미답변 댓글 실시간 조회 |
+| `d629e30` | **예약 발행** — `schedules`/`publications` (`0012`) · 예약 UI · 캘린더 표시 · 폴러 |
 | (미커밋) | **Phase 1-B 인증·테넌트** — Clerk 웹훅 · `scope`/`permissions`/`orgScope` · `0002` |
 
 **Phase 1-B 산출물 (신규 파일)**
@@ -477,7 +479,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 - `next-env.d.ts` 생성 → 이미지 모듈 타입 오류 13건 해소
 - Playwright chromium 설치 → `npm run test`의 browser 프로젝트 동작
 
-### 검증 상태 (커밋 `92774fe` 기준, 전부 실측)
+### 검증 상태 (커밋 `d629e30` 기준, 전부 실측)
 
 | 검사 | 결과 |
 |---|---|
@@ -485,7 +487,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `npm run lint` | ✅ **error 0건** (Board a11y 4건 · `SlideRenderer` img 3건은 기존 warning) |
 | `npm run check:i18n` | ✅ exit 0 |
 | `npm run check:deps` (knip) | ✅ 통과 |
-| `npm run test` | ✅ **436건 통과** (33개 파일) |
+| `npm run test` | ✅ **438건 통과** (33개 파일) |
 | `npm run build-local` | ✅ **통과** |
 | 마이그레이션 `0000`~`0006` | ✅ 빈 PGlite에 전부 적용 성공 |
 | 생성 SQL 파괴적 구문 검사 | ✅ `0003`~`0006`에 `DROP`·`ALTER COLUMN`·`DELETE` **0건** |
@@ -555,7 +557,14 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
    → 모션그래픽(ffmpeg로 우리 슬라이드 이어붙이기) vs 영상 생성 API(fal)
    → 렌더 서비스가 정지 이미지 전용이라 어느 쪽이든 서버 작업이 따라온다
 
-6. 예약 발행 — schedules/publications 테이블부터 (Phase 3)
+6. ~~예약 발행~~ — 완료 (`d629e30`)
+   → `0012_schedule_publish` (추가 전용, 파괴적 구문 0건). **프로덕션 미적용** —
+     .env.migrate.local 로 사람이 검토 후 적용해야 한다
+   → 폴러는 5분 주기. 예약마다 타이머를 거는 대신 테이블을 읽는다 —
+     배포가 끊은 타이머는 되살릴 방법이 없다
+   → SKIP LOCKED 로 집고, 집는 순간 attempts 를 올린다. 3회까지 재시도하고
+     그 뒤엔 failed 로 남는다(조용히 영원히 재시도하지 않게)
+   → **실제 발행은 미검증** — Meta 앱 자격증명과 Trigger.dev 키가 둘 다 필요하다
 
 7. Board 마무리 — Storybook 스토리 + a11y 스캔, 브라우저 실동작 확인 (R8)
 ```
@@ -565,16 +574,17 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 ```
 docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 줘. 전부 읽지는 말고.
 
-§4 '다음 세션에서 바로 실행할 작업'의 1~3번은 끝났다. 4번(생성 경로 실동작 검증)은
-0번 사용자 작업에 막혀 있으니, 0번이 아직 안 풀렸으면 5번(비디오 방향 결정)이나
-6번(예약 발행 테이블)부터 진행해 줘. 무엇부터 할지 먼저 물어봐도 된다.
+§4 '다음 세션에서 바로 실행할 작업'의 1~3번과 6번은 끝났다. 4번(생성 경로 실동작
+검증)은 0번 사용자 작업에 막혀 있으니, 0번이 아직 안 풀렸으면 5번(비디오 방향 결정)
+이나 7번(Board 브라우저 검증)부터 진행해 줘. 무엇부터 할지 먼저 물어봐도 된다.
 
 - 이미 있는 것을 다시 만들지 말 것: createRun/finalizeRun, 견적, Board 영속화,
   Deck 뷰어·편집·부분 재생성, 블로그, 캘린더, 성과, 기획, 레퍼런스, 링크 변환,
   Stripe, 암호화(libs/Crypto.ts), 키워드 매칭(features/social/matching.ts),
   계정 연동 전체(features/social/connect.ts · repository.ts),
   자동 DM 실행부(features/social/service.ts · signature.ts · reply.ts),
-  댓글 인박스(features/social/comments.ts).
+  댓글 인박스(features/social/comments.ts),
+  예약 발행 전체(features/publish/* · models/Publish.ts · trigger/publishDue.ts).
 
 작업 방식:
 - 머지 게이트 전부 통과 후 커밋: lint → check:types → check:i18n → check:deps
@@ -611,6 +621,7 @@ docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 �
 | R18 | **비디오 생성 백엔드 미결정.** 렌더 서비스는 Playwright 스크린샷 기반이라 정지 이미지 전용이다. 모션그래픽(우리 슬라이드를 ffmpeg로 이어붙임)은 기존 자산 재사용이 가능하고 원가도 예측되지만 렌더 서버에 ffmpeg가 필요하다. 영상 생성 API(fal 등)는 원가 구조가 완전히 다르다 | 착수 전 방향 확정 |
 | ~~R19~~ | ~~SNS 계정 연동이 없다~~ → **코드는 완료 (2026-08-03).** 테이블(`0011`) · OAuth · 장기 토큰 · 암호화 저장 · 댓글 웹훅 · 자동 DM 발송 · 댓글 인박스가 전부 있다. **남은 것은 Meta 앱 자격증명 4개(사용자 작업)** 와, 실제 Meta 트래픽으로의 검증이다 | 자격증명 입력 시 |
 | R20 | **자동 DM·댓글 인박스가 실제 Meta 트래픽으로 미검증.** 서명 검증·중복 방지·매칭은 단위 테스트로 고정했지만, 실물 웹훅 페이로드와 private reply 발송은 아직 돌려보지 않았다. Meta 앱 검수(App Review)에서 `instagram_manage_comments` 승인도 필요하다 | 자격증명이 들어온 직후 |
+| R22 | **예약 발행이 실제로 나가본 적이 없다.** 컨테이너 생성 → 발행 2단계는 Meta 문서대로 짰지만 실물 호출은 안 해봤다. 이미지 URL 은 Supabase 서명 URL이라 **버킷·서명이 동작해야** Meta 가 받아갈 수 있다(R16 과 묶여 있다). `0012` 는 프로덕션 미적용 | 자격증명·스토리지가 들어온 직후 |
 | R21 | **저장된 액세스 토큰이 약 60일 뒤 만료된다.** 갱신 잡이 없다. 지금은 만료되면 댓글 인박스가 해당 계정을 "불러오지 못함"으로 표시하고 사용자가 재연동해야 한다. `tokenExpiresAt` 은 이미 저장하므로 갱신 잡을 붙일 자리는 있다 | 첫 계정 연동 후 50일 이내 |
 | R14 | **렌더 서비스가 외부에서 닿지 않는다.** `http://155.94.154.102:3000/health` 연결 거부(`HTTP 000`). 같은 환경에서 GitHub·Vercel 은 200 이라 우리 쪽 아웃바운드 문제가 아니다. 서비스 미기동 · 방화벽에서 3000 미개방 · `127.0.0.1` 바인딩 중 하나로 보인다 | **생성 실동작 전.** 이게 막혀 있으면 워커가 `Render service is unreachable` 로 즉시 실패한다 |
 | R15 | **렌더 서비스가 HTTPS 가 아니다.** `RENDER_SERVICE_TOKEN`(공유 시크릿)이 `Authorization: Bearer` 헤더로 **평문**으로 공용 인터넷을 건넌다. 경로상 누구든 토큰을 주워 우리 Chromium 을 마음대로 돌리고 카드 내용을 볼 수 있다. `docs/07-PORTED-MODULES.md` §7 이 Caddy 리버스 프록시 + 자동 인증서를 요구한 이유가 이것이다 | **토큰이 이미 평문으로 나갔다면 교체가 필요하다.** HTTPS 적용과 함께 |
