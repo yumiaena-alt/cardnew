@@ -13,6 +13,8 @@ export const Env = createEnv({
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
+    /** Price the Standard plan checks out against. From the Stripe dashboard. */
+    STRIPE_STANDARD_PRICE_ID: z.string().startsWith('price_').optional(),
     // Planning model. Prefixed check catches a pasted placeholder early.
     ANTHROPIC_API_KEY: z.string().startsWith('sk-ant-').optional(),
     // Stock photography. Unsplash terms require the download trigger to fire.
@@ -50,6 +52,7 @@ export const Env = createEnv({
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    STRIPE_STANDARD_PRICE_ID: process.env.STRIPE_STANDARD_PRICE_ID,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY,
     FAL_KEY: process.env.FAL_KEY,

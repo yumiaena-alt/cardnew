@@ -70,22 +70,6 @@ export default async function RootLayout(props: {
 
   return (
     <html lang={locale} className={`${displaySerif.variable} ${monoFont.variable}`}>
-      <head>
-        {/*
-          Pretendard carries the Hangul UI and body text. Linked here rather
-          than `@import`-ed from CSS so the browser can start fetching it while
-          the stylesheet is still parsing. The dynamic subset only pulls the
-          glyph ranges a page actually uses.
-
-          Self-host this (next/font/local) before adding a strict CSP — the
-          origin would otherwise need an allow-list entry.
-        */}
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-        />
-      </head>
       <body>
         <NextIntlClientProvider>{props.children}</NextIntlClientProvider>
       </body>

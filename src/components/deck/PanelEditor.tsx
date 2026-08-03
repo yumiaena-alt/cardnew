@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/Modal';
 import { updatePanelSlot } from '@/features/deck/actions';
 import type { PanelView } from '@/features/deck/service';
+import { SLOT_LIMITS } from '@/validations/DeckValidation';
 
 type PanelEditorProps = {
   panel: PanelView | null;
@@ -87,10 +88,13 @@ export function PanelEditor(props: PanelEditorProps) {
         <ModalTitle>{t('edit_title')}</ModalTitle>
         <ModalDescription>{t('edit_description')}</ModalDescription>
 
-        <Field label={t('edit_headline')}>
+        <Field
+          label={t('edit_headline')}
+          hint={t('edit_limit', { used: headline.length, max: SLOT_LIMITS.headline ?? 0 })}
+        >
           <Textarea
             value={headline}
-            maxLength={600}
+            maxLength={SLOT_LIMITS.headline}
             className="min-h-16"
             onChange={(event) => {
               setHeadline(event.target.value);
@@ -98,10 +102,13 @@ export function PanelEditor(props: PanelEditorProps) {
           />
         </Field>
 
-        <Field label={t('edit_body')}>
+        <Field
+          label={t('edit_body')}
+          hint={t('edit_limit', { used: body.length, max: SLOT_LIMITS.body ?? 0 })}
+        >
           <Textarea
             value={body}
-            maxLength={600}
+            maxLength={SLOT_LIMITS.body}
             onChange={(event) => {
               setBody(event.target.value);
             }}

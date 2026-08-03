@@ -40,6 +40,16 @@
     "balance_label": "Credit balance",
     "estimate_label": "Estimated cost"
   },
+  "PlanPage": {
+    "title": "Plan",
+    "subtitle": "Credits refill every month.",
+    "current_plan": "Current plan · {plan}",
+    "balance": "{count} credits left",
+    "allowance": "{count} credits are granted each month.",
+    "upgrade_action": "Upgrade to Standard",
+    "starting": "Opening checkout",
+    "upgrade_failed": "Could not start checkout."
+  },
   "DeckListPage": {
     "empty_title": "No decks yet",
     "empty_description": "Turn one topic into a set of cards, then reuse it across channels.",
@@ -67,7 +77,8 @@
     "edit_save": "Save",
     "edit_saving": "Saving",
     "edit_cancel": "Cancel",
-    "edit_failed": "Could not save."
+    "edit_failed": "Could not save.",
+    "edit_limit": "{used}/{max} characters"
   },
   "DeckNewPage": {
     "title": "New card news",

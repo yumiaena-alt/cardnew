@@ -40,6 +40,16 @@
     "balance_label": "크레딧 잔액",
     "estimate_label": "예상 사용량"
   },
+  "PlanPage": {
+    "title": "플랜",
+    "subtitle": "크레딧은 매달 새로 채워집니다.",
+    "current_plan": "현재 플랜 · {plan}",
+    "balance": "잔액 {count}크레딧",
+    "allowance": "매달 {count}크레딧이 지급됩니다.",
+    "upgrade_action": "Standard로 업그레이드",
+    "starting": "결제창 여는 중",
+    "upgrade_failed": "결제를 시작하지 못했습니다."
+  },
   "DeckListPage": {
     "empty_title": "아직 만든 카드뉴스가 없어요",
     "empty_description": "소재 하나로 카드뉴스를 만들고, 채널마다 다시 쓰세요.",
@@ -67,7 +77,8 @@
     "edit_save": "저장",
     "edit_saving": "저장 중",
     "edit_cancel": "취소",
-    "edit_failed": "저장하지 못했습니다."
+    "edit_failed": "저장하지 못했습니다.",
+    "edit_limit": "{used}/{max}자"
   },
   "DeckNewPage": {
     "title": "카드뉴스 만들기",

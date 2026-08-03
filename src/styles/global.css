@@ -2,6 +2,16 @@
 
 @import 'tailwindcss';
 
+/*
+ * Pretendard, self-hosted from the npm package rather than a CDN, so no
+ * third-party request is made and a strict CSP stays possible.
+ *
+ * The dynamic subset splits the Korean range across many small woff2 files and
+ * loads only the ones a page actually uses. A single file covering Hangul is
+ * over a megabyte, which is the whole budget for a landing page.
+ */
+@import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
+
 /* Class-based dark mode, driven by the theme toggle in the dashboard shell. */
 @custom-variant dark (&:where(.dark, .dark *));
 

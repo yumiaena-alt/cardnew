@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
+import type { OrgScope } from '@/features/shared/scope';
 import { db } from '@/libs/DB';
 import type { PlanLimit } from '@/models/Billing';
-import { planLimits } from '@/models/Billing';
+import { planLimits, subscriptions } from '@/models/Billing';
 
 /**
  * Plan configuration access.
@@ -21,4 +22,31 @@ export async function findPlanLimit(planKey: string): Promise<PlanLimit | null> 
   const [row] = await db.select().from(planLimits).where(eq(planLimits.planKey, planKey)).limit(1);
 
   return row ?? null;
+}
+
+export type SubscriptionPatch = {
+  stripeCustomerId: string;
+  stripeSubscriptionId: string;
+  planKey: string;
+  status: string;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+  cancelAtPeriodEnd: boolean;
+};
+
+/**
+ * Stores the organization's subscription, replacing any earlier one.
+ *
+ * One subscription per organization is enforced by a unique index on `org_id`,
+ * so an upsert is the whole operation: a plan change rewrites the row rather
+ * than accumulating history that nothing reads.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param patch - The subscription state reported by Stripe.
+ */
+export async function upsertSubscription(scope: OrgScope, patch: SubscriptionPatch): Promise<void> {
+  await db
+    .insert(subscriptions)
+    .values({ ...patch, orgId: scope.orgId })
+    .onConflictDoUpdate({ target: subscriptions.orgId, set: patch });
 }
