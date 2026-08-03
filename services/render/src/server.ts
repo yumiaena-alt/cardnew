@@ -52,11 +52,14 @@ async function readJsonBody(req: IncomingMessage, maxBytes = MAX_BODY_BYTES): Pr
 }
 
 class HttpError extends Error {
-  constructor(
-    readonly status: number,
-    message: string,
-  ) {
+  // 필드를 따로 선언하고 대입한다. 생성자 파라미터 프로퍼티(`readonly status: number`)는
+  // 런타임 코드를 만들어 내는 문법이라, 타입만 벗겨 내는 `--experimental-strip-types`
+  // 에서는 기동 자체가 실패한다 — 이 서비스를 그렇게 띄우도록 README가 안내한다.
+  readonly status: number;
+
+  constructor(status: number, message: string) {
     super(message);
+    this.status = status;
   }
 }
 

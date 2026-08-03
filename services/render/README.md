@@ -23,25 +23,65 @@
 |---|---|---|
 | `PORT` | `4000` | |
 | `RENDER_SERVICE_TOKEN` | — | **필수.** 웹 앱과 공유하는 시크릿 |
-| `RENDER_POOL_SIZE` | `2` | 브라우저 재사용 풀 크기 |
+| `RENDER_POOL_SIZE` | `2` | 브라우저 재사용 풀 크기. RAM 4GB 이하면 `1` |
 | `FFMPEG_PATH` | `ffmpeg` | 실행 파일 경로가 다른 호스트용 |
 
 > **IP allowlist는 쓸 수 없다.** Vercel의 egress 주소가 고정이 아니다. 접근 통제는 이 토큰이 전부이므로, 길게 만들고 HTTPS 밖으로 내보내지 않는다.
 
 ## 배포 (RackNerd VPS)
 
+**Node 22 이상이 필요하다.** 그리고 `node --experimental-strip-types` 로는 뜨지 않는다 — `html.tsx` 가 JSX 이고, 리포 공용 코드를 확장자 없이 import 하기 때문이다. 둘 다 타입만 벗겨 내는 모드가 처리하지 못한다. `tsx` 로 띄운다.
+
 ```bash
-# 1. Chromium과 의존 라이브러리
+# 1. 의존성 (리포 루트에서)
+npm ci
+
+# 2. Chromium과 의존 라이브러리
 npx playwright install --with-deps chromium
 
-# 2. ffmpeg (릴스 영상용). 없으면 /video만 500이 나고 /render는 정상 동작한다.
+# 3. ffmpeg (릴스 영상용). 없으면 /video만 500이 나고 /render는 정상 동작한다.
 apt-get install -y ffmpeg
 
-# 3. 구동
-node --experimental-strip-types services/render/src/server.ts
+# 4. 실행기
+npm i -g tsx
+
+# 5. 구동
+PORT=3000 RENDER_SERVICE_TOKEN=<토큰> tsx services/render/src/server.ts
 ```
 
-`GET /health`의 `ffmpeg: true`로 설치를 확인한다.
+`GET /health` 의 `ffmpeg: true` · `browserRunning: true` 로 확인한다.
+
+### 상시 구동 (systemd)
+
+프로세스가 죽거나 서버가 재부팅돼도 살아나야 한다. 토큰은 유닛 파일이 아니라 권한 600 의 환경 파일에 둔다.
+
+```ini
+# /etc/systemd/system/panelo-render.service
+[Unit]
+Description=Panelo render service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/cardnews-render-service
+EnvironmentFile=/etc/panelo-render.env
+Environment=PATH=/opt/node22/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/opt/node22/bin/tsx services/render/src/server.ts
+Restart=always
+RestartSec=5
+MemoryMax=2G
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+systemctl enable --now panelo-render
+journalctl -u panelo-render -f
+```
+
+> 시스템 `node` 를 건드리지 않고 `/opt/node22` 에 따로 설치한 이유: 이 호스트에서 n8n 이 Node 18 로 돌고 있다. 시스템 런타임을 올리면 그쪽이 깨진다.
 
 앞단에 Caddy를 두고 서브도메인으로 HTTPS를 종단한다. 인증서는 자동 발급된다.
 
