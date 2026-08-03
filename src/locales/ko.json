@@ -244,6 +244,20 @@
     "weekday_fri": "금",
     "weekday_sat": "토"
   },
+  "AnalyticsPage": {
+    "title": "콘텐츠 성과",
+    "subtitle": "이 도구로 실제로 만들어낸 양입니다.",
+    "stat_month": "이번 달 카드뉴스",
+    "stat_month_hint": "전체 {count}건",
+    "stat_blog": "블로그 초안",
+    "stat_credits": "이번 달 사용 크레딧",
+    "stat_credits_hint": "지급분 제외, 사용분만",
+    "stat_runs": "성공한 생성",
+    "stat_runs_hint": "실패 {count}건은 환불됨",
+    "channel_heading": "채널 분포",
+    "channel_empty": "아직 만든 카드뉴스가 없어요.",
+    "reach_note": "도달·저장·댓글 같은 지표는 SNS 계정을 연동해야 가져올 수 있습니다. 연동 전까지는 추정치를 만들지 않고 비워둡니다."
+  },
   "DryRunPanel": {
     "title": "만들기 전에 확인",
     "description": "크레딧은 확인을 누른 다음에 빠집니다.",

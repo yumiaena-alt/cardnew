@@ -244,6 +244,20 @@
     "weekday_fri": "Fri",
     "weekday_sat": "Sat"
   },
+  "AnalyticsPage": {
+    "title": "Output",
+    "subtitle": "What this tool actually produced.",
+    "stat_month": "Decks this month",
+    "stat_month_hint": "{count} in total",
+    "stat_blog": "Blog drafts",
+    "stat_credits": "Credits spent this month",
+    "stat_credits_hint": "Spend only, grants excluded",
+    "stat_runs": "Successful runs",
+    "stat_runs_hint": "{count} failed and were refunded",
+    "channel_heading": "Channel mix",
+    "channel_empty": "No decks yet.",
+    "reach_note": "Reach, saves and comments need a connected social account. Until then they stay empty rather than estimated."
+  },
   "DryRunPanel": {
     "title": "Check before generating",
     "description": "Credits are spent after you confirm.",

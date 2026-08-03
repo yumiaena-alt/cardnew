@@ -102,7 +102,7 @@ const navGroups: NavGroup[] = [
     labelKey: 'analytics',
     icon: LineChart,
     href: '/dashboard/analytics',
-    phase: 3,
+    phase: 2,
   },
 ];
 
