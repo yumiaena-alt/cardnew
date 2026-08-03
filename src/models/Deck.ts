@@ -24,6 +24,23 @@ export type SlotProvenance = {
   commercialSafe: boolean;
 };
 
+/**
+ * The planning inputs behind one panel.
+ *
+ * A structural subset of the planner's slide schema — only the fields a repaint
+ * actually reads. Copying the whole planner type here would couple the stored
+ * shape to a prompt format that is expected to change.
+ */
+export type PanelPlan = {
+  role: string;
+  headline: string;
+  body: string | null;
+  eyebrow: string | null;
+  imageQuery: string;
+  imageMood: string;
+  templateHint: string | null;
+};
+
 /** The value a slot currently holds — text content, or the id of an image asset. */
 export type PanelSlotValue = {
   type: 'text' | 'image' | 'shape';
@@ -115,6 +132,14 @@ export const panels = cardnews.table(
     index: integer('index').notNull(),
     role: text('role').notNull().default('body'),
     slots: jsonb('slots').$type<Record<string, PanelSlotValue>>().notNull(),
+    /**
+     * The planned slide this panel was composed from.
+     *
+     * Kept because a repaint needs inputs the rendered image cannot give back:
+     * the image search term, the mood that drove contrast, the template hint.
+     * Without it, regenerating one card would mean re-planning the whole deck.
+     */
+    plan: jsonb('plan').$type<PanelPlan>(),
     /** Storage path of the rendered PNG. Null until the render service returns. */
     renderPath: text('render_path'),
     blurDataUrl: text('blur_data_url'),

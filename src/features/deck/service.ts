@@ -23,6 +23,8 @@ export type PanelView = {
   body: string | null;
   /** True once the copy has been edited by hand and no longer matches the image. */
   isEdited: boolean;
+  /** False for a panel generated before plans were stored; it cannot be repainted. */
+  canRepaint: boolean;
   /** Photo credit, when the provider requires attribution. */
   credit: { authorName: string | null; authorUrl: string | null; sourceUrl: string | null } | null;
 };
@@ -115,6 +117,7 @@ export async function getDeckView(scope: OrgScope, deckId: string): Promise<Deck
         headline: slotText(panel, 'headline'),
         body: slotText(panel, 'body'),
         isEdited: Object.values(panel.slots).some((slot) => slot.isUserEdited === true),
+        canRepaint: panel.plan !== null,
         credit: panelCredit(panel),
       }),
     ),

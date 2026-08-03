@@ -248,6 +248,7 @@ export async function findOwnedPanel(scope: OrgScope, panelId: string): Promise<
       index: panels.index,
       role: panels.role,
       slots: panels.slots,
+      plan: panels.plan,
       renderPath: panels.renderPath,
       blurDataUrl: panels.blurDataUrl,
     })

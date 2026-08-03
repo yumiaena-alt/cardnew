@@ -54,10 +54,15 @@ export type CreateRunResult = RunQuote | RunReceipt;
  *
  * @param scope - Tenant scope from `getScope()`.
  * @param run - The run to charge, carrying the estimate it was created with.
+ * @param panelIndex - Panel a partial run repaints. Undefined for a full run.
  * @returns The run in `queued`.
  * @throws DomainError `insufficient_credits` when the balance cannot cover it.
  */
-async function chargeAndQueue(scope: Scope, run: Run): Promise<Run> {
+async function chargeAndQueue(
+  scope: Scope,
+  run: Run,
+  panelIndex: number | undefined,
+): Promise<Run> {
   const spendKey = `run:${run.id}`;
 
   try {
@@ -81,7 +86,7 @@ async function chargeAndQueue(scope: Scope, run: Run): Promise<Run> {
   });
 
   try {
-    await enqueueRun({ runId: run.id, orgId: scope.orgId, userId: scope.userId });
+    await enqueueRun({ runId: run.id, orgId: scope.orgId, userId: scope.userId, panelIndex });
   } catch (error) {
     // The charge landed but nothing will ever pick the run up. Returning the
     // credits here is what keeps the invariant that a charge always buys either
@@ -103,6 +108,16 @@ async function chargeAndQueue(scope: Scope, run: Run): Promise<Run> {
   }
 
   return queued ?? run;
+}
+
+/**
+ * Reads the panel a partial run targets.
+ *
+ * @param input - Validated run input.
+ * @returns The panel index, or undefined for a full run.
+ */
+function targetPanelIndex(input: CreateRunInput): number | undefined {
+  return input.scope.kind === 'full' ? undefined : input.scope.panelIndex;
 }
 
 /**
@@ -136,7 +151,10 @@ export async function createRun(scope: Scope, input: CreateRunInput): Promise<Cr
   const existing = await findRunByIdempotencyKey(scope, parsed.idempotencyKey);
 
   if (existing) {
-    const run = existing.status === 'estimated' ? await chargeAndQueue(scope, existing) : existing;
+    const run =
+      existing.status === 'estimated'
+        ? await chargeAndQueue(scope, existing, targetPanelIndex(parsed))
+        : existing;
 
     return { dryRun: false, estimate, run, items: await listRunItems(scope, run.id) };
   }
@@ -154,6 +172,7 @@ export async function createRun(scope: Scope, input: CreateRunInput): Promise<Cr
     },
     estimate.cuts.map((cut) => ({
       rowId: cut.sourceRowId,
+      deckId: cut.deckId,
       topic: cut.topic,
       channel: cut.channel,
       ratio: cut.ratio,
@@ -170,7 +189,7 @@ export async function createRun(scope: Scope, input: CreateRunInput): Promise<Cr
   return {
     dryRun: false,
     estimate,
-    run: await chargeAndQueue(scope, inserted.run),
+    run: await chargeAndQueue(scope, inserted.run, targetPanelIndex(parsed)),
     items: inserted.items,
   };
 }

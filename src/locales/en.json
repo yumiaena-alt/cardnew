@@ -184,7 +184,8 @@
     "edit_saving": "Saving",
     "edit_cancel": "Cancel",
     "edit_failed": "Could not save.",
-    "edit_limit": "{used}/{max} characters"
+    "edit_limit": "{used}/{max} characters",
+    "repaint_action": "Repaint"
   },
   "DeckNewPage": {
     "title": "New card news",

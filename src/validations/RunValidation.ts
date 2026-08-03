@@ -38,6 +38,12 @@ const runItemSchema = z.object({
     }),
   /** Set when the run was started from a row of the monthly board. */
   sourceRowId: z.uuid().optional(),
+  /**
+   * The deck being regenerated. Required for a partial scope and absent for a
+   * full one: a repaint edits an existing deck, while a full run makes a new
+   * one, and the two must not be confusable.
+   */
+  deckId: z.uuid().optional(),
 });
 
 const runScopeSchema = z.discriminatedUnion('kind', [
@@ -53,15 +59,21 @@ const runScopeSchema = z.discriminatedUnion('kind', [
 /** Upper bound on one run. A monthly board is the largest realistic batch. */
 const MAX_RUN_ITEMS = 50;
 
-export const createRunSchema = z.object({
-  items: z.array(runItemSchema).min(1).max(MAX_RUN_ITEMS),
-  scope: runScopeSchema,
-  /** Board the run came from, when it was started from the sheet. */
-  boardId: z.uuid().optional(),
-  idempotencyKey: z.string().min(1).max(200),
-  /** Quote only. Nothing is written and no credits move. */
-  dryRun: z.boolean(),
-});
+export const createRunSchema = z
+  .object({
+    items: z.array(runItemSchema).min(1).max(MAX_RUN_ITEMS),
+    scope: runScopeSchema,
+    /** Board the run came from, when it was started from the sheet. */
+    boardId: z.uuid().optional(),
+    idempotencyKey: z.string().min(1).max(200),
+    /** Quote only. Nothing is written and no credits move. */
+    dryRun: z.boolean(),
+  })
+  .refine(
+    (input) =>
+      input.scope.kind === 'full' || input.items.every((item) => item.deckId !== undefined),
+    { message: 'A partial regeneration must name the deck it edits' },
+  );
 
 export type RunItemInput = z.infer<typeof runItemSchema>;
 export type RunScopeInput = z.infer<typeof runScopeSchema>;

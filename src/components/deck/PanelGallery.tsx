@@ -1,16 +1,23 @@
 'use client';
 
-import { ImageOff, Pencil } from 'lucide-react';
+import { ImageOff, Pencil, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { StatusChip } from '@/components/ui/StatusChip';
 import type { PanelView } from '@/features/deck/service';
+import type { RunItemInput } from '@/validations/RunValidation';
 import { PanelEditor } from './PanelEditor';
+import { PanelRepaint } from './PanelRepaint';
 
 type PanelGalleryProps = {
   panels: PanelView[];
   ratio: string;
+  deckId: string;
+  deckTopic: string;
+  deckChannel: RunItemInput['targets'][number]['channel'];
+  deckRatio: RunItemInput['targets'][number]['ratio'];
+  creditBalance: number;
 };
 
 const RATIO_CLASS: Record<string, string> = {
@@ -35,6 +42,7 @@ export function PanelGallery(props: PanelGalleryProps) {
   const t = useTranslations('DeckDetailPage');
   const aspect = RATIO_CLASS[props.ratio] ?? 'aspect-[4/5]';
   const [editing, setEditing] = useState<PanelView | null>(null);
+  const [repainting, setRepainting] = useState<PanelView | null>(null);
 
   return (
     <>
@@ -77,6 +85,19 @@ export function PanelGallery(props: PanelGalleryProps) {
                     {t('edit_action')}
                   </Button>
 
+                  {panel.canRepaint ? (
+                    <Button
+                      variant="signal"
+                      size="xs"
+                      onClick={() => {
+                        setRepainting(panel);
+                      }}
+                    >
+                      <RefreshCw data-icon="inline-start" />
+                      {t('repaint_action')}
+                    </Button>
+                  ) : null}
+
                   {panel.isEdited ? <StatusChip tone="wait">{t('edited_badge')}</StatusChip> : null}
                 </div>
 
@@ -95,6 +116,18 @@ export function PanelGallery(props: PanelGalleryProps) {
         panel={editing}
         onClose={() => {
           setEditing(null);
+        }}
+      />
+
+      <PanelRepaint
+        panel={repainting}
+        deckId={props.deckId}
+        deckTopic={props.deckTopic}
+        deckChannel={props.deckChannel}
+        deckRatio={props.deckRatio}
+        creditBalance={props.creditBalance}
+        onClose={() => {
+          setRepainting(null);
         }}
       />
     </>

@@ -169,6 +169,18 @@ async function renderAndStore(input: {
       index,
       role: toPanelRole(planned?.role, index),
       slots: planned ? toSlots(planned, input.imagery.provenance[index] ?? null) : {},
+      // Stored so one card can be repainted later without re-planning the deck.
+      plan: planned
+        ? {
+            role: planned.role,
+            headline: planned.headline,
+            body: planned.body,
+            eyebrow: planned.eyebrow,
+            imageQuery: planned.imageQuery,
+            imageMood: planned.imageMood,
+            templateHint: planned.templateHint,
+          }
+        : null,
       renderPath: path,
     });
   }

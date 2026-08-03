@@ -17,6 +17,8 @@ type RunCutEstimate = {
   isOrigin: boolean;
   credits: number;
   sourceRowId?: string;
+  /** Set for a partial regeneration: the deck being repainted. */
+  deckId?: string;
   /** Target-level pin wins over the item-level one; both may be absent. */
   templateVersionId?: string;
 };
@@ -71,6 +73,7 @@ export function estimateRun(input: Pick<CreateRunInput, 'items' | 'scope'>): Run
         isOrigin: target.isOrigin,
         credits: priceCut(input.scope, target.isOrigin),
         sourceRowId: item.sourceRowId,
+        deckId: item.deckId,
         templateVersionId: target.templateVersionId ?? item.templateVersionId,
       });
     }

@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { PanelGallery } from '@/components/deck/PanelGallery';
+import { getBalance } from '@/features/credit/service';
 import { getDeckView } from '@/features/deck/service';
 import { findScope } from '@/features/shared/scope';
 
@@ -14,7 +15,10 @@ export default async function DeckDetailPage(props: DeckDetailPageProps) {
   const t = await getTranslations({ locale, namespace: 'DeckDetailPage' });
 
   const scope = await findScope();
-  const view = scope ? await getDeckView(scope, deckId) : null;
+  const [view, creditBalance] = await Promise.all([
+    scope ? getDeckView(scope, deckId) : Promise.resolve(null),
+    scope ? getBalance(scope) : Promise.resolve(0),
+  ]);
 
   // A deck in another organization is reported the same as one that does not
   // exist, so browsing ids cannot confirm what other tenants own.
@@ -35,7 +39,15 @@ export default async function DeckDetailPage(props: DeckDetailPageProps) {
         </p>
       </header>
 
-      <PanelGallery panels={view.panels} ratio={view.deck.ratio} />
+      <PanelGallery
+        panels={view.panels}
+        ratio={view.deck.ratio}
+        deckId={view.deck.id}
+        deckTopic={view.deck.topic}
+        deckChannel={view.deck.channel}
+        deckRatio={view.deck.ratio}
+        creditBalance={creditBalance}
+      />
     </div>
   );
 }

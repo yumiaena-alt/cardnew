@@ -2,6 +2,7 @@ import { logger as triggerLogger, task } from '@trigger.dev/sdk';
 import { findDefaultProjectId } from '@/features/deck/repository';
 import type { SlideImagery } from '@/features/run/imagery';
 import { generateCut } from '@/features/run/pipeline';
+import { regeneratePanels } from '@/features/run/regenerate';
 import { findRun, listRunItems, updateRun, updateRunItem } from '@/features/run/repository';
 import type { RunItemOutcome } from '@/features/run/service';
 import { finalizeRun } from '@/features/run/service';
@@ -29,6 +30,8 @@ export type GenerateRunPayload = {
   runId: string;
   orgId: string;
   userId: string;
+  /** Which panel a partial run repaints. Absent for a full run. */
+  panelIndex?: number;
 };
 
 /**
@@ -60,6 +63,8 @@ async function runOneCut(input: {
   item: RunItem;
   projectId: string;
   plans: PlanCache;
+  /** Set for a partial run: which panel of the item's deck to repaint. */
+  panelIndex: number | null;
 }): Promise<CutOutcome> {
   const empty = { inputTokens: 0, outputTokens: 0 };
 
@@ -68,6 +73,19 @@ async function runOneCut(input: {
       status: 'running',
       attempts: input.item.attempts + 1,
     });
+
+    if (input.panelIndex !== null) {
+      const repaint = await regeneratePanels(input.scope, {
+        item: input.item,
+        panelIndex: input.panelIndex,
+      });
+
+      return {
+        outcome: { itemId: input.item.id, status: 'done', deckId: repaint.deckId },
+        usage: empty,
+        panelCount: repaint.repainted,
+      };
+    }
 
     const reuse = input.item.isOrigin ? undefined : input.plans.get(input.item.topic);
 
@@ -138,6 +156,10 @@ export const generateRunTask = task({
 
     await updateRun(scope, payload.runId, { status: 'running', startedAt: new Date() });
 
+    // A partial run repaints one card of an existing deck rather than making a
+    // new one, so the panel it targets travels on the payload.
+    const panelIndex = run.scopeKind === 'full' ? null : (payload.panelIndex ?? 0);
+
     // Origins first, so every derived cut finds its plan already cached.
     const ordered = items.toSorted((a, b) => Number(b.isOrigin) - Number(a.isOrigin));
     const plans: PlanCache = new Map();
@@ -147,7 +169,7 @@ export const generateRunTask = task({
     let panelCount = 0;
 
     for (const [position, item] of ordered.entries()) {
-      const result = await runOneCut({ scope, item, projectId, plans });
+      const result = await runOneCut({ scope, item, projectId, plans, panelIndex });
 
       outcomes.push(result.outcome);
       inputTokens += result.usage.inputTokens;
