@@ -122,7 +122,12 @@
     "status_active": "사용 중",
     "status_paused": "중지됨",
     "unconfigured_note": "연동 설정이 아직 없습니다. Meta 앱 정보와 토큰 암호화 키가 있어야 시작할 수 있습니다.",
-    "scope_note": "요청하는 권한은 댓글 읽기·답장·발행뿐입니다. 액세스 토큰은 암호화해 저장하고 화면에 표시하지 않습니다."
+    "scope_note": "요청하는 권한은 댓글 읽기·답장·발행뿐입니다. 액세스 토큰은 암호화해 저장하고 화면에 표시하지 않습니다.",
+    "result_connected": "계정을 연동했습니다.",
+    "result_canceled": "연동을 취소했습니다.",
+    "result_no_business_account": "페이스북 페이지에 연결된 인스타그램 프로 계정이 없습니다.",
+    "result_already_connected": "이 계정은 다른 조직에 연동되어 있습니다.",
+    "result_failed": "계정을 연동하지 못했습니다."
   },
   "DeckListPage": {
     "empty_title": "아직 만든 카드뉴스가 없어요",

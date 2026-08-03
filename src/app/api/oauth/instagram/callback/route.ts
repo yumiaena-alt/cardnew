@@ -1,6 +1,15 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { exchangeCode, readState } from '@/features/social/connect';
+import { findDefaultProjectId } from '@/features/deck/repository';
+import {
+  exchangeCode,
+  extendToken,
+  fetchInstagramProfile,
+  isConnectConfigured,
+  readState,
+} from '@/features/social/connect';
+import { upsertSocialAccount } from '@/features/social/repository';
+import { encryptSecret } from '@/libs/Crypto';
 import { Env } from '@/libs/Env';
 import { logger } from '@/libs/Logger';
 
@@ -26,6 +35,13 @@ function backToAccounts(outcome: string) {
 }
 
 export async function GET(request: NextRequest) {
+  // Checked before anything is exchanged. Without the encryption key the token
+  // would arrive with nowhere safe to put it, and encrypting it at the last
+  // step would throw after the credential already existed in this process.
+  if (!isConnectConfigured()) {
+    return backToAccounts('not_configured');
+  }
+
   const params = request.nextUrl.searchParams;
   const code = params.get('code');
   const state = params.get('state');
@@ -55,10 +71,43 @@ export async function GET(request: NextRequest) {
     return backToAccounts(exchanged.reason);
   }
 
-  // Storing the account needs the provider's own id and handle, which is a
-  // second call against the Graph API. Until that lands the token is discarded
-  // rather than parked somewhere it would sit unencrypted.
-  logger.info('Account authorized', { orgId: verified.orgId });
+  const extended = await extendToken(exchanged.accessToken);
 
-  return backToAccounts('pending_profile');
+  if (!extended.ok) {
+    return backToAccounts(extended.reason);
+  }
+
+  const profile = await fetchInstagramProfile(extended.accessToken);
+
+  if (!profile.ok) {
+    return backToAccounts(profile.reason);
+  }
+
+  const scope = { orgId: verified.orgId };
+  const projectId = await findDefaultProjectId(scope);
+
+  if (!projectId) {
+    logger.warn('Account callback found no project', { orgId: scope.orgId });
+
+    return backToAccounts('no_project');
+  }
+
+  const stored = await upsertSocialAccount(scope, {
+    projectId,
+    channel: 'instagram',
+    externalId: profile.profile.externalId,
+    handle: profile.profile.handle,
+    accessTokenCipher: encryptSecret(extended.accessToken),
+    tokenExpiresAt: extended.expiresAt,
+  });
+
+  if (!stored) {
+    logger.warn('Account already held elsewhere', { orgId: scope.orgId });
+
+    return backToAccounts('already_connected');
+  }
+
+  logger.info('Account connected', { orgId: scope.orgId, accountId: stored.id });
+
+  return backToAccounts('connected');
 }

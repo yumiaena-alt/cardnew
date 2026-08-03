@@ -15,7 +15,10 @@ import { logger } from '@/libs/Logger';
  */
 
 const AUTHORIZE_ENDPOINT = 'https://www.facebook.com/v21.0/dialog/oauth';
-const TOKEN_ENDPOINT = 'https://graph.facebook.com/v21.0/oauth/access_token';
+const GRAPH_BASE = 'https://graph.facebook.com/v21.0';
+const TOKEN_ENDPOINT = `${GRAPH_BASE}/oauth/access_token`;
+const ACCOUNTS_ENDPOINT = `${GRAPH_BASE}/me/accounts`;
+const GRAPH_TIMEOUT_MS = 15_000;
 
 /** Read comments, reply to them, and publish. Nothing broader is requested. */
 const SCOPES = [
@@ -32,7 +35,15 @@ export type ConnectFailure =
   | 'not_configured'
   | 'invalid_state'
   | 'expired_state'
-  | 'exchange_failed';
+  | 'exchange_failed'
+  | 'profile_failed'
+  | 'no_business_account';
+
+/** What the network calls the account, and what the owner calls it. */
+export type ConnectedProfile = {
+  externalId: string;
+  handle: string;
+};
 
 /**
  * Whether the connection flow can run.
@@ -143,6 +154,60 @@ export function buildAuthorizeUrl(scope: OrgScope, redirectUri: string): string 
   return `${AUTHORIZE_ENDPOINT}?${params.toString()}`;
 }
 
+/** An access token and the moment it stops working, when the provider says so. */
+type IssuedToken = {
+  accessToken: string;
+  expiresAt: Date | null;
+};
+
+export type TokenResult = ({ ok: true } & IssuedToken) | { ok: false; reason: ConnectFailure };
+
+/**
+ * Calls the Graph API and decodes the body.
+ *
+ * @param url - The fully built request URL, access token included.
+ * @param label - What the call was for. Logged when it is refused.
+ * @returns The decoded body, or null when the call did not succeed.
+ */
+async function getGraph(url: string, label: string): Promise<unknown> {
+  const response = await fetch(url, { signal: AbortSignal.timeout(GRAPH_TIMEOUT_MS) }).catch(
+    () => null,
+  );
+
+  if (!response?.ok) {
+    logger.warn('Graph request failed', { label, status: response?.status ?? 0 });
+
+    return null;
+  }
+
+  return await response.json();
+}
+
+/**
+ * Reads a token out of a Graph token response.
+ *
+ * @param payload - The decoded body.
+ * @returns The token and its expiry, or null when the body carries no token.
+ */
+function readToken(payload: unknown): IssuedToken | null {
+  if (
+    typeof payload !== 'object' ||
+    payload === null ||
+    !('access_token' in payload) ||
+    typeof payload.access_token !== 'string'
+  ) {
+    return null;
+  }
+
+  const seconds =
+    'expires_in' in payload && typeof payload.expires_in === 'number' ? payload.expires_in : null;
+
+  return {
+    accessToken: payload.access_token,
+    expiresAt: seconds === null ? null : new Date(Date.now() + seconds * 1000),
+  };
+}
+
 /**
  * Exchanges an authorization code for an access token.
  *
@@ -150,10 +215,7 @@ export function buildAuthorizeUrl(scope: OrgScope, redirectUri: string): string 
  * @param redirectUri - The same redirect used to obtain the code.
  * @returns The token, or why the exchange failed.
  */
-export async function exchangeCode(
-  code: string,
-  redirectUri: string,
-): Promise<{ ok: true; accessToken: string } | { ok: false; reason: ConnectFailure }> {
+export async function exchangeCode(code: string, redirectUri: string): Promise<TokenResult> {
   if (!(Env.META_APP_ID && Env.META_APP_SECRET)) {
     return { ok: false, reason: 'not_configured' };
   }
@@ -165,26 +227,102 @@ export async function exchangeCode(
     code,
   });
 
-  const response = await fetch(`${TOKEN_ENDPOINT}?${params.toString()}`, {
-    signal: AbortSignal.timeout(15_000),
-  }).catch(() => null);
+  const token = readToken(
+    await getGraph(`${TOKEN_ENDPOINT}?${params.toString()}`, 'code exchange'),
+  );
 
-  if (!response?.ok) {
-    logger.warn('Account token exchange failed', { status: response?.status ?? 0 });
+  return token ? { ok: true, ...token } : { ok: false, reason: 'exchange_failed' };
+}
 
-    return { ok: false, reason: 'exchange_failed' };
+/**
+ * Trades the code's short-lived token for a long-lived one.
+ *
+ * The token that comes straight out of the code expires in about an hour, so
+ * storing it would produce a connection that is already broken by the time
+ * anyone publishes through it. The long-lived token lasts about sixty days,
+ * which is what makes the stored credential worth encrypting and keeping.
+ *
+ * @param shortLivedToken - The token from the code exchange.
+ * @returns The long-lived token, or why the exchange failed.
+ */
+export async function extendToken(shortLivedToken: string): Promise<TokenResult> {
+  if (!(Env.META_APP_ID && Env.META_APP_SECRET)) {
+    return { ok: false, reason: 'not_configured' };
   }
 
-  const payload: unknown = await response.json();
+  const params = new URLSearchParams({
+    grant_type: 'fb_exchange_token',
+    client_id: Env.META_APP_ID,
+    client_secret: Env.META_APP_SECRET,
+    fb_exchange_token: shortLivedToken,
+  });
+
+  const token = readToken(await getGraph(`${TOKEN_ENDPOINT}?${params.toString()}`, 'token extend'));
+
+  return token ? { ok: true, ...token } : { ok: false, reason: 'exchange_failed' };
+}
+
+/**
+ * Reads the Instagram account linked to one page.
+ *
+ * @param page - A raw entry from the pages listing.
+ * @returns The profile, or null when the page has no Instagram account.
+ */
+function readProfile(page: unknown): ConnectedProfile | null {
+  if (typeof page !== 'object' || page === null || !('instagram_business_account' in page)) {
+    return null;
+  }
+
+  const account = page.instagram_business_account;
 
   if (
-    typeof payload !== 'object' ||
-    payload === null ||
-    !('access_token' in payload) ||
-    typeof payload.access_token !== 'string'
+    typeof account !== 'object' ||
+    account === null ||
+    !('id' in account) ||
+    typeof account.id !== 'string'
   ) {
-    return { ok: false, reason: 'exchange_failed' };
+    return null;
   }
 
-  return { ok: true, accessToken: payload.access_token };
+  const username =
+    'username' in account && typeof account.username === 'string' ? account.username : '';
+
+  return { externalId: account.id, handle: username === '' ? account.id : username };
+}
+
+/**
+ * Reads the Instagram profile attached to the authorizing user's pages.
+ *
+ * Instagram's own id and handle are what everything downstream keys on: a
+ * comment webhook names an account id, not a page. Only a professional account
+ * linked to a page is reachable this way, which is a Meta constraint rather
+ * than ours — a personal account has no comment or publishing API at all.
+ *
+ * @param accessToken - A token from the connection flow.
+ * @returns The profile, or why it could not be read.
+ */
+export async function fetchInstagramProfile(
+  accessToken: string,
+): Promise<{ ok: true; profile: ConnectedProfile } | { ok: false; reason: ConnectFailure }> {
+  const params = new URLSearchParams({
+    access_token: accessToken,
+    fields: 'instagram_business_account{id,username}',
+  });
+
+  const payload = await getGraph(`${ACCOUNTS_ENDPOINT}?${params.toString()}`, 'profile lookup');
+
+  if (payload === null) {
+    return { ok: false, reason: 'profile_failed' };
+  }
+
+  const pages =
+    typeof payload === 'object' && payload !== null && 'data' in payload ? payload.data : null;
+
+  if (!Array.isArray(pages)) {
+    return { ok: false, reason: 'profile_failed' };
+  }
+
+  const profile = pages.map(readProfile).find((entry) => entry !== null);
+
+  return profile ? { ok: true, profile } : { ok: false, reason: 'no_business_account' };
 }

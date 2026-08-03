@@ -39,6 +39,55 @@ export async function listSocialAccounts(scope: OrgScope): Promise<AccountSummar
     .orderBy(desc(socialAccounts.connectedAt));
 }
 
+export type ConnectAccountInput = {
+  projectId: string;
+  channel: SocialAccount['channel'];
+  /** The network's own account id. Stable across handle changes. */
+  externalId: string;
+  handle: string;
+  accessTokenCipher: string;
+  tokenExpiresAt: Date | null;
+};
+
+/**
+ * Stores a freshly authorized account, replacing an earlier connection to it.
+ *
+ * Reconnecting is the normal way a user fixes an expired token, so the same
+ * account arriving twice updates the row rather than failing. It only does so
+ * for the organization that already holds it: the uniqueness of an account is
+ * global, and without the guard a second organization connecting the same
+ * profile would silently take it over — along with its automations.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param input - The account and its encrypted credential.
+ * @returns The stored account, or null when another organization holds it.
+ */
+export async function upsertSocialAccount(
+  scope: OrgScope,
+  input: ConnectAccountInput,
+): Promise<SocialAccount | null> {
+  const [row] = await db
+    .insert(socialAccounts)
+    .values({ ...input, orgId: scope.orgId, isActive: true })
+    .onConflictDoUpdate({
+      target: [socialAccounts.channel, socialAccounts.externalId],
+      set: {
+        projectId: input.projectId,
+        handle: input.handle,
+        accessTokenCipher: input.accessTokenCipher,
+        tokenExpiresAt: input.tokenExpiresAt,
+        isActive: true,
+        connectedAt: new Date(),
+      },
+      // The isolation filter, written out rather than composed through
+      // `orgScoped()`: this guards a conflict clause, not a query.
+      setWhere: eq(socialAccounts.orgId, scope.orgId),
+    })
+    .returning();
+
+  return row ?? null;
+}
+
 /**
  * Lists the organization's DM automations.
  *

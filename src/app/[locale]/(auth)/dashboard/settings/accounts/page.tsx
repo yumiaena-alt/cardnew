@@ -9,12 +9,26 @@ import { Env } from '@/libs/Env';
 
 type AccountsPageProps = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ connect?: string }>;
 };
 
 export default async function AccountsPage(props: AccountsPageProps) {
   const { locale } = await props.params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'AccountsPage' });
+
+  // Outcomes worth naming. Everything else — a refused state, a failed
+  // exchange, a missing project — is a fault the reader cannot act on, and
+  // describing each separately would say the same thing in more words.
+  const { connect } = await props.searchParams;
+  const named: Record<string, string> = {
+    connected: t('result_connected'),
+    canceled: t('result_canceled'),
+    no_business_account: t('result_no_business_account'),
+    already_connected: t('result_already_connected'),
+  };
+  const result = connect ? (named[connect] ?? t('result_failed')) : null;
+  const isConnected = connect === 'connected';
 
   const scope = await findScope();
   const accounts = scope ? await listSocialAccounts(scope) : [];
@@ -28,6 +42,18 @@ export default async function AccountsPage(props: AccountsPageProps) {
         <h1 className="text-xl font-bold text-foreground">{t('title')}</h1>
         <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
+
+      {result ? (
+        <output
+          className={
+            isConnected
+              ? 'block rounded-lg border border-status-done-border bg-status-done p-3 text-sm text-status-done-foreground'
+              : 'block rounded-lg border border-status-fail-border bg-status-fail p-3 text-sm text-status-fail-foreground'
+          }
+        >
+          {result}
+        </output>
+      ) : null}
 
       <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-5">
         {accounts.length === 0 ? (

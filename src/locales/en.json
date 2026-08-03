@@ -122,7 +122,12 @@
     "status_active": "Active",
     "status_paused": "Paused",
     "unconfigured_note": "Connection is not set up yet. It needs the Meta app credentials and a token encryption key.",
-    "scope_note": "Only comment read, reply and publish permissions are requested. Access tokens are stored encrypted and never shown."
+    "scope_note": "Only comment read, reply and publish permissions are requested. Access tokens are stored encrypted and never shown.",
+    "result_connected": "Account connected.",
+    "result_canceled": "Connection canceled.",
+    "result_no_business_account": "No Instagram professional account is linked to your Facebook page.",
+    "result_already_connected": "This account is connected to another organization.",
+    "result_failed": "Could not connect the account."
   },
   "DeckListPage": {
     "empty_title": "No decks yet",
