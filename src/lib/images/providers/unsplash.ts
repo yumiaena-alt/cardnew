@@ -13,6 +13,66 @@ import type { ImageCandidate, ImageProvider, ProvenanceRecord, SearchOptions } f
 
 const API_BASE = 'https://api.unsplash.com';
 
+/**
+ * 검색어에서 떨어내도 뜻이 남는 단어들. 이것만으로는 사진을 못 찾는다.
+ */
+const STOP_WORDS = new Set([
+  'a',
+  'an',
+  'the',
+  'in',
+  'on',
+  'at',
+  'of',
+  'with',
+  'and',
+  'or',
+  'to',
+  'for',
+  'from',
+  'by',
+  'over',
+  'under',
+  'into',
+  'up',
+  'down',
+  'out',
+]);
+
+/** 좁혀 들어갈 때 남길 핵심 단어 수. 셋을 넘으면 다시 0건으로 돌아간다. */
+const KEYWORD_LIMIT = 3;
+
+/**
+ * 검색어를 넓은 쪽으로 단계적으로 푼다.
+ *
+ * 기획 모델은 이미지 지시를 문장으로 쓴다 — "person looking tired in summer
+ * heat, fanning with hand, soft window light" 같은 식이다. Unsplash 검색은 이런
+ * 문장에 0건을 돌려준다. 같은 소재도 "person tired summer" 로 물으면 수천 건이
+ * 나온다. 그래서 실패를 사진 없음으로 받아들이기 전에 스스로 좁혀 본다.
+ *
+ * @param query - 기획이 준 원본 지시.
+ * @returns 넓은 쪽으로 갈수록 뒤에 오는 검색어들. 중복은 제거된다.
+ */
+export function narrowQueries(query: string): string[] {
+  const full = query.trim();
+
+  if (full === '') {
+    return [];
+  }
+
+  // 첫 쉼표 앞이 주제고 뒤는 대개 조명·구도 같은 수식이다.
+  const subject = (full.split(',')[0] ?? '').trim();
+
+  const keywords = subject
+    .toLowerCase()
+    .split(/[^a-z0-9가-힣]+/u)
+    .filter((word) => word !== '' && !STOP_WORDS.has(word))
+    .slice(0, KEYWORD_LIMIT)
+    .join(' ');
+
+  return [...new Set([full, subject, keywords])].filter((entry) => entry !== '');
+}
+
 type UnsplashPhoto = {
   id: string;
   width: number;
@@ -40,7 +100,29 @@ export class UnsplashProvider implements ImageProvider {
     return Boolean(this.#accessKey);
   }
 
+  /**
+   * 기획이 준 지시로 사진을 찾는다.
+   *
+   * 한 번 물어보고 마는 대신 검색어를 넓혀 가며 다시 묻는다. 문장으로 된 지시에
+   * Unsplash 가 0건을 돌려주는 것이 흔한데, 그걸 "사진 없음"으로 받아들이면
+   * 대부분의 카드가 사진 없이 나간다.
+   *
+   * @param options - 검색어, 방향, 개수.
+   * @returns 후보들. 어떤 검색어로도 못 찾으면 빈 배열.
+   */
   async search(options: SearchOptions): Promise<ImageCandidate[]> {
+    for (const query of narrowQueries(options.query)) {
+      const found = await this.#searchOnce({ ...options, query });
+
+      if (found.length > 0) {
+        return found;
+      }
+    }
+
+    return [];
+  }
+
+  async #searchOnce(options: SearchOptions): Promise<ImageCandidate[]> {
     if (!this.#accessKey) {
       throw new Error('UNSPLASH_ACCESS_KEY가 없습니다');
     }
