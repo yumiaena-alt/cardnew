@@ -33,7 +33,9 @@
     "planning_ideas": "Content planning",
     "planning_reference": "Reference research",
     "deck_link": "From a link",
-    "blog": "Blog posts"
+    "blog": "Blog posts",
+    "automation": "Auto DM",
+    "comments": "Comments"
   },
   "DashboardTopbar": {
     "open_sidebar": "Open sidebar",
@@ -258,6 +260,42 @@
     "channel_heading": "Channel mix",
     "channel_empty": "No decks yet.",
     "reach_note": "Reach, saves and comments need a connected social account. Until then they stay empty rather than estimated."
+  },
+  "AutomationPage": {
+    "title": "Auto DM",
+    "subtitle": "When a comment on your post contains a word you chose, the commenter gets a reply.",
+    "new_action": "New automation",
+    "empty_title": "Reply automatically when someone comments",
+    "empty_description": "When a comment contains one of your keywords, the person who wrote it gets your link or note straight away.",
+    "step_1": "Pick a post",
+    "step_2": "Set keywords",
+    "step_3": "Write the reply",
+    "connect_note": "Connect a social account to start. Instagram and Facebook supported.",
+    "name_label": "Name",
+    "name_placeholder": "e.g. price enquiry reply",
+    "keywords_label": "Keywords",
+    "keywords_hint": "Comma separated. Case is ignored.",
+    "keywords_placeholder": "price, cost, 가격",
+    "message_label": "Reply",
+    "message_hint": "Only goes to people who commented. This does not start conversations.",
+    "message_placeholder": "Hi! Here is what you asked for.",
+    "save": "Save",
+    "saving": "Saving",
+    "create_failed": "Could not save.",
+    "status_on": "On",
+    "status_off": "Off",
+    "keywords_summary": "Keywords · {list}",
+    "turn_on": "Turn on",
+    "turn_off": "Turn off",
+    "remove": "Delete"
+  },
+  "CommentsPage": {
+    "title": "Comments",
+    "subtitle": "Everything waiting for a reply, in one place.",
+    "unconnected_title": "Connect a social account",
+    "unconnected_description": "Comments are read from the account itself. There is nothing to show until one is connected.",
+    "empty_title": "Nothing waiting for a reply",
+    "empty_description": "Unanswered comments show up here as they arrive."
   },
   "DryRunPanel": {
     "title": "Check before generating",

@@ -35,6 +35,8 @@ function useNavLabels(): NavLabels {
     template: t('template'),
     template_gallery: t('template_gallery'),
     template_learn: t('template_learn'),
+    automation: t('automation'),
+    comments: t('comments'),
     calendar: t('calendar'),
     analytics: t('analytics'),
   };
