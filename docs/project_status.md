@@ -1,6 +1,6 @@
 # 📌 Project Status & Handover Guide
 
-최종 갱신: **2026-08-03** · 문서 버전 **2.0** · 기준 커밋 `4ee21f3`
+최종 갱신: **2026-08-03** · 문서 버전 **2.1** · 기준 커밋 `2626c89` (origin/main 동기화됨 · 작업 트리 깨끗)
 이 문서 하나로 세션을 완전히 복원할 수 있어야 한다. 상태가 바뀌면 반드시 갱신한다.
 
 > 갱신 규칙: 커밋을 남겼으면 이 문서의 §2 체크리스트 · §4 현재 위치/다음 작업 · §6 리스크를 같은 턴에 맞춘다. 문서가 커밋보다 뒤처지면 다음 세션이 이미 끝난 일을 다시 한다.
@@ -416,6 +416,8 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `0e534fa` | **발행 캘린더** |
 | `0d7ddea` | **성과 대시보드** |
 | `4ee21f3` | **부분 재생성** — 카드 1장 다시 그리기 (`0010`) |
+| `b93e9c3` | **자동 DM · 댓글 인박스** — `social_accounts`/`dm_automations`/`dm_sends` (`0011`) |
+| `2626c89` | **계정 연동 + 토큰 암호화** — AES-256-GCM · 서명된 OAuth state |
 | (미커밋) | **Phase 1-B 인증·테넌트** — Clerk 웹훅 · `scope`/`permissions`/`orgScope` · `0002` |
 
 **Phase 1-B 산출물 (신규 파일)**
@@ -467,7 +469,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 - `next-env.d.ts` 생성 → 이미지 모듈 타입 오류 13건 해소
 - Playwright chromium 설치 → `npm run test`의 browser 프로젝트 동작
 
-### 검증 상태 (커밋 `4ee21f3` 기준, 전부 실측)
+### 검증 상태 (커밋 `2626c89` 기준, 전부 실측)
 
 | 검사 | 결과 |
 |---|---|
@@ -475,7 +477,7 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 | `npm run lint` | ✅ **error 0건** (Board a11y 4건 · `SlideRenderer` img 3건은 기존 warning) |
 | `npm run check:i18n` | ✅ exit 0 |
 | `npm run check:deps` (knip) | ✅ 통과 |
-| `npm run test` | ✅ **382건 통과** (26개 파일) |
+| `npm run test` | ✅ **408건 통과** (29개 파일) |
 | `npm run build-local` | ✅ **통과** |
 | 마이그레이션 `0000`~`0006` | ✅ 빈 PGlite에 전부 적용 성공 |
 | 생성 SQL 파괴적 구문 검사 | ✅ `0003`~`0006`에 `DROP`·`ALTER COLUMN`·`DELETE` **0건** |
@@ -502,42 +504,62 @@ Board UI와 DB 스키마는 로드맵상 Phase 2 항목이지만, 흐름상 먼�
 ### 다음 세션에서 바로 실행할 작업
 
 ```
-0. 막혀 있는 것 — 코드로는 못 푼다 (아래 §6 R14·R15)
-   → [사용자] 렌더 서비스가 외부에서 접속되지 않는다. 155.94.154.102:3000 연결 거부
-     (방화벽/포트 미개방, 또는 127.0.0.1 바인딩 의심)
-   → [사용자] 렌더 서비스에 HTTPS 를 씌워야 한다. 지금은 http 라 Bearer 토큰이 평문으로 나간다
-   → [사용자] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 를 .env.local 에 넣어야 한다
+0. 사용자 작업 — 코드로는 못 푼다 (§6 R14~R17, R19)
+   → [사용자] 렌더 서비스가 외부에서 안 열린다. 155.94.154.102:3000 연결 거부
+     (방화벽/포트 미개방, 또는 127.0.0.1 바인딩 의심) · 게다가 http 라 토큰이 평문으로 나간다
+   → [사용자] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 를 .env.local 에
    → [사용자] Supabase Storage 에 'renders' 버킷(비공개) 생성
-   → [사용자] Vercel 자동 배포가 안 걸린다. GitHub App 이 cardnew 저장소에 접근 권한이 없는 듯
-   ※ 위 4개가 하나라도 비면 submitRun 이 실행을 거부한다(견적은 정상 동작). 크레딧은 안 빠진다
+   → [사용자] 계정 연동용 3개: META_APP_ID / META_APP_SECRET / TOKEN_ENCRYPTION_KEY
+     키 생성: node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"
+     Meta 콜백 URL: {APP_URL}/api/oauth/instagram/callback
+   → [사용자] (선택) META_AD_LIBRARY_TOKEN — 레퍼런스 리서치용
+   → [사용자] (선택) STRIPE_STANDARD_PRICE_ID — 결제용
+   ※ 큐·렌더·스토리지 중 하나라도 비면 submitRun 이 차감 전에 거부한다. 크레딧은 안전하다
 
-1. 생성 경로 실동작 검증  ← 위가 풀리면 여기부터
-   → 보드 1행 · 인스타 1채널로 15cr 짜리 Run 을 실제로 돌려본다
-   → 확인할 것: runs/run_items 상태 전이 · panels.render_path · 원장 -15
-   → 실패 시 환불이 도는지, 첫 장 실패 시 나머지가 canceled 로 남는지
+1. 계정 연동 마무리  ← 코드 작업은 여기부터
+   → 지금 OAuth 콜백은 토큰 교환까지만 하고 버린다(평문 보관 회피).
+     남은 것: Graph 로 프로필(id·handle) 조회 → encryptSecret() → socialAccounts 저장
+   → 그러면 댓글 인박스·자동 DM·성과 도달 지표가 한꺼번에 열린다
 
-2. Stripe Checkout (Standard 단일 플랜) + 웹훅
-   ※ stripe 패키지 설치가 필요하다
+2. 자동 DM 실행부
+   → 댓글 웹훅 수신 → findTriggerKeyword() → private reply 발송 → dmSends 기록
+   → 매칭 로직과 멱등 인덱스는 이미 있다. 없는 건 웹훅 라우트와 발송 호출뿐
 
-3. Deck 에디터 — Slot 편집과 부분 재생성 (1cr / 3cr)
-   → panels.slots 에 기획 문구가 이미 저장돼 있어 편집 대상은 준비됐다
-   → createRun 의 scope: {kind:'slot'|'panel'} 경로가 아직 UI 없이 비어 있다
+3. 댓글 인박스 실제 목록
+   → 지금은 빈 상태 화면만 있다. Graph 로 미답변 댓글을 읽어 렌더
 
-4. 폰트 (R2) — Pretendard 만 남았다. npm 패키지 설치 승인 필요
+4. 생성 경로 실동작 검증 (0번이 풀린 뒤)
+   → 보드 1행 · 인스타 1채널로 15cr Run 을 실제로 돌려본다
+   → 확인: runs/run_items 상태 전이 · panels.render_path · 원장 -15
+   → 실패 시 환불, 첫 장 실패 시 나머지 canceled 인지
 
-5. 예약 발행 (Phase 3) — schedules/publications 테이블부터
+5. 비디오 생성 (R18 — 방향 결정 먼저)
+   → 모션그래픽(ffmpeg로 우리 슬라이드 이어붙이기) vs 영상 생성 API(fal)
+   → 렌더 서비스가 정지 이미지 전용이라 어느 쪽이든 서버 작업이 따라온다
 
-6. Board 마무리 — Storybook 스토리 + a11y 스캔, 브라우저 실동작 확인 (R8)
+6. 예약 발행 — schedules/publications 테이블부터 (Phase 3)
+
+7. Board 마무리 — Storybook 스토리 + a11y 스캔, 브라우저 실동작 확인 (R8)
 ```
 
 **다음 세션 시작 프롬프트**
 
 ```
-docs/project_status.md §4 와 CLAUDE.md 를 먼저 읽고 컨텍스트를 파악해 줘.
-그다음 §4 '다음 세션에서 바로 실행할 작업' 1번(생성 진입점 배선)부터 진행해 줘.
-createRun()·finalizeRun()·견적은 이미 src/features/run/ 에 있으니 다시 만들지 말고,
-Server Action 과 DryRunPanel 로 잇기만 하면 된다.
-머지 게이트 전부 통과 후 커밋하고, project_status.md 를 같은 턴에 갱신해 줘.
+docs/project_status.md 의 §4 와 §6, 그리고 CLAUDE.md 를 먼저 읽어 줘. 전부 읽지는 말고.
+
+그다음 §4 '다음 세션에서 바로 실행할 작업' 1번(계정 연동 마무리)부터 이어서 진행해 줘.
+- OAuth 콜백(src/app/api/oauth/instagram/callback)은 토큰 교환까지 되어 있다.
+  남은 것은 Graph 프로필 조회 → encryptSecret() → socialAccounts 저장뿐이다.
+- 이미 있는 것을 다시 만들지 말 것: createRun/finalizeRun, 견적, Board 영속화,
+  Deck 뷰어·편집·부분 재생성, 블로그, 캘린더, 성과, 기획, 레퍼런스, 링크 변환,
+  Stripe, 암호화(libs/Crypto.ts), 키워드 매칭(features/social/matching.ts).
+
+작업 방식:
+- 머지 게이트 전부 통과 후 커밋: lint → check:types → check:i18n → check:deps
+  → test → build-local → test:e2e
+- 마이그레이션이 생기면 SQL 을 눈으로 검토하고, 프로덕션 적용은
+  .env.migrate.local 로 (§2 하단 명령)
+- 커밋한 턴에 이 문서(§2 체크리스트 · §4 · §6)를 같이 갱신해 줘.
 ```
 
 ---
