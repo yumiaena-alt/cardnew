@@ -41,7 +41,7 @@ export type BoardSheet = {
   pasteAtSelection: (text: string) => void;
   copySelection: () => string;
   previewFill: (targetRow: number | null) => void;
-  applyFill: () => void;
+  applyFill: (targetRow: number) => void;
   undoEdit: () => void;
   redoEdit: () => void;
 };
@@ -203,13 +203,15 @@ export function useBoardSheet(options: {
       );
     },
 
-    applyFill: () => {
-      if (!fillPreview) {
-        return;
-      }
+    // Takes the target row as an argument rather than reading `fillPreview`.
+    // The drag registers its listeners once, so they hold the state of the
+    // render that started it — where the preview is still null, which made the
+    // handle draw a highlight and then commit nothing.
+    applyFill: (targetRow) => {
+      const range = getFillRange({ source: selection, targetRow, size });
 
-      writeRange(fillPreview, readRange(selection));
-      setSelection(fillPreview);
+      writeRange(range, readRange(selection));
+      setSelection(range);
       setFillPreview(null);
     },
 

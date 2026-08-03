@@ -93,14 +93,25 @@ export function BoardGrid(props: BoardGridProps) {
     event.preventDefault();
     const originY = event.clientY;
     const originRow = bounds.maxRow;
+    // Carried in the drag's own scope, not in React state: the listeners below
+    // are registered once and cannot see a re-render.
+    let targetRow = originRow;
 
     const onMove = (moveEvent: PointerEvent) => {
       const offsetRows = Math.round((moveEvent.clientY - originY) / ROW_HEIGHT);
-      sheet.previewFill(originRow + offsetRows);
+      targetRow = originRow + offsetRows;
+      sheet.previewFill(targetRow);
     };
 
     const onUp = () => {
-      sheet.applyFill();
+      // A drag that never left the handle is a click. Filling anyway would put
+      // an undo step on the stack for a change nobody made.
+      if (targetRow === originRow) {
+        sheet.previewFill(null);
+      } else {
+        sheet.applyFill(targetRow);
+      }
+
       globalThis.removeEventListener('pointermove', onMove);
       globalThis.removeEventListener('pointerup', onUp);
     };
