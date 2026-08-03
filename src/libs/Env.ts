@@ -21,6 +21,11 @@ export const Env = createEnv({
     UNSPLASH_ACCESS_KEY: z.string().optional(),
     /** Graph API token with ads_read, for the public Ad Library search. */
     META_AD_LIBRARY_TOKEN: z.string().optional(),
+    /** 32 bytes, base64. Encrypts stored third-party access tokens. */
+    TOKEN_ENCRYPTION_KEY: z.string().optional(),
+    /** Meta app used for the account connection flow. */
+    META_APP_ID: z.string().optional(),
+    META_APP_SECRET: z.string().optional(),
     // Generative imagery, `<uuid>:<secret>`.
     FAL_KEY: z.string().includes(':').optional(),
     // Batch generation queue. Deploys carry this; local dev runs tasks inline.
@@ -58,6 +63,9 @@ export const Env = createEnv({
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     UNSPLASH_ACCESS_KEY: process.env.UNSPLASH_ACCESS_KEY,
     META_AD_LIBRARY_TOKEN: process.env.META_AD_LIBRARY_TOKEN,
+    TOKEN_ENCRYPTION_KEY: process.env.TOKEN_ENCRYPTION_KEY,
+    META_APP_ID: process.env.META_APP_ID,
+    META_APP_SECRET: process.env.META_APP_SECRET,
     FAL_KEY: process.env.FAL_KEY,
     TRIGGER_SECRET_KEY: process.env.TRIGGER_SECRET_KEY,
     RENDER_SERVICE_URL: process.env.RENDER_SERVICE_URL,

@@ -113,6 +113,17 @@
     "starting": "Opening checkout",
     "upgrade_failed": "Could not start checkout."
   },
+  "AccountsPage": {
+    "title": "Connected accounts",
+    "subtitle": "Comments, auto DM and reach metrics all depend on this.",
+    "empty_title": "No account connected",
+    "empty_description": "Connect an Instagram account to read comments, reply to them, and pull publishing results.",
+    "connect": "Connect Instagram",
+    "status_active": "Active",
+    "status_paused": "Paused",
+    "unconfigured_note": "Connection is not set up yet. It needs the Meta app credentials and a token encryption key.",
+    "scope_note": "Only comment read, reply and publish permissions are requested. Access tokens are stored encrypted and never shown."
+  },
   "DeckListPage": {
     "empty_title": "No decks yet",
     "empty_description": "Turn one topic into a set of cards, then reuse it across channels.",
