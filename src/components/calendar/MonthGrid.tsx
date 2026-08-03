@@ -47,6 +47,12 @@ function DayCell(props: { day: CalendarDay }) {
           ))}
         </ul>
       )}
+
+      {props.day.bookings.length > 0 ? (
+        <span className="mt-auto inline-flex w-fit items-center gap-1 rounded-full border border-status-done-border bg-status-done px-1.5 py-0.5 text-[0.6875rem] font-medium text-status-done-foreground">
+          {t('day_booked', { count: props.day.bookings.length })}
+        </span>
+      ) : null}
     </div>
   );
 }

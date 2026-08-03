@@ -1,13 +1,17 @@
 import { loadCurrentBoard } from '@/features/board/service';
+import { listSchedulesInRange } from '@/features/publish/repository';
 import type { Scope } from '@/features/shared/scope';
 
 /**
  * The publishing month, as a calendar.
  *
- * Built from the board rather than from a table of its own. The board is where
- * a month is decided, so a calendar with its own store would be a second answer
- * to the same question — and the two would disagree the first time someone
- * edited one of them.
+ * Plans come from the board rather than from a table of its own. The board is
+ * where a month is decided, so a calendar with its own store would be a second
+ * answer to the same question — and the two would disagree the first time
+ * someone edited one of them.
+ *
+ * Bookings are a different thing and are shown as such: a row on the board is
+ * an intention, and a schedule is a post that will actually go out.
  */
 
 type CalendarEntry = {
@@ -15,11 +19,18 @@ type CalendarEntry = {
   channels: string[];
 };
 
+type CalendarBooking = {
+  id: string;
+  status: string;
+};
+
 export type CalendarDay = {
   /** ISO date. The key the grid renders against. */
   date: string;
   dayOfMonth: number;
   entries: CalendarEntry[];
+  /** Posts actually booked for this day. */
+  bookings: CalendarBooking[];
 };
 
 export type CalendarMonth = {
@@ -90,10 +101,31 @@ export async function loadCalendarMonth(
 
   const dayCount = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 
+  const schedules = await listSchedulesInRange(scope, {
+    from: new Date(Date.UTC(year, month, 1)),
+    to: new Date(Date.UTC(year, month + 1, 0, 23, 59, 59)),
+  });
+
+  const bookingsByDate = new Map<string, CalendarBooking[]>();
+
+  for (const schedule of schedules) {
+    const date = isoDate(schedule.scheduledAt);
+
+    bookingsByDate.set(date, [
+      ...(bookingsByDate.get(date) ?? []),
+      { id: schedule.id, status: schedule.status },
+    ]);
+  }
+
   const days: CalendarDay[] = Array.from({ length: dayCount }, (_, index) => {
     const date = isoDate(new Date(Date.UTC(year, month, index + 1)));
 
-    return { date, dayOfMonth: index + 1, entries: byDate.get(date) ?? [] };
+    return {
+      date,
+      dayOfMonth: index + 1,
+      entries: byDate.get(date) ?? [],
+      bookings: bookingsByDate.get(date) ?? [],
+    };
   });
 
   return {

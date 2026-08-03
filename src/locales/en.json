@@ -261,7 +261,8 @@
     "weekday_wed": "Wed",
     "weekday_thu": "Thu",
     "weekday_fri": "Fri",
-    "weekday_sat": "Sat"
+    "weekday_sat": "Sat",
+    "day_booked": "{count} booked"
   },
   "AnalyticsPage": {
     "title": "Output",
@@ -390,5 +391,25 @@
     "shortcut_deck_body": "Turn a single topic into one card news deck.",
     "shortcut_template_title": "Browse templates",
     "shortcut_template_body": "Pick a style, or train a new one from your references."
+  },
+  "SchedulePanel": {
+    "title": "Scheduled posting",
+    "subtitle": "Book this card news to go out on a connected account.",
+    "new_action": "Schedule",
+    "no_account": "No account is connected. Connect one in settings first.",
+    "account_label": "Account",
+    "when_label": "Publish at",
+    "caption_label": "Caption",
+    "caption_placeholder": "Left empty, the card news title is used.",
+    "submit": "Book it",
+    "submitting": "Booking",
+    "cancel": "Cancel",
+    "error_conflict": "This is already booked for that account at that time.",
+    "error_failed": "Could not book the post.",
+    "status_pending": "Waiting",
+    "status_publishing": "Publishing",
+    "status_published": "Published",
+    "status_failed": "Failed",
+    "status_canceled": "Canceled"
   }
 }

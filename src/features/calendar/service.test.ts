@@ -1,9 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Scope } from '@/features/shared/scope';
+import type { Schedule } from '@/models/Publish';
 
 // The board load is faked so these tests are about the calendar's own maths —
 // month boundaries and which rows land where — rather than about persistence.
-const board = vi.hoisted(() => ({ rows: [] as Record<string, string>[] }));
+const board = vi.hoisted(() => ({
+  rows: [] as Record<string, string>[],
+  schedules: [] as Schedule[],
+}));
 
 // oxlint-disable eslint/require-await -- these doubles stand in for async
 // repository calls, so their signatures must match even though the canned
@@ -13,6 +17,20 @@ vi.mock(import('@/features/board/service'), () => ({
   saveBoard: async () => {
     // Never called here; present so the mocked module matches the real one.
   },
+}));
+
+// Every export is stubbed because the typed form demands the whole module,
+// even though the calendar only reads the range query.
+vi.mock(import('@/features/publish/repository'), () => ({
+  listSchedulesInRange: async () => board.schedules,
+  insertSchedule: async () => null,
+  listSchedulesForDeck: async () => [],
+  cancelSchedule: async () => null,
+  claimDueSchedules: async () => [],
+  settleSchedule: async () => {
+    // Never called here; present so the mocked module matches the real one.
+  },
+  recordPublication: async () => null,
 }));
 
 const { loadCalendarMonth } = await import('./service');
@@ -30,9 +48,26 @@ function row(overrides: Record<string, string>) {
   return { topic: '', fanout: '', scheduledAt: '', notes: '', ...overrides };
 }
 
+function schedule(overrides: Partial<Schedule> & Pick<Schedule, 'id' | 'scheduledAt'>): Schedule {
+  return {
+    orgId: 'org_1',
+    deckId: 'deck_1',
+    socialAccountId: 'account_1',
+    caption: null,
+    hashtags: [],
+    status: 'pending',
+    attempts: 0,
+    errorMessage: null,
+    createdBy: 'user_1',
+    createdAt: new Date('2026-08-01T00:00:00Z'),
+    ...overrides,
+  };
+}
+
 describe(loadCalendarMonth, () => {
   beforeEach(() => {
     board.rows = [];
+    board.schedules = [];
   });
 
   describe('month shape', () => {
@@ -116,6 +151,36 @@ describe(loadCalendarMonth, () => {
       const month = await loadCalendarMonth(scope, new Date('2026-08-01T00:00:00Z'));
 
       expect(month.days.every((day) => day.entries.length === 0)).toBeTruthy();
+    });
+  });
+
+  describe('booked posts', () => {
+    // A booking and a board row are different claims: one is a plan, the other
+    // is a post that will actually go out. A day can hold either alone.
+    it('places a booking on its day without needing a board row', async () => {
+      board.schedules = [
+        schedule({ id: 'schedule_1', scheduledAt: new Date('2026-08-14T09:00:00Z') }),
+      ];
+
+      const month = await loadCalendarMonth(scope, new Date('2026-08-01T00:00:00Z'));
+
+      expect(month.days[13]?.bookings).toStrictEqual([{ id: 'schedule_1', status: 'pending' }]);
+      expect(month.days[13]?.entries).toStrictEqual([]);
+    });
+
+    it('keeps several bookings on one day', async () => {
+      board.schedules = [
+        schedule({ id: 'schedule_1', scheduledAt: new Date('2026-08-14T09:00:00Z') }),
+        schedule({
+          id: 'schedule_2',
+          scheduledAt: new Date('2026-08-14T18:00:00Z'),
+          status: 'published',
+        }),
+      ];
+
+      const month = await loadCalendarMonth(scope, new Date('2026-08-01T00:00:00Z'));
+
+      expect(month.days[13]?.bookings).toHaveLength(2);
     });
   });
 });

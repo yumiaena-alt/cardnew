@@ -59,6 +59,21 @@ export const runStatusEnum = cardnews.enum('run_status', [
   'canceled',
 ]);
 
+/**
+ * A scheduled post's lifecycle.
+ *
+ * `publishing` exists so a worker that dies mid-send is distinguishable from
+ * one that never started: the first needs a human to check whether the post
+ * actually went out, and the second can simply be retried.
+ */
+export const scheduleStatusEnum = cardnews.enum('schedule_status', [
+  'pending',
+  'publishing',
+  'published',
+  'failed',
+  'canceled',
+]);
+
 export const creditReasonEnum = cardnews.enum('credit_reason', [
   'grant.signup',
   'grant.monthly',

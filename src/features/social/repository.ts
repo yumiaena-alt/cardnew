@@ -158,6 +158,40 @@ export async function listAccountCredentials(scope: OrgScope): Promise<AccountWi
 }
 
 /**
+ * Reads one of the organization's accounts with its stored credential.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param accountId - The account.
+ * @returns The account, or null when it is not the caller's or is switched off.
+ */
+export async function findAccountCredential(
+  scope: OrgScope,
+  accountId: string,
+): Promise<AccountWithCredential | null> {
+  const [row] = await db
+    .select({
+      id: socialAccounts.id,
+      orgId: socialAccounts.orgId,
+      externalId: socialAccounts.externalId,
+      handle: socialAccounts.handle,
+      accessTokenCipher: socialAccounts.accessTokenCipher,
+      isActive: socialAccounts.isActive,
+    })
+    .from(socialAccounts)
+    .where(
+      orgScoped(
+        scope,
+        socialAccounts,
+        eq(socialAccounts.id, accountId),
+        eq(socialAccounts.isActive, true),
+      ),
+    )
+    .limit(1);
+
+  return row ?? null;
+}
+
+/**
  * Lists the automations that are switched on for one account.
  *
  * @param scope - Tenant scope, or any object carrying the organization id.

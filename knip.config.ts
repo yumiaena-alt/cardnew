@@ -20,6 +20,9 @@ const config: KnipConfig = {
     'services/**',
     // Queue config. Read by the Trigger.dev CLI, not by the app.
     'trigger.config.ts',
+    // Scheduled task. The Trigger.dev CLI finds it by scanning `src/trigger`,
+    // so nothing in the app imports it — unlike a task the app enqueues itself.
+    'src/trigger/publishDue.ts',
   ],
   // Dependencies to ignore during analysis
   ignoreDependencies: [

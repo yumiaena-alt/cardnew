@@ -1,5 +1,5 @@
 import { logger } from '@/libs/Logger';
-import { GRAPH_BASE, GRAPH_TIMEOUT_MS } from './graph';
+import { GRAPH_BASE, GRAPH_TIMEOUT_MS, readGraphError } from './graph';
 
 /**
  * Answering a commenter privately.
@@ -21,26 +21,6 @@ export type ReplyResult = { ok: true } | { ok: false; error: string };
  */
 export function composeReply(message: string, linkUrl: string | null): string {
   return linkUrl ? `${message}\n\n${linkUrl}` : message;
-}
-
-/**
- * Reads a Graph error into something short enough to store.
- *
- * @param payload - The decoded error body.
- * @returns The provider's message, or a fallback.
- */
-function readError(payload: unknown): string {
-  if (typeof payload !== 'object' || payload === null || !('error' in payload)) {
-    return 'unknown_error';
-  }
-
-  const { error } = payload;
-
-  if (typeof error === 'object' && error !== null && 'message' in error) {
-    return typeof error.message === 'string' ? error.message.slice(0, 300) : 'unknown_error';
-  }
-
-  return 'unknown_error';
 }
 
 /**
@@ -79,7 +59,7 @@ export async function sendPrivateReply(input: {
   }
 
   if (!response.ok) {
-    const error = readError(await response.json().catch(() => null));
+    const error = readGraphError(await response.json().catch(() => null));
 
     logger.warn('Private reply refused', { status: response.status });
 

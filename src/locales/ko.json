@@ -261,7 +261,8 @@
     "weekday_wed": "수",
     "weekday_thu": "목",
     "weekday_fri": "금",
-    "weekday_sat": "토"
+    "weekday_sat": "토",
+    "day_booked": "예약 {count}건"
   },
   "AnalyticsPage": {
     "title": "콘텐츠 성과",
@@ -390,5 +391,25 @@
     "shortcut_deck_body": "소재 하나로 카드뉴스 한 건을 만들어요.",
     "shortcut_template_title": "템플릿 둘러보기",
     "shortcut_template_body": "스타일을 고르거나, 내 레퍼런스로 새로 학습시켜요."
+  },
+  "SchedulePanel": {
+    "title": "예약 발행",
+    "subtitle": "연동된 계정에 이 카드뉴스를 예약해 둡니다.",
+    "new_action": "예약 잡기",
+    "no_account": "연동된 SNS 계정이 없습니다. 설정에서 계정을 먼저 연동하세요.",
+    "account_label": "계정",
+    "when_label": "발행 시각",
+    "caption_label": "캡션",
+    "caption_placeholder": "비워 두면 카드뉴스 제목을 씁니다.",
+    "submit": "예약하기",
+    "submitting": "예약하는 중",
+    "cancel": "취소",
+    "error_conflict": "같은 계정에 같은 시각으로 이미 예약되어 있습니다.",
+    "error_failed": "예약하지 못했습니다.",
+    "status_pending": "대기",
+    "status_publishing": "발행 중",
+    "status_published": "발행됨",
+    "status_failed": "실패",
+    "status_canceled": "취소됨"
   }
 }
