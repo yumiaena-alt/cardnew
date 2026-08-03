@@ -13,8 +13,15 @@ import { Env } from './Env';
  * on the server, never from a request body.
  */
 
-/** Rendered panel images. Private; reads go through a signed URL. */
-export const RENDER_BUCKET = 'renders';
+/**
+ * Rendered cards and the videos built from them. Private; reads go through a
+ * signed URL.
+ *
+ * Read from the environment because the bucket is created by hand in the
+ * Supabase dashboard — a project whose bucket is already called something else
+ * points at it here instead of creating a second one.
+ */
+export const RENDER_BUCKET = Env.SUPABASE_STORAGE_BUCKET;
 
 const UPLOAD_TIMEOUT_MS = 30_000;
 

@@ -11,6 +11,15 @@ export const Env = createEnv({
     CLERK_WEBHOOK_SECRET: z.string().optional(),
     SUPABASE_URL: z.url().optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+    /**
+     * Bucket the rendered cards live in. Named rather than fixed because the
+     * bucket is created by hand in the Supabase dashboard, and a project that
+     * already has one under another name should not need a second.
+     *
+     * Server-only: it is used to build paths with the service role key, and a
+     * public copy of the name would invite guessing at objects.
+     */
+    SUPABASE_STORAGE_BUCKET: z.string().min(1).default('renders'),
     STRIPE_SECRET_KEY: z.string().optional(),
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
     /** Price the Standard plan checks out against. From the Stripe dashboard. */
@@ -59,6 +68,7 @@ export const Env = createEnv({
     CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     STRIPE_STANDARD_PRICE_ID: process.env.STRIPE_STANDARD_PRICE_ID,
