@@ -114,6 +114,11 @@ export const deckVersions = cardnews.table(
     creditsCharged: integer('credits_charged').notNull().default(0),
     scopeKind: runScopeKindEnum('scope_kind').notNull().default('full'),
     scopeDetail: jsonb('scope_detail').$type<{ panelIndex?: number; slotKey?: string }>(),
+    /**
+     * Stitched reel, when one has been built. Null until someone asks for it —
+     * most decks are posted as a carousel and never need a video.
+     */
+    videoPath: text('video_path'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [

@@ -7,6 +7,7 @@ import { logger } from '@/libs/Logger';
 import type { UpdateSlotInput } from '@/validations/DeckValidation';
 import { updateSlotSchema } from '@/validations/DeckValidation';
 import { findOwnedPanel, updatePanelSlots } from './repository';
+import { buildDeckVideo } from './video';
 
 /**
  * Server Action for editing generated copy.
@@ -17,6 +18,8 @@ import { findOwnedPanel, updatePanelSlots } from './repository';
  */
 
 export type UpdateSlotResult = { ok: true } | { ok: false; code: string };
+
+export type BuildVideoResult = { ok: true; url: string } | { ok: false; code: string };
 
 /**
  * Writes one slot's text.
@@ -64,6 +67,39 @@ export async function updatePanelSlot(input: UpdateSlotInput): Promise<UpdateSlo
     const code = error instanceof DomainError ? error.code : 'invalid_input';
 
     logger.warn('Slot edit rejected', { code });
+
+    return { ok: false, code };
+  }
+}
+
+/**
+ * Builds the deck's reel.
+ *
+ * Kicked off by the user rather than produced with every deck: most decks are
+ * posted as a carousel and never need a video, and encoding one for each would
+ * spend the render host's time on files nobody opens.
+ *
+ * @param deckId - The deck to stitch.
+ * @returns A signed URL for the video, or a failure code.
+ */
+export async function buildVideo(deckId: string): Promise<BuildVideoResult> {
+  try {
+    const scope = await getScope();
+    requirePermission(scope, 'board:edit');
+
+    const result = await buildDeckVideo(scope, deckId);
+
+    if (!result.ok) {
+      return { ok: false, code: result.reason };
+    }
+
+    revalidatePath(`/dashboard/deck/${deckId}`);
+
+    return { ok: true, url: result.url };
+  } catch (error) {
+    const code = error instanceof DomainError ? error.code : 'invalid_input';
+
+    logger.warn('Video build rejected', { code });
 
     return { ok: false, code };
   }

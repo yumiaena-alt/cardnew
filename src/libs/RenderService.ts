@@ -93,6 +93,51 @@ export async function renderPanel(doc: SlideDoc, scale = 1): Promise<RenderedPan
   };
 }
 
+/** Stitching twenty cards is a long job on a small host, so it gets its own budget. */
+const VIDEO_TIMEOUT_MS = 240_000;
+
+/**
+ * Stitches rendered cards into one video.
+ *
+ * The reel this product makes is our own cards moving, which is why it is built
+ * from the images we already rendered rather than asked of a generative video
+ * API: a generated clip has nothing to do with the deck it came from, so it
+ * would not be a fan-out of anything. It also costs nothing extra per second.
+ *
+ * @param images - Rendered card bytes, in reading order.
+ * @param secondsPerSlide - How long each card stays on screen.
+ * @returns The video bytes and its length in seconds.
+ * @throws Error when the service is unconfigured, unreachable, or has no ffmpeg.
+ */
+export async function renderVideo(
+  images: ArrayBuffer[],
+  secondsPerSlide?: number,
+): Promise<{ bytes: ArrayBuffer; durationSeconds: number }> {
+  const config = requireConfig();
+
+  const response = await fetch(`${config.url}/video`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${config.token}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      images: images.map((image) => Buffer.from(image).toString('base64')),
+      ...(secondsPerSlide === undefined ? {} : { secondsPerSlide }),
+    }),
+    signal: AbortSignal.timeout(VIDEO_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Render service responded ${response.status}`);
+  }
+
+  return {
+    bytes: await response.arrayBuffer(),
+    durationSeconds: Number(response.headers.get('x-duration-seconds') ?? 0),
+  };
+}
+
 /**
  * Checks that the render service is up.
  *

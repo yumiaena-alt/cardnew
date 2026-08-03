@@ -411,5 +411,16 @@
     "status_published": "Published",
     "status_failed": "Failed",
     "status_canceled": "Canceled"
+  },
+  "DeckVideoPanel": {
+    "title": "Reel video",
+    "subtitle": "Stitch the cards into one vertical video to download.",
+    "build": "Make a video",
+    "rebuild": "Rebuild",
+    "building": "Building",
+    "download": "Download",
+    "no_cards": "No card has been rendered yet.",
+    "error_unavailable": "Could not reach the render server.",
+    "error_failed": "Could not build the video."
   }
 }

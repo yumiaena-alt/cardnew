@@ -411,5 +411,16 @@
     "status_published": "발행됨",
     "status_failed": "실패",
     "status_canceled": "취소됨"
+  },
+  "DeckVideoPanel": {
+    "title": "릴스 영상",
+    "subtitle": "만든 카드를 이어붙여 세로 영상으로 내려받습니다.",
+    "build": "영상 만들기",
+    "rebuild": "다시 만들기",
+    "building": "만드는 중",
+    "download": "내려받기",
+    "no_cards": "아직 렌더된 카드가 없습니다.",
+    "error_unavailable": "렌더 서버에 연결하지 못했습니다.",
+    "error_failed": "영상을 만들지 못했습니다."
   }
 }

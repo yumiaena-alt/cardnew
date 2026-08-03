@@ -146,3 +146,16 @@ export function panelRenderPath(input: {
 }): string {
   return `${input.orgId}/${input.versionId}/${input.index}.png`;
 }
+
+/**
+ * Builds the storage path for a deck's stitched video.
+ *
+ * Namespaced beside the cards it was built from, so a deleted version takes its
+ * video with it rather than leaving an orphan nobody will ever look for.
+ *
+ * @param input - Organization and deck version.
+ * @returns The object path inside the render bucket.
+ */
+export function deckVideoPath(input: { orgId: string; versionId: string }): string {
+  return `${input.orgId}/${input.versionId}/reel.mp4`;
+}

@@ -1,9 +1,11 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { DeckVideoPanel } from '@/components/deck/DeckVideoPanel';
 import { PanelGallery } from '@/components/deck/PanelGallery';
 import { SchedulePanel } from '@/components/deck/SchedulePanel';
 import { getBalance } from '@/features/credit/service';
 import { getDeckView } from '@/features/deck/service';
+import { findDeckVideoUrl } from '@/features/deck/video';
 import { listSchedulesForDeck } from '@/features/publish/repository';
 import { findScope } from '@/features/shared/scope';
 import { listSocialAccounts } from '@/features/social/repository';
@@ -18,11 +20,12 @@ export default async function DeckDetailPage(props: DeckDetailPageProps) {
   const t = await getTranslations({ locale, namespace: 'DeckDetailPage' });
 
   const scope = await findScope();
-  const [view, creditBalance, accounts, schedules] = await Promise.all([
+  const [view, creditBalance, accounts, schedules, videoUrl] = await Promise.all([
     scope ? getDeckView(scope, deckId) : Promise.resolve(null),
     scope ? getBalance(scope) : Promise.resolve(0),
     scope ? listSocialAccounts(scope) : Promise.resolve([]),
     scope ? listSchedulesForDeck(scope, deckId) : Promise.resolve([]),
+    scope ? findDeckVideoUrl(scope, deckId) : Promise.resolve(null),
   ]);
 
   // A deck in another organization is reported the same as one that does not
@@ -52,6 +55,12 @@ export default async function DeckDetailPage(props: DeckDetailPageProps) {
         deckChannel={view.deck.channel}
         deckRatio={view.deck.ratio}
         creditBalance={creditBalance}
+      />
+
+      <DeckVideoPanel
+        deckId={view.deck.id}
+        hasRenderedCards={view.panels.some((panel) => panel.imageUrl !== null)}
+        videoUrl={videoUrl}
       />
 
       <SchedulePanel accounts={accounts} deckId={view.deck.id} schedules={schedules} />

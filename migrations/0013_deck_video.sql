@@ -1,0 +1,1 @@
+ALTER TABLE "cardnews"."deck_versions" ADD COLUMN "video_path" text;
