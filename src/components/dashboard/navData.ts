@@ -8,6 +8,7 @@ export type NavLabelKey =
   | 'planning_reference'
   | 'board'
   | 'deck'
+  | 'deck_link'
   | 'deck_new'
   | 'deck_list'
   | 'template'
@@ -66,6 +67,7 @@ const navGroups: NavGroup[] = [
     icon: Images,
     phase: 1,
     children: [
+      { id: 'deck-link', labelKey: 'deck_link', href: '/dashboard/deck/link' },
       { id: 'deck-new', labelKey: 'deck_new', href: '/dashboard/deck/new' },
       { id: 'deck-list', labelKey: 'deck_list', href: '/dashboard/deck' },
     ],

@@ -31,7 +31,8 @@
     "upgrade": "Upgrade plan",
     "planning": "Content planning",
     "planning_ideas": "Content planning",
-    "planning_reference": "Reference research"
+    "planning_reference": "Reference research",
+    "deck_link": "From a link"
   },
   "DashboardTopbar": {
     "open_sidebar": "Open sidebar",
@@ -121,6 +122,32 @@
     "status_scheduled": "Scheduled",
     "status_published": "Published",
     "status_archived": "Archived"
+  },
+  "DeckLinkPage": {
+    "title": "Card news from a link",
+    "subtitle": "Paste an article or blog URL and its content becomes card news.",
+    "url_label": "Link",
+    "url_hint": "https only. Private posts and script-rendered pages may not be readable.",
+    "url_placeholder": "https://example.com/article",
+    "read": "Read the page",
+    "reading": "Reading",
+    "untitled": "Untitled",
+    "extracted": "Pulled {count} characters.",
+    "channel_label": "Channel",
+    "channel_hint": "Rendered at {ratio}.",
+    "channel_instagram": "Instagram",
+    "channel_threads": "Threads",
+    "channel_tiktok": "TikTok",
+    "channel_blog": "Blog",
+    "submit": "See the estimate",
+    "error_invalid_url": "Use an address starting with https.",
+    "error_blocked_host": "That address cannot be read.",
+    "error_unreachable": "Could not fetch the page.",
+    "error_unsupported_content": "That page is not an article.",
+    "error_empty_content": "No body text found. Try another link.",
+    "error_unauthorized": "Sign in to continue.",
+    "error_forbidden": "Your role cannot do this.",
+    "error_invalid_input": "Check the address."
   },
   "DeckDetailPage": {
     "meta": "{count} slides · {ratio} · {channel}",
