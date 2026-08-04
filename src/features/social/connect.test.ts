@@ -9,6 +9,7 @@ process.env.TOKEN_ENCRYPTION_KEY = randomBytes(32).toString('base64');
 const { afterEach, describe, expect, it, vi } = await import('vitest');
 const {
   buildAuthorizeUrl,
+  toCallbackUrl,
   createState,
   extendToken,
   fetchInstagramProfile,
@@ -160,5 +161,30 @@ describe('account connection', () => {
         reason: 'profile_failed',
       });
     });
+  });
+});
+
+describe(toCallbackUrl, () => {
+  it('builds an absolute callback from the app address', () => {
+    expect(toCallbackUrl('https://panelo.example')).toBe(
+      'https://panelo.example/api/oauth/instagram/callback',
+    );
+  });
+
+  it('drops a trailing slash rather than doubling it', () => {
+    expect(toCallbackUrl('https://panelo.example/')).toBe(
+      'https://panelo.example/api/oauth/instagram/callback',
+    );
+  });
+
+  // A relative redirect_uri reaches Meta as a message about app domains, which
+  // sends whoever reads it into the Meta dashboard hunting a problem that is
+  // not there.
+  it('refuses to build one without an app address', () => {
+    expect(toCallbackUrl()).toBeNull();
+  });
+
+  it('treats a blank address as unset', () => {
+    expect(toCallbackUrl('   ')).toBeNull();
   });
 });

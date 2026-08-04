@@ -3,9 +3,12 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Button } from '@/components/ui/Button';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { findScope } from '@/features/shared/scope';
-import { buildAuthorizeUrl, isConnectConfigured } from '@/features/social/connect';
+import {
+  buildAuthorizeUrl,
+  buildRedirectUri,
+  isConnectConfigured,
+} from '@/features/social/connect';
 import { listSocialAccounts } from '@/features/social/repository';
-import { Env } from '@/libs/Env';
 
 type AccountsPageProps = {
   params: Promise<{ locale: string }>;
@@ -26,6 +29,7 @@ export default async function AccountsPage(props: AccountsPageProps) {
     canceled: t('result_canceled'),
     no_business_account: t('result_no_business_account'),
     already_connected: t('result_already_connected'),
+    unconfigured: t('result_unconfigured'),
   };
   const result = connect ? (named[connect] ?? t('result_failed')) : null;
   const isConnected = connect === 'connected';
@@ -33,8 +37,8 @@ export default async function AccountsPage(props: AccountsPageProps) {
   const scope = await findScope();
   const accounts = scope ? await listSocialAccounts(scope) : [];
 
-  const redirectUri = `${Env.NEXT_PUBLIC_APP_URL ?? ''}/api/oauth/instagram/callback`;
-  const authorizeUrl = scope ? buildAuthorizeUrl(scope, redirectUri) : null;
+  const redirectUri = buildRedirectUri();
+  const authorizeUrl = scope && redirectUri ? buildAuthorizeUrl(scope, redirectUri) : null;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -85,7 +89,7 @@ export default async function AccountsPage(props: AccountsPageProps) {
         )}
 
         {isConnectConfigured() && authorizeUrl ? (
-          <Button variant="signal" size="lg" render={<a href={authorizeUrl}>{t('connect')}</a>} />
+          <Button size="lg" render={<a href={authorizeUrl}>{t('connect')}</a>} />
         ) : (
           <p className="rounded-lg border border-status-wait-border bg-status-wait p-3 text-sm text-status-wait-foreground">
             {t('unconfigured_note')}

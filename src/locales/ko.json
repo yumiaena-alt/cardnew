@@ -127,7 +127,8 @@
     "result_canceled": "연동을 취소했습니다.",
     "result_no_business_account": "페이스북 페이지에 연결된 인스타그램 프로 계정이 없습니다.",
     "result_already_connected": "이 계정은 다른 조직에 연동되어 있습니다.",
-    "result_failed": "계정을 연동하지 못했습니다."
+    "result_failed": "계정을 연동하지 못했습니다.",
+    "result_unconfigured": "앱 주소가 설정되지 않아 연동을 시작할 수 없어요"
   },
   "DeckListPage": {
     "empty_title": "아직 만든 카드뉴스가 없어요",

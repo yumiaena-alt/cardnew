@@ -2,6 +2,7 @@ import type { Button as ButtonPrimitive } from '@base-ui/react/button';
 import { Button as ButtonBase } from '@base-ui/react/button';
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
+import { isValidElement } from 'react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
@@ -45,6 +46,21 @@ const buttonVariants = cva(
 type ButtonProps = ButtonPrimitive.Props & VariantProps<typeof buttonVariants>;
 
 /**
+ * Decides whether what is being rendered is a real `<button>`.
+ *
+ * Base UI assumes one unless told otherwise, and warns when the rendered
+ * element turns out to be something else — which every `render={<Link/>}` is.
+ * Working it out here rather than at each call site means a link styled as a
+ * button cannot reintroduce the warning by forgetting a prop.
+ *
+ * @param render - The element Base UI was asked to render into, if any.
+ * @returns Whether Base UI should treat it as a native button.
+ */
+function isNativeButton(render: ButtonProps['render']): boolean {
+  return !isValidElement(render) || render.type === 'button';
+}
+
+/**
  * Primary interactive control. Use `variant="signal"` only for AI generation actions.
  *
  * @param props - Base UI button props plus `variant` and `size`.
@@ -56,6 +72,7 @@ function Button(props: ButtonProps) {
   return (
     <ButtonBase
       data-slot="button"
+      nativeButton={isNativeButton(props.render)}
       className={cn(buttonVariants({ variant, size, className }))}
       {...rest}
     />

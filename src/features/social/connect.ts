@@ -129,6 +129,40 @@ export function readState(
   return { ok: true, orgId: decoded.orgId };
 }
 
+/** Where the provider returns the user after they approve. */
+const CALLBACK_PATH = '/api/oauth/instagram/callback';
+
+/**
+ * Builds the absolute callback URL the provider must return to.
+ *
+ * Null rather than a relative path when the app's own address is unknown. Meta
+ * rejects a relative `redirect_uri` with a message about app domains, which
+ * reads as a misconfigured Meta app rather than a variable missing on our side
+ * — so an unset address has to stop the flow here, where the screen can say so,
+ * instead of surfacing as somebody else's error two redirects later.
+ *
+ * @param origin - The app's own address, if configured.
+ * @returns The absolute callback URL, or null when the app address is unset.
+ */
+export function toCallbackUrl(origin?: string): string | null {
+  const trimmed = origin?.trim();
+
+  if (trimmed === undefined || trimmed === '') {
+    return null;
+  }
+
+  return `${trimmed.replace(/\/+$/u, '')}${CALLBACK_PATH}`;
+}
+
+/**
+ * The callback URL for this deployment.
+ *
+ * @returns The absolute callback URL, or null when the app address is unset.
+ */
+export function buildRedirectUri(): string | null {
+  return toCallbackUrl(Env.NEXT_PUBLIC_APP_URL);
+}
+
 /**
  * Builds the URL that starts the connection.
  *
