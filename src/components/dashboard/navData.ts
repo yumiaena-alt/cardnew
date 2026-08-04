@@ -71,13 +71,6 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'board',
-    labelKey: 'board',
-    icon: LayoutGrid,
-    href: '/dashboard/board',
-    phase: 2,
-  },
-  {
     id: 'deck',
     labelKey: 'deck',
     icon: Images,
@@ -87,6 +80,13 @@ const navGroups: NavGroup[] = [
       { id: 'deck-new', labelKey: 'deck_new', href: '/dashboard/deck/new' },
       { id: 'deck-list', labelKey: 'deck_list', href: '/dashboard/deck' },
     ],
+  },
+  {
+    id: 'board',
+    labelKey: 'board',
+    icon: LayoutGrid,
+    href: '/dashboard/board',
+    phase: 2,
   },
   {
     id: 'blog',
@@ -113,6 +113,13 @@ const navGroups: NavGroup[] = [
     phase: 2,
   },
   {
+    id: 'analytics',
+    labelKey: 'analytics',
+    icon: LineChart,
+    href: '/dashboard/analytics',
+    phase: 2,
+  },
+  {
     id: 'automation',
     labelKey: 'automation',
     icon: Zap,
@@ -126,16 +133,6 @@ const navGroups: NavGroup[] = [
     href: '/dashboard/comments',
     phase: 2,
   },
-  {
-    id: 'analytics',
-    labelKey: 'analytics',
-    icon: LineChart,
-    href: '/dashboard/analytics',
-    phase: 2,
-  },
-  // Last, and not optional: automations, the comment inbox and analytics are
-  // all empty until an account is connected, and the only screen that connects
-  // one was reachable by typing its address.
   {
     id: 'settings',
     labelKey: 'settings',
