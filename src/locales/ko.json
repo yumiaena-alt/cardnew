@@ -18,11 +18,9 @@
     "brand_name": "Panelo",
     "primary_navigation": "주요 메뉴",
     "close_sidebar": "사이드바 닫기",
-    "board": "월간 보드",
-    "deck": "카드뉴스",
+    "deck": "콘텐츠 제작",
     "deck_new": "새로 만들기",
     "deck_list": "내 카드뉴스",
-    "template": "템플릿",
     "calendar": "캘린더",
     "analytics": "성과",
     "credits_left": "{count} 남음",
@@ -34,8 +32,8 @@
     "blog": "블로그 글",
     "automation": "자동 DM",
     "comments": "댓글 관리",
-    "settings": "설정",
-    "settings_accounts": "SNS 계정 연동"
+    "settings_accounts": "SNS 계정 연동",
+    "social": "SNS 관리"
   },
   "DashboardTopbar": {
     "open_sidebar": "사이드바 열기",
@@ -229,7 +227,9 @@
     "channel_threads": "스레드",
     "channel_tiktok": "틱톡",
     "channel_blog": "블로그",
-    "submit": "견적 보기"
+    "submit": "견적 보기",
+    "templates_title": "템플릿 둘러보기",
+    "templates_description": "마음에 드는 스타일을 고르고 거기서 시작하세요."
   },
   "TemplateGalleryPage": {
     "scaffold_title": "템플릿 갤러리를 만들고 있어요",
@@ -274,7 +274,10 @@
     "weekday_thu": "목",
     "weekday_fri": "금",
     "weekday_sat": "토",
-    "day_booked": "예약 {count}건"
+    "day_booked": "예약 {count}건",
+    "view_label": "보기 전환",
+    "view_calendar": "캘린더",
+    "view_board": "보드"
   },
   "AnalyticsPage": {
     "title": "콘텐츠 성과",

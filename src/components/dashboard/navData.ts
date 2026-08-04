@@ -1,34 +1,21 @@
 import type { LucideIcon } from 'lucide-react';
-import {
-  Calendar,
-  FileText,
-  Images,
-  LayoutGrid,
-  LineChart,
-  MessageCircle,
-  Palette,
-  Settings,
-  Sparkles,
-  Zap,
-} from 'lucide-react';
+import { Calendar, Images, Share2, Sparkles } from 'lucide-react';
 
 /** Keys available in the `DashboardNav` i18n namespace. Keeps `t()` type-safe. */
 export type NavLabelKey =
   | 'planning'
   | 'planning_ideas'
   | 'planning_reference'
-  | 'board'
   | 'deck'
   | 'deck_link'
   | 'deck_new'
   | 'deck_list'
   | 'blog'
-  | 'template'
   | 'automation'
   | 'comments'
   | 'calendar'
   | 'analytics'
-  | 'settings'
+  | 'social'
   | 'settings_accounts';
 
 type NavItem = {
@@ -76,32 +63,9 @@ const navGroups: NavGroup[] = [
     children: [
       { id: 'deck-link', labelKey: 'deck_link', href: '/dashboard/deck/link' },
       { id: 'deck-new', labelKey: 'deck_new', href: '/dashboard/deck/new' },
+      { id: 'deck-blog', labelKey: 'blog', href: '/dashboard/blog' },
       { id: 'deck-list', labelKey: 'deck_list', href: '/dashboard/deck' },
     ],
-  },
-  {
-    id: 'board',
-    labelKey: 'board',
-    icon: LayoutGrid,
-    href: '/dashboard/board',
-    phase: 2,
-  },
-  {
-    id: 'blog',
-    labelKey: 'blog',
-    icon: FileText,
-    href: '/dashboard/blog',
-    phase: 1,
-  },
-  // Design learning lives in the card news tabs, next to creating and history,
-  // because teaching a style is something you do while making — not a place you
-  // navigate to. That leaves one template destination, so it stops being a group.
-  {
-    id: 'template',
-    labelKey: 'template',
-    icon: Palette,
-    href: '/dashboard/templates',
-    phase: 1,
   },
   {
     id: 'calendar',
@@ -110,35 +74,21 @@ const navGroups: NavGroup[] = [
     href: '/dashboard/calendar',
     phase: 2,
   },
+  // Everything that only matters once an account is connected, kept together:
+  // results, DM rules, the comment inbox, and the connection they all depend on.
+  // Separately they were four entries in three parts of the menu, and the one
+  // that turns the other three on was the easiest to miss.
   {
-    id: 'analytics',
-    labelKey: 'analytics',
-    icon: LineChart,
-    href: '/dashboard/analytics',
-    phase: 2,
-  },
-  {
-    id: 'automation',
-    labelKey: 'automation',
-    icon: Zap,
-    href: '/dashboard/automation',
-    phase: 2,
-  },
-  {
-    id: 'comments',
-    labelKey: 'comments',
-    icon: MessageCircle,
-    href: '/dashboard/comments',
-    phase: 2,
-  },
-  {
-    id: 'settings',
-    labelKey: 'settings',
-    icon: Settings,
+    id: 'social',
+    labelKey: 'social',
+    icon: Share2,
     phase: 2,
     children: [
+      { id: 'social-analytics', labelKey: 'analytics', href: '/dashboard/analytics' },
+      { id: 'social-automation', labelKey: 'automation', href: '/dashboard/automation' },
+      { id: 'social-comments', labelKey: 'comments', href: '/dashboard/comments' },
       {
-        id: 'settings-accounts',
+        id: 'social-accounts',
         labelKey: 'settings_accounts',
         href: '/dashboard/settings/accounts',
       },

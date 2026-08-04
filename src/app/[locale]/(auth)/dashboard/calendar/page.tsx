@@ -1,5 +1,8 @@
 import { CalendarDays } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { BoardPanel } from '@/components/board/BoardPanel';
+import type { CalendarView } from '@/components/calendar/CalendarViewTabs';
+import { CalendarViewTabs } from '@/components/calendar/CalendarViewTabs';
 import { MonthGrid } from '@/components/calendar/MonthGrid';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -9,6 +12,8 @@ import { Link } from '@/libs/I18nNavigation';
 
 type CalendarPageProps = {
   params: Promise<{ locale: string }>;
+  /** The sheet is a view of the month, so which view is showing lives in the URL. */
+  searchParams: Promise<{ view?: string }>;
 };
 
 export default async function CalendarPage(props: CalendarPageProps) {
@@ -16,11 +21,24 @@ export default async function CalendarPage(props: CalendarPageProps) {
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'CalendarPage' });
 
+  const { view } = await props.searchParams;
+  const active: CalendarView = view === 'board' ? 'board' : 'calendar';
+
+  if (active === 'board') {
+    return (
+      <div className="flex flex-col gap-4">
+        <CalendarViewTabs active={active} />
+        <BoardPanel />
+      </div>
+    );
+  }
+
   const scope = await findScope();
 
   if (!scope) {
     return (
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4">
+        <CalendarViewTabs active={active} />
         <EmptyState
           icon={CalendarDays}
           title={t('empty_title')}
@@ -35,6 +53,8 @@ export default async function CalendarPage(props: CalendarPageProps) {
 
   return (
     <div className="flex flex-col gap-4">
+      <CalendarViewTabs active={active} />
+
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-foreground">
@@ -48,7 +68,7 @@ export default async function CalendarPage(props: CalendarPageProps) {
         <Button
           variant="signal"
           size="lg"
-          render={<Link href="/dashboard/board">{t('fill_action')}</Link>}
+          render={<Link href="/dashboard/calendar?view=board">{t('fill_action')}</Link>}
         />
       </header>
 

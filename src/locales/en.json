@@ -18,11 +18,9 @@
     "brand_name": "Panelo",
     "primary_navigation": "Primary navigation",
     "close_sidebar": "Close sidebar",
-    "board": "Board",
-    "deck": "Deck",
+    "deck": "Create",
     "deck_new": "New deck",
     "deck_list": "My decks",
-    "template": "Templates",
     "calendar": "Calendar",
     "analytics": "Performance",
     "credits_left": "{count} left",
@@ -34,8 +32,8 @@
     "blog": "Blog posts",
     "automation": "Auto DM",
     "comments": "Comments",
-    "settings": "Settings",
-    "settings_accounts": "Social accounts"
+    "settings_accounts": "Social accounts",
+    "social": "Social"
   },
   "DashboardTopbar": {
     "open_sidebar": "Open sidebar",
@@ -229,7 +227,9 @@
     "channel_threads": "Threads",
     "channel_tiktok": "TikTok",
     "channel_blog": "Blog",
-    "submit": "See the estimate"
+    "submit": "See the estimate",
+    "templates_title": "Browse templates",
+    "templates_description": "Pick a look you like and start from it."
   },
   "TemplateGalleryPage": {
     "scaffold_title": "Template gallery is being built",
@@ -274,7 +274,10 @@
     "weekday_thu": "Thu",
     "weekday_fri": "Fri",
     "weekday_sat": "Sat",
-    "day_booked": "{count} booked"
+    "day_booked": "{count} booked",
+    "view_label": "Switch view",
+    "view_calendar": "Calendar",
+    "view_board": "Sheet"
   },
   "AnalyticsPage": {
     "title": "Output",

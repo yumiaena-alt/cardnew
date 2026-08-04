@@ -27,6 +27,15 @@ export function DeckTabs() {
   const t = useTranslations('DeckTabs');
   const pathname = usePathname();
 
+  // Named one by one rather than looked up from the tab id. A dynamic `t(key)`
+  // reads to the i18n checker as a key nobody uses, and the same is done for
+  // the sidebar labels for the same reason.
+  const labels: Record<(typeof TABS)[number]['id'], string> = {
+    create: t('create'),
+    learn: t('learn'),
+    history: t('history'),
+  };
+
   return (
     <nav aria-label={t('label')} className="flex gap-1 rounded-xl border border-border bg-card p-1">
       {TABS.map((tab) => {
@@ -45,7 +54,7 @@ export function DeckTabs() {
             href={tab.href}
             key={tab.id}
           >
-            {t(tab.id)}
+            {labels[tab.id]}
           </Link>
         );
       })}
