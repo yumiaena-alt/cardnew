@@ -35,7 +35,9 @@
     "deck_link": "링크로 만들기",
     "blog": "블로그 글",
     "automation": "자동 DM",
-    "comments": "댓글 관리"
+    "comments": "댓글 관리",
+    "settings": "설정",
+    "settings_accounts": "SNS 계정 연동"
   },
   "DashboardTopbar": {
     "open_sidebar": "사이드바 열기",
@@ -73,7 +75,11 @@
     "error_conflict": "이미 처리된 요청입니다.",
     "error_insufficient_credits": "크레딧이 모자랍니다.",
     "error_invalid_input": "입력을 확인해 주세요.",
-    "error_planner_unavailable": "기획 서버가 아직 연결되지 않았습니다."
+    "error_planner_unavailable": "기획 서버가 아직 연결되지 않았습니다.",
+    "generate_more": "아이디어 더 받기",
+    "select_all": "전체 선택",
+    "clear_all": "전체 해제",
+    "kept_summary": "{total}개 중 {count}개 선택"
   },
   "ReferencePage": {
     "eyebrow": "콘텐츠 레퍼런스 검색",

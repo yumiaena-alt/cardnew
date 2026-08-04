@@ -7,6 +7,7 @@ import {
   LineChart,
   MessageCircle,
   Palette,
+  Settings,
   Sparkles,
   Zap,
 } from 'lucide-react';
@@ -28,7 +29,9 @@ export type NavLabelKey =
   | 'automation'
   | 'comments'
   | 'calendar'
-  | 'analytics';
+  | 'analytics'
+  | 'settings'
+  | 'settings_accounts';
 
 type NavItem = {
   id: string;
@@ -129,6 +132,22 @@ const navGroups: NavGroup[] = [
     icon: LineChart,
     href: '/dashboard/analytics',
     phase: 2,
+  },
+  // Last, and not optional: automations, the comment inbox and analytics are
+  // all empty until an account is connected, and the only screen that connects
+  // one was reachable by typing its address.
+  {
+    id: 'settings',
+    labelKey: 'settings',
+    icon: Settings,
+    phase: 2,
+    children: [
+      {
+        id: 'settings-accounts',
+        labelKey: 'settings_accounts',
+        href: '/dashboard/settings/accounts',
+      },
+    ],
   },
 ];
 

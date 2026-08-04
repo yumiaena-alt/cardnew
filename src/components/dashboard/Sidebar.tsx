@@ -39,6 +39,8 @@ function useNavLabels(): NavLabels {
     comments: t('comments'),
     calendar: t('calendar'),
     analytics: t('analytics'),
+    settings: t('settings'),
+    settings_accounts: t('settings_accounts'),
   };
 }
 

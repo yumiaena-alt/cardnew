@@ -61,8 +61,11 @@ export function PlanningView(props: PlanningViewProps) {
         return;
       }
 
-      setIdeas(result.ideas);
-      setKept(new Set(result.ideas));
+      // Added to what is already on screen rather than replacing it. Asking
+      // again usually means "these are not enough", not "throw away the ones I
+      // already ticked" — and replacing would silently drop those choices.
+      setIdeas((previous) => [...new Set([...previous, ...result.ideas])]);
+      setKept((previous) => new Set([...previous, ...result.ideas]));
     });
   };
 
@@ -161,7 +164,7 @@ export function PlanningView(props: PlanningViewProps) {
           onClick={generate}
         >
           <Sparkles data-icon="inline-start" />
-          {isPending ? t('working') : t('generate')}
+          {isPending ? t('working') : t(ideas.length === 0 ? 'generate' : 'generate_more')}
         </Button>
 
         {failure ? (
@@ -223,7 +226,28 @@ export function PlanningView(props: PlanningViewProps) {
             ))}
           </ul>
 
-          <div className="flex justify-end">
+          {/* Sticky because the list runs past a screen: the action that ends
+              this screen has to stay in reach without scrolling to find it. */}
+          <div className="sticky bottom-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card/95 p-3 shadow-sm backdrop-blur">
+            <div className="flex items-center gap-3">
+              {/* tabular-nums stops the count jittering as it changes, but the
+                  sentence stays in the UI face — mono is for figures, not prose. */}
+              <span className="text-sm text-muted-foreground tabular-nums">
+                {t('kept_summary', { count: kept.size, total: ideas.length })}
+              </span>
+
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={isPending}
+                onClick={() => {
+                  setKept(kept.size === ideas.length ? new Set() : new Set(ideas));
+                }}
+              >
+                {kept.size === ideas.length ? t('clear_all') : t('select_all')}
+              </Button>
+            </div>
+
             <Button size="lg" disabled={kept.size === 0 || isPending} onClick={push}>
               {t('push', { count: kept.size })}
             </Button>
