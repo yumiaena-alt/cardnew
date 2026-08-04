@@ -2,6 +2,7 @@ import { logger as triggerLogger, task } from '@trigger.dev/sdk';
 import { findDefaultProjectId } from '@/features/deck/repository';
 import type { SlideImagery } from '@/features/run/imagery';
 import { generateCut } from '@/features/run/pipeline';
+import { checkMargin, providerCostUsd } from '@/features/run/providerCost';
 import { regeneratePanels } from '@/features/run/regenerate';
 import { findRun, listRunItems, updateRun, updateRunItem } from '@/features/run/repository';
 import type { RunItemOutcome } from '@/features/run/service';
@@ -192,17 +193,34 @@ export const generateRunTask = task({
       }
     }
 
+    const usage = { llmInputTokens: inputTokens, llmOutputTokens: outputTokens };
+
     const closed = await finalizeRun(scope, payload.runId, {
       outcomes,
       costSnapshot: {
         llmInputTokens: inputTokens,
         llmOutputTokens: outputTokens,
         imageCount: panelCount,
-        // Filled in once provider pricing is wired to the ledger; the token and
-        // image counts above are what a cost review actually needs first.
-        providerCostUsd: 0,
+        providerCostUsd: providerCostUsd(usage),
       },
     });
+
+    // Logged rather than thrown: the run is finished and the cards are made, so
+    // failing here would refuse to close a run over a pricing question. A thin
+    // margin is something to read in the morning, not to drop work over.
+    const margin = checkMargin({
+      creditsCharged: closed.chargedCredits - closed.refundedCredits,
+      usage,
+    });
+
+    if (!margin.healthy) {
+      triggerLogger.warn('Run charged too close to what it cost', {
+        runId: closed.id,
+        costUsd: Number(margin.costUsd.toFixed(4)),
+        chargedUsd: Number(margin.chargedUsd.toFixed(4)),
+        multiple: Number(margin.multiple.toFixed(2)),
+      });
+    }
 
     return {
       runId: closed.id,

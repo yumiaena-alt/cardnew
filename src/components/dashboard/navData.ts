@@ -24,8 +24,6 @@ export type NavLabelKey =
   | 'deck_list'
   | 'blog'
   | 'template'
-  | 'template_gallery'
-  | 'template_learn'
   | 'automation'
   | 'comments'
   | 'calendar'
@@ -95,15 +93,15 @@ const navGroups: NavGroup[] = [
     href: '/dashboard/blog',
     phase: 1,
   },
+  // Design learning lives in the card news tabs, next to creating and history,
+  // because teaching a style is something you do while making — not a place you
+  // navigate to. That leaves one template destination, so it stops being a group.
   {
     id: 'template',
     labelKey: 'template',
     icon: Palette,
+    href: '/dashboard/templates',
     phase: 1,
-    children: [
-      { id: 'template-gallery', labelKey: 'template_gallery', href: '/dashboard/templates' },
-      { id: 'template-learn', labelKey: 'template_learn', href: '/dashboard/templates/learn' },
-    ],
   },
   {
     id: 'calendar',

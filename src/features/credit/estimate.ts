@@ -15,8 +15,15 @@ export const CREDIT_RATES = {
   panel: 3,
   /** Single slot regenerated in place. */
   slot: 1,
-  /** Reference images turned into a reusable template. */
-  designLearning: 5,
+  /**
+   * Reference images turned into a reusable template.
+   *
+   * Ten images cost about 10 cents of model time — the images alone are 5.8 of
+   * that — against 5 cents a credit. Five credits cleared cost by 2.5x, which
+   * is under the floor once the render host, storage and refunds are counted.
+   * See `run/providerCost.ts`.
+   */
+  designLearning: 10,
   /** One ad-library search. Charged once per query per day, not per attempt. */
   referenceSearch: 1,
   /**
