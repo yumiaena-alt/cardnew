@@ -15,15 +15,15 @@ type PlanningViewProps = {
 };
 
 /**
- * Where topics can come from. Only self-authored is live; the other two are
- * shown disabled rather than hidden so the shape of the feature is honest
- * about what is coming without pretending it already works.
+ * Where topics can come from. Each one asks the planner a different question:
+ * from nothing, from what is current on the web, or from what this business has
+ * already published.
  */
 const SOURCES = [
-  { id: 'self', icon: Sparkles, enabled: true },
-  { id: 'web', icon: Globe, enabled: false },
-  { id: 'library', icon: Library, enabled: false },
-] as const satisfies readonly { id: IdeaSource; icon: typeof Sparkles; enabled: boolean }[];
+  { id: 'self', icon: Sparkles },
+  { id: 'web', icon: Globe },
+  { id: 'library', icon: Library },
+] as const satisfies readonly { id: IdeaSource; icon: typeof Sparkles }[];
 
 const CONTEXT_FIELD_ID = 'planning-context';
 const MIN_CONTEXT_LENGTH = 2;
@@ -119,7 +119,6 @@ export function PlanningView(props: PlanningViewProps) {
                 key={entry.id}
                 type="button"
                 aria-pressed={isActive}
-                disabled={!entry.enabled}
                 onClick={() => {
                   setSource(entry.id);
                 }}
@@ -128,7 +127,6 @@ export function PlanningView(props: PlanningViewProps) {
                   isActive
                     ? 'border-signal bg-signal/10 text-foreground'
                     : 'border-border bg-background text-muted-foreground hover:bg-accent',
-                  entry.enabled ? '' : 'cursor-not-allowed opacity-50 hover:bg-background',
                 )}
               >
                 <span

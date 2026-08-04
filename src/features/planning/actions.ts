@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { loadCurrentBoard, saveBoard } from '@/features/board/service';
+import { listDecks } from '@/features/deck/repository';
 import { DomainError } from '@/features/shared/errors';
 import { getScope, requirePermission } from '@/features/shared/scope';
 import { Env } from '@/libs/Env';
@@ -27,7 +28,8 @@ export type PlanningFailureCode =
   | 'conflict'
   | 'insufficient_credits'
   | 'invalid_input'
-  | 'planner_unavailable';
+  | 'planner_unavailable'
+  | 'empty_library';
 
 export type IdeaResult = { ok: true; ideas: string[] } | { ok: false; code: PlanningFailureCode };
 
@@ -41,6 +43,23 @@ export type PushResult = { ok: true; added: number } | { ok: false; code: Planni
  */
 function toFailureCode(error: unknown): PlanningFailureCode {
   return error instanceof DomainError ? error.code : 'invalid_input';
+}
+
+/** Enough of the back catalogue to show what a business keeps returning to. */
+const LIBRARY_SAMPLE = 40;
+
+/**
+ * Reads the topics this organization has already covered.
+ *
+ * @param scope - Tenant scope.
+ * @returns Distinct prior topics, most recent first.
+ */
+async function readPriorTopics(scope: Awaited<ReturnType<typeof getScope>>): Promise<string[]> {
+  const decks = await listDecks(scope, LIBRARY_SAMPLE);
+
+  return [
+    ...new Set(decks.map((deck) => deck.topic ?? deck.title).filter((topic) => topic !== '')),
+  ];
 }
 
 /**
@@ -59,7 +78,16 @@ export async function requestIdeas(input: IdeaRequestInput): Promise<IdeaResult>
     }
 
     const parsed = ideaRequestSchema.parse(input);
-    const ideas = await generateIdeas(parsed);
+
+    // The library source builds on work that exists. With nothing to build on it
+    // would quietly behave like the plain one, so it says so instead.
+    const priorTopics = parsed.source === 'library' ? await readPriorTopics(scope) : undefined;
+
+    if (parsed.source === 'library' && priorTopics?.length === 0) {
+      return { ok: false, code: 'empty_library' };
+    }
+
+    const ideas = await generateIdeas({ ...parsed, priorTopics });
 
     return { ok: true, ideas };
   } catch (error) {

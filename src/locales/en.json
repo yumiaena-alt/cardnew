@@ -79,7 +79,8 @@
     "generate_more": "Get more ideas",
     "select_all": "Select all",
     "clear_all": "Clear all",
-    "kept_summary": "{count} of {total} selected"
+    "kept_summary": "{count} of {total} selected",
+    "error_empty_library": "Nothing to draw on yet — no card news has been made."
   },
   "ReferencePage": {
     "eyebrow": "Reference search",
@@ -134,7 +135,13 @@
     "result_no_business_account": "No Instagram professional account is linked to your Facebook page.",
     "result_already_connected": "This account is connected to another organization.",
     "result_failed": "Could not connect the account.",
-    "result_unconfigured": "Cannot start connecting: the app address is not set"
+    "result_unconfigured": "Cannot start connecting: the app address is not set",
+    "channel_instagram": "Instagram",
+    "channel_threads": "Threads",
+    "channel_tiktok": "TikTok",
+    "channel_youtube": "YouTube",
+    "channel_ready": "Ready",
+    "channel_later": "Not yet"
   },
   "DeckListPage": {
     "empty_title": "No decks yet",
@@ -316,8 +323,6 @@
   "CommentsPage": {
     "title": "Comments",
     "subtitle": "Everything waiting for a reply, in one place.",
-    "unconnected_title": "Connect a social account",
-    "unconnected_description": "Comments are read from the account itself. There is nothing to show until one is connected.",
     "empty_title": "Nothing waiting for a reply",
     "empty_description": "Unanswered comments show up here as they arrive.",
     "unreachable": "Could not read comments for {handles}. Reconnecting the account fixes this.",
@@ -429,5 +434,16 @@
     "no_cards": "No card has been rendered yet.",
     "error_unavailable": "Could not reach the render server.",
     "error_failed": "Could not build the video."
+  },
+  "ConnectNotice": {
+    "action": "Connect an account",
+    "title_planning": "Connect to plan around your channels",
+    "description_planning": "Right now ideas come from your description alone. Connected, they come from what actually landed.",
+    "title_analytics": "No results to pull in yet",
+    "description_analytics": "Views, saves and comments come from a connected account.",
+    "title_automation": "Automations run on connected accounts",
+    "description_automation": "Rules can be written now. They start working once an account is connected.",
+    "title_comments": "Comments arrive from connected accounts",
+    "description_comments": "Connect one to read comments here and reply without leaving."
   }
 }

@@ -1,5 +1,6 @@
 import { ExternalLink, MessageCircle } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { ConnectNotice } from '@/components/dashboard/ConnectNotice';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { findScope } from '@/features/shared/scope';
 import { listUnansweredComments } from '@/features/social/comments';
@@ -34,6 +35,8 @@ export default async function CommentsPage(props: CommentsPageProps) {
         <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
+      {accounts.length === 0 ? <ConnectNotice surface="comments" /> : null}
+
       {inbox.unreachableAccounts.length > 0 ? (
         <p className="rounded-lg border border-status-fail-border bg-status-fail p-3 text-sm text-status-fail-foreground">
           {t('unreachable', { handles: inbox.unreachableAccounts.join(', ') })}
@@ -41,12 +44,12 @@ export default async function CommentsPage(props: CommentsPageProps) {
       ) : null}
 
       {inbox.comments.length === 0 ? (
+        // 미연동일 때 할 말은 위 배너가 이미 한다. 한 화면에서 같은 말을 두 번
+        // 하면 어느 쪽을 눌러야 하는지가 흐려진다.
         <EmptyState
           icon={MessageCircle}
-          title={accounts.length === 0 ? t('unconnected_title') : t('empty_title')}
-          description={
-            accounts.length === 0 ? t('unconnected_description') : t('empty_description')
-          }
+          title={t('empty_title')}
+          description={t('empty_description')}
         />
       ) : (
         <ul className="flex flex-col gap-2">

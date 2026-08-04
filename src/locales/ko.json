@@ -79,7 +79,8 @@
     "generate_more": "아이디어 더 받기",
     "select_all": "전체 선택",
     "clear_all": "전체 해제",
-    "kept_summary": "{total}개 중 {count}개 선택"
+    "kept_summary": "{total}개 중 {count}개 선택",
+    "error_empty_library": "아직 만든 카드뉴스가 없어 참고할 자료가 없습니다."
   },
   "ReferencePage": {
     "eyebrow": "콘텐츠 레퍼런스 검색",
@@ -134,7 +135,13 @@
     "result_no_business_account": "페이스북 페이지에 연결된 인스타그램 프로 계정이 없습니다.",
     "result_already_connected": "이 계정은 다른 조직에 연동되어 있습니다.",
     "result_failed": "계정을 연동하지 못했습니다.",
-    "result_unconfigured": "앱 주소가 설정되지 않아 연동을 시작할 수 없어요"
+    "result_unconfigured": "앱 주소가 설정되지 않아 연동을 시작할 수 없어요",
+    "channel_instagram": "인스타그램",
+    "channel_threads": "스레드",
+    "channel_tiktok": "틱톡",
+    "channel_youtube": "유튜브",
+    "channel_ready": "연동 가능",
+    "channel_later": "준비 중"
   },
   "DeckListPage": {
     "empty_title": "아직 만든 카드뉴스가 없어요",
@@ -316,8 +323,6 @@
   "CommentsPage": {
     "title": "댓글 관리",
     "subtitle": "답변이 필요한 댓글을 한 곳에서 봅니다.",
-    "unconnected_title": "SNS 계정을 연동해 주세요",
-    "unconnected_description": "댓글은 계정에서 직접 읽어옵니다. 연동 전에는 보여드릴 것이 없습니다.",
     "empty_title": "답변이 필요한 댓글이 없어요",
     "empty_description": "아직 답변하지 않은 댓글이 생기면 여기에 모입니다.",
     "unreachable": "{handles} 계정의 댓글을 불러오지 못했습니다. 연동을 다시 하면 해결됩니다.",
@@ -429,5 +434,16 @@
     "no_cards": "아직 렌더된 카드가 없습니다.",
     "error_unavailable": "렌더 서버에 연결하지 못했습니다.",
     "error_failed": "영상을 만들지 못했습니다."
+  },
+  "ConnectNotice": {
+    "action": "계정 연동하기",
+    "title_planning": "연동하면 채널에 맞춰 기획합니다",
+    "description_planning": "지금은 업종 설명만 보고 소재를 냅니다. 계정을 이으면 실제 반응을 보고 제안합니다.",
+    "title_analytics": "아직 가져올 성과가 없습니다",
+    "description_analytics": "조회·저장·댓글 수는 연동한 계정에서 가져옵니다.",
+    "title_automation": "자동 DM은 연동한 계정에서만 돕니다",
+    "description_automation": "규칙은 미리 만들어 두어도 됩니다. 계정을 이으면 그때부터 작동합니다.",
+    "title_comments": "댓글은 연동한 계정에서 들어옵니다",
+    "description_comments": "계정을 이으면 댓글을 여기서 읽고 바로 답장할 수 있습니다."
   }
 }

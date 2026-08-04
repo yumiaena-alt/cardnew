@@ -1,9 +1,11 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ChannelMix } from '@/components/analytics/ChannelMix';
 import { StatTile } from '@/components/analytics/StatTile';
+import { ConnectNotice } from '@/components/dashboard/ConnectNotice';
 import { loadProductionStats } from '@/features/analytics/repository';
 import { toChannelShares } from '@/features/analytics/share';
 import { findScope } from '@/features/shared/scope';
+import { listSocialAccounts } from '@/features/social/repository';
 
 type AnalyticsPageProps = {
   params: Promise<{ locale: string }>;
@@ -15,6 +17,7 @@ export default async function AnalyticsPage(props: AnalyticsPageProps) {
   const t = await getTranslations({ locale, namespace: 'AnalyticsPage' });
 
   const scope = await findScope();
+  const accounts = scope ? await listSocialAccounts(scope) : [];
   const stats = scope
     ? await loadProductionStats(scope)
     : {
@@ -35,6 +38,8 @@ export default async function AnalyticsPage(props: AnalyticsPageProps) {
         <h1 className="text-xl font-bold text-foreground">{t('title')}</h1>
         <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
+
+      {accounts.length === 0 ? <ConnectNotice surface="analytics" /> : null}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile

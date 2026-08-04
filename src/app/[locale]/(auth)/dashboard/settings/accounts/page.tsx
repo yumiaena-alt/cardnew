@@ -10,6 +10,19 @@ import {
 } from '@/features/social/connect';
 import { listSocialAccounts } from '@/features/social/repository';
 
+/**
+ * Channels this product means to support, and whether one works today.
+ *
+ * Instagram is the only live one. The rest are listed so the shape of the plan
+ * is visible without implying they are a click away.
+ */
+const CHANNELS = [
+  { id: 'instagram', live: true },
+  { id: 'threads', live: false },
+  { id: 'tiktok', live: false },
+  { id: 'youtube', live: false },
+] as const;
+
 type AccountsPageProps = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ connect?: string }>;
@@ -61,12 +74,38 @@ export default async function AccountsPage(props: AccountsPageProps) {
 
       <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-5">
         {accounts.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <span className="grid size-12 place-items-center rounded-xl bg-muted text-muted-foreground">
-              <Plug className="size-5" aria-hidden="true" />
-            </span>
-            <p className="text-sm font-medium text-foreground">{t('empty_title')}</p>
-            <p className="max-w-sm text-sm text-muted-foreground">{t('empty_description')}</p>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col items-center gap-3 py-2 text-center">
+              <span className="grid size-12 place-items-center rounded-xl bg-muted text-muted-foreground">
+                <Plug className="size-5" aria-hidden="true" />
+              </span>
+              <p className="text-sm font-medium text-foreground">{t('empty_title')}</p>
+              <p className="max-w-sm text-sm text-muted-foreground">{t('empty_description')}</p>
+            </div>
+
+            {/* Every channel we intend to support, with the ones that do not work
+                yet marked as such. Listing only Instagram would read as the whole
+                plan; listing the rest as though they worked would be a lie. */}
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {CHANNELS.map((entry) => (
+                <li
+                  key={entry.id}
+                  className="flex items-center justify-between gap-2 rounded-md border border-border bg-background px-3 py-2.5"
+                >
+                  <span
+                    className={
+                      entry.live ? 'text-sm text-foreground' : 'text-sm text-muted-foreground'
+                    }
+                  >
+                    {t(`channel_${entry.id}`)}
+                  </span>
+
+                  <StatusChip tone={entry.live ? 'done' : 'wait'}>
+                    {entry.live ? t('channel_ready') : t('channel_later')}
+                  </StatusChip>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : (
           <ul className="flex flex-col gap-2">
