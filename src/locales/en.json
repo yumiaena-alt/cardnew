@@ -445,5 +445,31 @@
     "description_automation": "Rules can be written now. They start working once an account is connected.",
     "title_comments": "Comments arrive from connected accounts",
     "description_comments": "Connect one to read comments here and reply without leaving."
+  },
+  "DeckTabs": {
+    "label": "Card news screens",
+    "create": "Create",
+    "learn": "Learn my design",
+    "history": "History"
+  },
+  "RunHistoryPage": {
+    "meta_title": "History",
+    "title": "History",
+    "subtitle": "What was made when, and what it cost.",
+    "empty_title": "Nothing here yet",
+    "empty_description": "Each generation run shows up here once you make card news.",
+    "summary": "{count} runs",
+    "cuts": "{count} cards",
+    "charged": "{count} credits",
+    "refunded": "{count} refunded",
+    "scope_full": "New",
+    "scope_panel": "One card",
+    "scope_slot": "Partial",
+    "status_estimated": "Quoted",
+    "status_queued": "Queued",
+    "status_running": "Running",
+    "status_done": "Done",
+    "status_failed": "Failed",
+    "status_canceled": "Canceled"
   }
 }

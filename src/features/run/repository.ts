@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 import { orgScoped } from '@/features/shared/orgScope';
 import type { OrgScope } from '@/features/shared/scope';
 import { db } from '@/libs/DB';
@@ -228,4 +228,50 @@ export async function updateRunItemStatuses(
     .set({ status })
     .where(inArray(runItems.id, itemIds))
     .returning();
+}
+
+export type RunSummary = {
+  id: string;
+  status: Run['status'];
+  scopeKind: Run['scopeKind'];
+  itemCount: number;
+  chargedCredits: number;
+  refundedCredits: number;
+  createdAt: Date;
+  finishedAt: Date | null;
+};
+
+/** A month of activity is what a history screen is actually asked to show. */
+const RUN_HISTORY_LIMIT = 50;
+
+/**
+ * Lists this organization's runs, newest first.
+ *
+ * Reads the run rows rather than the decks they produced: a run that failed or
+ * was refunded left no deck behind, and those are the ones a person goes to the
+ * history for.
+ *
+ * @param scope - Tenant scope, or any object carrying the organization id.
+ * @param limit - Most runs to return.
+ * @returns Run summaries for the history view.
+ */
+export async function listRuns(
+  scope: OrgScope,
+  limit: number = RUN_HISTORY_LIMIT,
+): Promise<RunSummary[]> {
+  return await db
+    .select({
+      id: runs.id,
+      status: runs.status,
+      scopeKind: runs.scopeKind,
+      itemCount: runs.itemCount,
+      chargedCredits: runs.chargedCredits,
+      refundedCredits: runs.refundedCredits,
+      createdAt: runs.createdAt,
+      finishedAt: runs.finishedAt,
+    })
+    .from(runs)
+    .where(orgScoped(scope, runs))
+    .orderBy(desc(runs.createdAt))
+    .limit(limit);
 }

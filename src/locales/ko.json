@@ -445,5 +445,31 @@
     "description_automation": "규칙은 미리 만들어 두어도 됩니다. 계정을 이으면 그때부터 작동합니다.",
     "title_comments": "댓글은 연동한 계정에서 들어옵니다",
     "description_comments": "계정을 이으면 댓글을 여기서 읽고 바로 답장할 수 있습니다."
+  },
+  "DeckTabs": {
+    "label": "카드뉴스 화면",
+    "create": "생성하기",
+    "learn": "내 디자인 학습",
+    "history": "생성기록"
+  },
+  "RunHistoryPage": {
+    "meta_title": "생성기록",
+    "title": "생성기록",
+    "subtitle": "언제 무엇을 만들었고 크레딧이 얼마나 나갔는지 봅니다.",
+    "empty_title": "아직 생성기록이 없습니다",
+    "empty_description": "카드뉴스를 만들면 실행 한 건마다 여기에 남습니다.",
+    "summary": "{count}건",
+    "cuts": "{count}장",
+    "charged": "{count}크레딧",
+    "refunded": "{count}크레딧 환불",
+    "scope_full": "새로 만들기",
+    "scope_panel": "한 장 다시",
+    "scope_slot": "부분 수정",
+    "status_estimated": "견적",
+    "status_queued": "대기",
+    "status_running": "만드는 중",
+    "status_done": "완료",
+    "status_failed": "실패",
+    "status_canceled": "취소"
   }
 }
