@@ -278,6 +278,7 @@ export function PanelEditorShell(props: PanelEditorShellProps) {
                   doc.layers.findIndex((layer) => layer.id === selected.id) < doc.layers.length - 1
                 }
                 layer={selected}
+                panelId={props.panelId}
                 onReplace={(next) => {
                   replaceLayer(selected.id, next);
                 }}

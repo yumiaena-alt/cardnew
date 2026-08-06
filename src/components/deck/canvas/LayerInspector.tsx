@@ -5,9 +5,11 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Field, Input, Textarea } from '@/components/ui/Field';
 import type { ImageLayer, Layer as DocLayer, TextLayer } from '@/lib/slidedoc/layers';
+import { ImagePicker } from './ImagePicker';
 
 type LayerInspectorProps = {
   layer: DocLayer;
+  panelId: string;
   /** False for the layer already at the back, so it cannot be sent further. */
   canMoveDown: boolean;
   canMoveUp: boolean;
@@ -26,6 +28,9 @@ const MAX_FONT_SIZE = 400;
 
 /** Focus is a ratio, and a hundred steps is finer than anyone needs. */
 const FOCUS_STEP = 0.01;
+
+/** Cards are taller than they are wide on every channel we publish to. */
+const ORIENTATION_FOR_LAYER = 'portrait' as const;
 
 /**
  * Copy and size for a text layer.
@@ -85,7 +90,11 @@ function TextFields(props: { layer: TextLayer; onChange: (next: TextLayer) => vo
  * @param props - The image layer and how to patch it.
  * @returns The focus controls.
  */
-function ImageFields(props: { layer: ImageLayer; onChange: (next: ImageLayer) => void }) {
+function ImageFields(props: {
+  layer: ImageLayer;
+  panelId: string;
+  onChange: (next: ImageLayer) => void;
+}) {
   const t = useTranslations('PanelEditorPage');
   const { layer } = props;
   const axisLabels = { x: t('focus_x'), y: t('focus_y') };
@@ -119,6 +128,17 @@ function ImageFields(props: { layer: ImageLayer; onChange: (next: ImageLayer) =>
           </span>
         </label>
       ))}
+
+      <ImagePicker
+        onPick={(image) => {
+          // The asset id is dropped: it pointed at the record for the photo that
+          // was here, and this one has no record of its own until it is stored.
+          props.onChange({ ...layer, src: image.url, assetId: null });
+        }}
+        orientation={ORIENTATION_FOR_LAYER}
+        panelId={props.panelId}
+        slotKey={layer.id}
+      />
     </div>
   );
 }
@@ -209,7 +229,7 @@ export function LayerInspector(props: LayerInspectorProps) {
       ) : null}
 
       {props.layer.type === 'image' ? (
-        <ImageFields layer={props.layer} onChange={props.onReplace} />
+        <ImageFields layer={props.layer} onChange={props.onReplace} panelId={props.panelId} />
       ) : null}
     </section>
   );

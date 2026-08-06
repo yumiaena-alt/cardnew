@@ -3,11 +3,23 @@
 import { revalidatePath } from 'next/cache';
 import { DomainError } from '@/features/shared/errors';
 import { getScope, requirePermission } from '@/features/shared/scope';
+import { UnsplashProvider } from '@/lib/images/providers/unsplash';
+import { shouldRetranslate, toEnglishQuery } from '@/lib/images/query';
 import { logger } from '@/libs/Logger';
 import { PANEL_CONTENT_TYPE, renderPanel } from '@/libs/RenderService';
 import { RENDER_BUCKET, uploadObject } from '@/libs/Storage';
-import type { SavePanelDocInput, UpdateSlotInput } from '@/validations/DeckValidation';
-import { savePanelDocSchema, updateSlotSchema } from '@/validations/DeckValidation';
+import type {
+  ChooseImageInput,
+  SavePanelDocInput,
+  SearchImagesInput,
+  UpdateSlotInput,
+} from '@/validations/DeckValidation';
+import {
+  chooseImageSchema,
+  savePanelDocSchema,
+  searchImagesSchema,
+  updateSlotSchema,
+} from '@/validations/DeckValidation';
 import { findOwnedPanel, updatePanelDoc, updatePanelSlots } from './repository';
 import { buildDeckVideo } from './video';
 
@@ -159,6 +171,155 @@ export async function savePanelDoc(input: SavePanelDocInput): Promise<SavePanelD
     const code = error instanceof DomainError ? error.code : 'invalid_input';
 
     logger.warn('Panel layout save rejected', { code });
+
+    return { ok: false, code };
+  }
+}
+
+export type StockImage = {
+  url: string;
+  thumbnailUrl: string;
+  sourceId: string;
+  authorName: string | null;
+};
+
+export type SearchImagesResult = { ok: true; images: StockImage[] } | { ok: false; code: string };
+
+/** A grid to choose from, not a catalogue to browse. */
+const IMAGE_RESULT_LIMIT = 12;
+
+/**
+ * Searches, and asks again in English when Korean turns up nothing.
+ *
+ * Shared by searching and choosing so the second call lands on the same list
+ * the user picked from — a choice resolved against a different search would
+ * credit a different photographer.
+ *
+ * @param provider - The stock provider.
+ * @param input - Query and orientation.
+ * @returns The candidates.
+ */
+async function searchWithFallback(provider: UnsplashProvider, input: SearchImagesInput) {
+  const search = async (query: string) =>
+    await provider.search({
+      query,
+      mood: 'neutral',
+      orientation: input.orientation,
+      limit: IMAGE_RESULT_LIMIT,
+    });
+
+  const first = await search(input.query);
+
+  if (!shouldRetranslate({ query: input.query, resultCount: first.length })) {
+    return first;
+  }
+
+  const english = await toEnglishQuery(input.query);
+  const second = await search(english);
+
+  return second.length > first.length ? second : first;
+}
+
+/**
+ * Finds replacement photography for a card.
+ *
+ * Search only. Nothing is recorded until one is chosen, because a search that
+ * reported usage would tell the provider a photo was used every time someone
+ * typed a different word.
+ *
+ * @param input - What to search for and the shape it has to fill.
+ * @returns Candidates, or a failure code.
+ */
+export async function searchStockImages(input: SearchImagesInput): Promise<SearchImagesResult> {
+  try {
+    const scope = await getScope();
+    requirePermission(scope, 'deck:update');
+
+    const parsed = searchImagesSchema.parse(input);
+    const provider = new UnsplashProvider();
+
+    if (!provider.isAvailable()) {
+      return { ok: false, code: 'provider_unavailable' };
+    }
+
+    const candidates = await searchWithFallback(provider, parsed);
+
+    return {
+      ok: true,
+      images: candidates.map((candidate) => ({
+        url: candidate.url,
+        thumbnailUrl: candidate.url,
+        sourceId: candidate.sourceId,
+        authorName: candidate.authorName,
+      })),
+    };
+  } catch (error) {
+    const code = error instanceof DomainError ? error.code : 'invalid_input';
+
+    logger.warn('Image search rejected', { code });
+
+    return { ok: false, code };
+  }
+}
+
+export type ChooseImageResult = { ok: true } | { ok: false; code: string };
+
+/**
+ * Records that a chosen photo is now in use.
+ *
+ * Separate from saving the card. Unsplash requires a download to be reported
+ * when a photo is actually used, not when it is listed, and the attribution
+ * shown under the card is read from the panel rather than from the document —
+ * so a replacement that only changed the document would keep crediting the
+ * photographer whose picture is no longer there.
+ *
+ * @param input - The panel, the slot, and which photo was picked.
+ * @returns Success, or a failure code.
+ */
+export async function chooseStockImage(input: ChooseImageInput): Promise<ChooseImageResult> {
+  try {
+    const scope = await getScope();
+    requirePermission(scope, 'deck:update');
+
+    const parsed = chooseImageSchema.parse(input);
+    const panel = await findOwnedPanel(scope, parsed.panelId);
+
+    if (!panel) {
+      return { ok: false, code: 'not_found' };
+    }
+
+    const provider = new UnsplashProvider();
+    const candidates = await searchWithFallback(provider, parsed);
+    const chosen = candidates.find((candidate) => candidate.sourceId === parsed.sourceId);
+
+    if (!chosen) {
+      return { ok: false, code: 'not_found' };
+    }
+
+    // Terms of use: the provider is told when a photo is used, and skipping it
+    // is grounds for losing production access.
+    await provider.reportUsage?.(chosen);
+
+    const slot = panel.slots[parsed.slotKey];
+
+    await updatePanelSlots(parsed.panelId, {
+      ...panel.slots,
+      [parsed.slotKey]: {
+        type: 'image',
+        value: chosen.url,
+        ...(slot?.style ? { style: slot.style } : {}),
+        provenance: provider.provenanceFor(chosen),
+        isUserEdited: true,
+      },
+    });
+
+    logger.info('Panel image replaced', { orgId: scope.orgId, panelId: parsed.panelId });
+
+    return { ok: true };
+  } catch (error) {
+    const code = error instanceof DomainError ? error.code : 'invalid_input';
+
+    logger.warn('Image choice rejected', { code });
 
     return { ok: false, code };
   }

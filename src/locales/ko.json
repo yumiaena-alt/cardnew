@@ -515,6 +515,12 @@
     "size_hint": "직접 정하면 자동 맞춤이 꺼집니다.",
     "focus_hint": "사진에서 보여줄 위치를 정합니다.",
     "focus_x": "좌우",
-    "focus_y": "위아래"
+    "focus_y": "위아래",
+    "image_search_label": "사진 바꾸기",
+    "image_search_hint": "고르면 저작자 표기도 함께 바뀝니다.",
+    "image_search_placeholder": "예: 아이스 커피",
+    "image_search": "검색",
+    "image_searching": "찾는 중",
+    "image_failed": "사진을 가져오지 못했습니다"
   }
 }

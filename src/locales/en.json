@@ -515,6 +515,12 @@
     "size_hint": "Setting this by hand turns autofit off.",
     "focus_hint": "Choose which part of the photo shows.",
     "focus_x": "Across",
-    "focus_y": "Down"
+    "focus_y": "Down",
+    "image_search_label": "Replace photo",
+    "image_search_hint": "Choosing one rewrites the credit too.",
+    "image_search_placeholder": "e.g. iced coffee",
+    "image_search": "Search",
+    "image_searching": "Searching",
+    "image_failed": "Could not load photos"
   }
 }

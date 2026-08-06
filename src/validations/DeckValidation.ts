@@ -52,3 +52,29 @@ export const savePanelDocSchema = z.object({
 });
 
 export type SavePanelDocInput = z.infer<typeof savePanelDocSchema>;
+
+const orientationSchema = z.enum(['landscape', 'portrait', 'squarish']);
+
+export const searchImagesSchema = z.object({
+  query: z.string().min(1).max(200),
+  orientation: orientationSchema,
+});
+
+export type SearchImagesInput = z.infer<typeof searchImagesSchema>;
+
+/**
+ * Picking a photo names the search it came from.
+ *
+ * The candidate itself is not sent back. A client that could hand over an
+ * arbitrary URL and have it recorded as sourced photography would be a way to
+ * put anything into a card with a provenance record vouching for it.
+ */
+export const chooseImageSchema = z.object({
+  panelId: z.uuid(),
+  slotKey: z.string().min(1).max(50),
+  sourceId: z.string().min(1).max(200),
+  query: z.string().min(1).max(200),
+  orientation: orientationSchema,
+});
+
+export type ChooseImageInput = z.infer<typeof chooseImageSchema>;
