@@ -235,7 +235,10 @@
   },
   "TemplateGalleryPage": {
     "scaffold_title": "Template gallery is being built",
-    "scaffold_description": "System templates land in Phase 1-D. Routing and layout are ready."
+    "scaffold_description": "System templates land in Phase 1-D. Routing and layout are ready.",
+    "title": "Templates",
+    "summary": "{count} learned styles",
+    "layouts": "Layouts: {roles}"
   },
   "TemplateLearnPage": {
     "scaffold_title": "Design learning is being built",
@@ -522,5 +525,35 @@
     "image_search": "Search",
     "image_searching": "Searching",
     "image_failed": "Could not load photos"
+  },
+  "DesignLearnPage": {
+    "meta_title": "Learn my design",
+    "title": "Learn my design",
+    "subtitle": "Upload card news you want to follow and its layout and colours become a template.",
+    "name_label": "Template name",
+    "name_placeholder": "e.g. our summer style",
+    "ratio_label": "Ratio",
+    "images_label": "{count} reference images",
+    "images_hint": "Up to {max} · PNG, JPG, WEBP",
+    "reference_alt": "Reference {index}",
+    "remove_reference": "Remove reference",
+    "instruction_label": "Extra direction (optional)",
+    "instruction_hint": "Anything beyond the layout you want kept.",
+    "instruction_placeholder": "e.g. generous margins, left-aligned text",
+    "rights_label": "I confirm I have the right to use these images, and will not use this to copy someone else’s design.",
+    "quote_action": "See the price",
+    "learn_action": "Learn it",
+    "learning": "Reading",
+    "quote": "This costs {credits} credits",
+    "balance": "{balance} available",
+    "learned": "Template created. It can be chosen when making card news.",
+    "error_unauthorized": "Sign in required.",
+    "error_forbidden": "Not allowed.",
+    "error_not_found": "Not found.",
+    "error_conflict": "Already handled.",
+    "error_insufficient_credits": "Not enough credits.",
+    "error_invalid_input": "Check the input.",
+    "error_rights_not_confirmed": "Please confirm the rights checkbox.",
+    "error_planner_unavailable": "The learning engine is not connected yet."
   }
 }
