@@ -6,6 +6,7 @@ import { Image as KonvaImage, Layer, Rect, Stage, Text, Transformer } from 'reac
 import { docCanvasSize } from '@/lib/slidedoc/doc';
 import type { SlideDoc } from '@/lib/slidedoc/doc';
 import type { Rect as MeasuredRect } from '@/lib/slidedoc/geometry';
+import { rectToOffset } from '@/lib/slidedoc/geometry';
 import type { Layer as DocLayer } from '@/lib/slidedoc/layers';
 
 type PanelCanvasProps = {
@@ -108,17 +109,37 @@ function toPixels(
 }
 
 /**
- * Reports a drag or resize back as ratios.
+ * Reports a move back as an anchor offset.
  *
- * Konva hands back pixels and a scale factor rather than a new size, so the
- * scale is folded into the width and reset — otherwise the next drag compounds
- * it and the layer creeps.
+ * Position only, and put back through the anchor. A drag that also wrote width
+ * and height would freeze whatever was measured at that instant into the
+ * document, and a text layer measures to nothing until its copy is laid out —
+ * dragging a headline collapsed it to a point. Writing the raw pixel into `x`
+ * was the other half: the next typeset re-applies the anchor and the layer
+ * lands back where it started, so the drag appears to do nothing at all.
  *
  * @param node - The node that moved.
+ * @param layer - The layer it belongs to, for its anchor and size.
+ * @param canvas - Logical canvas size in pixels.
+ * @returns The position patch to store.
+ */
+function toPosition(node: Konva.Node, layer: DocLayer, canvas: { width: number; height: number }) {
+  return rectToOffset({ left: node.x(), top: node.y() }, layer.layout, canvas, node.height());
+}
+
+/**
+ * Reports a resize back as ratios.
+ *
+ * Konva hands back a scale factor rather than a new size, so the scale is
+ * folded into the box and reset — otherwise the next resize compounds it and
+ * the layer runs away.
+ *
+ * @param node - The node that was resized.
+ * @param layer - The layer it belongs to, for its anchor.
  * @param canvas - Logical canvas size in pixels.
  * @returns The layout patch to store.
  */
-function toLayout(node: Konva.Node, canvas: { width: number; height: number }) {
+function toLayout(node: Konva.Node, layer: DocLayer, canvas: { width: number; height: number }) {
   const scaleX = node.scaleX();
   const scaleY = node.scaleY();
 
@@ -126,8 +147,7 @@ function toLayout(node: Konva.Node, canvas: { width: number; height: number }) {
   node.scaleY(1);
 
   return {
-    x: node.x() / canvas.width,
-    y: node.y() / canvas.height,
+    ...toPosition(node, layer, canvas),
     w: (node.width() * scaleX) / canvas.width,
     h: (node.height() * scaleY) / canvas.height,
     rotate: node.rotation(),
@@ -153,10 +173,10 @@ function LayerNode(props: NodeProps) {
     onClick: props.onSelect,
     onTap: props.onSelect,
     onDragEnd: (event: Konva.KonvaEventObject<DragEvent>) => {
-      props.onChange(toLayout(event.target, props.canvas));
+      props.onChange(toPosition(event.target, props.layer, props.canvas));
     },
     onTransformEnd: (event: Konva.KonvaEventObject<Event>) => {
-      props.onChange(toLayout(event.target, props.canvas));
+      props.onChange(toLayout(event.target, props.layer, props.canvas));
     },
   };
 

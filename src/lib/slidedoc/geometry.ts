@@ -106,3 +106,39 @@ export function fontScale(canvas: CanvasBox, base: number): number {
 export function focusToObjectPosition(focus: { x: number; y: number }): string {
   return `${(focus.x * 100).toFixed(2)}% ${(focus.y * 100).toFixed(2)}%`;
 }
+
+/**
+ * 절대 사각형을 LayoutBox 좌표로 되돌린다. `resolveRect`의 역함수.
+ *
+ * 에디터가 필요로 한다. 캔버스에서 레이어를 끌면 나오는 값은 화면 픽셀인데,
+ * 문서가 저장하는 것은 앵커 기준 오프셋이다. 픽셀을 그대로 x/y에 적으면
+ * 다음 조판에서 앵커가 다시 적용돼 레이어가 제자리로 돌아간다 —
+ * 끌었는데 아무 일도 일어나지 않는 것처럼 보인다.
+ *
+ * @param rect - 옮겨진 절대 사각형.
+ * @param layout - 원래 LayoutBox. 앵커와 크기를 여기서 가져온다.
+ * @param canvas - 논리 캔버스 크기.
+ * @returns 저장할 x/y 오프셋.
+ */
+export function rectToOffset(
+  rect: Pick<Rect, 'left' | 'top'>,
+  layout: LayoutBox,
+  canvas: CanvasBox,
+  resolvedHeight?: number,
+): { x: number; y: number } {
+  const a = ANCHOR_TABLE[layout.anchor];
+  const width = layout.w * canvas.width;
+  const height = layout.h === undefined ? (resolvedHeight ?? 0) : layout.h * canvas.height;
+
+  const isHCenter = layout.anchor.endsWith('-center') || layout.anchor === 'center';
+  const isVCenter = layout.anchor.startsWith('middle-') || layout.anchor === 'center';
+
+  // resolveRect가 뺀 만큼을 그대로 되더한다.
+  const backX = isHCenter ? width / 2 : a.sx === -1 ? width : 0;
+  const backY = isVCenter ? height / 2 : a.sy === -1 ? height : 0;
+
+  return {
+    x: (rect.left + backX - a.bx * canvas.width) / (a.sx * canvas.width),
+    y: (rect.top + backY - a.by * canvas.height) / (a.sy * canvas.height),
+  };
+}
