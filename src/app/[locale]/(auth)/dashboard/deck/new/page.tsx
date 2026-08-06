@@ -4,6 +4,7 @@ import { DeckCreateForm } from '@/components/deck/DeckCreateForm';
 import { DeckTabs } from '@/components/deck/DeckTabs';
 import { getBalance } from '@/features/credit/service';
 import { findScope } from '@/features/shared/scope';
+import { listLearnedTemplates } from '@/features/template/repository';
 import { Link } from '@/libs/I18nNavigation';
 
 type DeckNewPageProps = {
@@ -17,6 +18,7 @@ export default async function DeckNewPage(props: DeckNewPageProps) {
 
   const scope = await findScope();
   const creditBalance = scope ? await getBalance(scope) : 0;
+  const learned = scope ? await listLearnedTemplates(scope) : [];
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -27,7 +29,14 @@ export default async function DeckNewPage(props: DeckNewPageProps) {
         <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
-      <DeckCreateForm creditBalance={creditBalance} />
+      <DeckCreateForm
+        creditBalance={creditBalance}
+        templates={learned.map((entry) => ({
+          id: entry.id,
+          versionId: entry.versionId,
+          name: entry.name,
+        }))}
+      />
 
       {/* The gallery sits here rather than in the menu: picking a look is a way
           of starting a card news, not somewhere you go on its own. */}

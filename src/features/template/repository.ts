@@ -1,9 +1,11 @@
 import { and, desc, eq } from 'drizzle-orm';
 import type { OrgScope } from '@/features/shared/scope';
+import type { BrandStyle } from '@/lib/renderer/types';
 import { db } from '@/libs/DB';
 import type { Ratio } from '@/models/Enums';
 import type { PanelLayoutSpec, Template } from '@/models/Template';
 import { designLearnings, templates, templateVersions } from '@/models/Template';
+import { toBrandStyle } from './brand';
 
 /**
  * Storage for learned templates.
@@ -77,6 +79,7 @@ export async function saveLearnedTemplate(
 
 type LearnedTemplate = {
   id: string;
+  versionId: string;
   name: string;
   ratio: Template['ratio'];
   createdAt: Date;
@@ -97,6 +100,7 @@ export async function listLearnedTemplates(scope: OrgScope): Promise<LearnedTemp
   return await db
     .select({
       id: templates.id,
+      versionId: templateVersions.id,
       name: templates.name,
       ratio: templates.ratio,
       createdAt: templates.createdAt,
@@ -108,4 +112,29 @@ export async function listLearnedTemplates(scope: OrgScope): Promise<LearnedTemp
     .where(and(eq(templates.orgId, scope.orgId), eq(templates.source, 'learned')))
     .orderBy(desc(templates.createdAt))
     .limit(TEMPLATE_LIMIT);
+}
+
+/**
+ * Reads the brand style a learned template contributes.
+ *
+ * Scoped, because a template version id is a client-supplied value on a run
+ * item — one organization naming another's template would otherwise generate
+ * cards in a brand it has never seen.
+ *
+ * @param scope - Tenant scope.
+ * @param templateVersionId - Version named by the run item.
+ * @returns The style, or null when it is not the caller's.
+ */
+export async function findTemplateBrand(
+  scope: OrgScope,
+  templateVersionId: string,
+): Promise<BrandStyle | null> {
+  const [row] = await db
+    .select({ tokens: templateVersions.tokens })
+    .from(templateVersions)
+    .innerJoin(templates, eq(templates.id, templateVersions.templateId))
+    .where(and(eq(templateVersions.id, templateVersionId), eq(templates.orgId, scope.orgId)))
+    .limit(1);
+
+  return row ? toBrandStyle(row.tokens) : null;
 }

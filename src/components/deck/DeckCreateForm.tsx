@@ -14,6 +14,8 @@ import type { RunItemInput } from '@/validations/RunValidation';
 
 type DeckCreateFormProps = {
   creditBalance: number;
+  /** Styles this organization has learned, newest first. Empty is normal. */
+  templates: { id: string; versionId: string; name: string }[];
 };
 
 const TOPIC_FIELD_ID = 'deck-topic';
@@ -35,6 +37,7 @@ export function DeckCreateForm(props: DeckCreateFormProps) {
   const [isPending, startTransition] = useTransition();
   const [quote, setQuote] = useState<RunEstimate | null>(null);
   const [isPanelOpen, setPanelOpen] = useState(false);
+  const [templateVersionId, setTemplateVersionId] = useState('');
   const [failureCode, setFailureCode] = useState<RunFailureCode | null>(null);
   const [startedRunId, setStartedRunId] = useState<string | null>(null);
   const [runKey, setRunKey] = useState('');
@@ -45,6 +48,7 @@ export function DeckCreateForm(props: DeckCreateFormProps) {
   const buildItems = (): RunItemInput[] => [
     {
       topic: topic.trim(),
+      ...(templateVersionId === '' ? {} : { templateVersionId }),
       targets: [{ channel: target.id, ratio: target.ratio, isOrigin: true }],
     },
   ];
@@ -135,6 +139,22 @@ export function DeckCreateForm(props: DeckCreateFormProps) {
             }))}
           />
         </Field>
+
+        {/* Only offered when there is something to offer. A picker whose only
+            entry is "none" is a control that teaches nothing. */}
+        {props.templates.length > 0 ? (
+          <Field hint={t('template_hint')} label={t('template_label')}>
+            <Select
+              aria-label={t('template_label')}
+              onValueChange={setTemplateVersionId}
+              options={[
+                { value: '', label: t('template_none') },
+                ...props.templates.map((entry) => ({ value: entry.versionId, label: entry.name })),
+              ]}
+              value={templateVersionId}
+            />
+          </Field>
+        ) : null}
 
         <div className="flex justify-end">
           <Button variant="signal" size="lg" disabled={!canSubmit} onClick={requestQuote}>

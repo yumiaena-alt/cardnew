@@ -231,7 +231,10 @@
     "channel_blog": "블로그",
     "submit": "견적 보기",
     "templates_title": "템플릿 둘러보기",
-    "templates_description": "마음에 드는 스타일을 고르고 거기서 시작하세요."
+    "templates_description": "마음에 드는 스타일을 고르고 거기서 시작하세요.",
+    "template_label": "스타일",
+    "template_hint": "학습해 둔 디자인으로 만듭니다.",
+    "template_none": "기본 스타일"
   },
   "TemplateGalleryPage": {
     "scaffold_title": "템플릿 갤러리를 만들고 있어요",

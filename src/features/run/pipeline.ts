@@ -1,5 +1,6 @@
 import { createDeckWithVersion, replacePanels, setDeckStatus } from '@/features/deck/repository';
 import type { OrgScope } from '@/features/shared/scope';
+import { findTemplateBrand } from '@/features/template/repository';
 import { AnthropicPlanner } from '@/lib/plan/planner';
 import type { CardnewsPlan } from '@/lib/plan/schema';
 import type { ComposedCardnews } from '@/lib/renderer/compose';
@@ -202,8 +203,17 @@ export async function generateCut(input: GenerateCutInput): Promise<GenerateCutR
   const { plan, usage } = await resolvePlan(input.item, input.plan);
   const imagery = input.imagery ?? (await sourceImagery(plan, input.item.ratio));
 
+  // A learned template contributes its palette and weights. Its layouts are
+  // stored but not applied yet: built-in templates are builder functions that
+  // decide overlay direction and text inversion from measured luminance, and a
+  // data-driven layout has no way to make those calls.
+  const brand = input.item.templateVersionId
+    ? await findTemplateBrand(input.scope, input.item.templateVersionId)
+    : null;
+
   const composed = composeCardnews({
     plan,
+    ...(brand ? { brand } : {}),
     ratio: input.item.ratio,
     images: imagery.images,
     // Seeded by the item so a retry redraws the same layout rather than

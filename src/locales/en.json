@@ -231,7 +231,10 @@
     "channel_blog": "Blog",
     "submit": "See the estimate",
     "templates_title": "Browse templates",
-    "templates_description": "Pick a look you like and start from it."
+    "templates_description": "Pick a look you like and start from it.",
+    "template_label": "Style",
+    "template_hint": "Make it with a design you have learned.",
+    "template_none": "Default style"
   },
   "TemplateGalleryPage": {
     "scaffold_title": "Template gallery is being built",
