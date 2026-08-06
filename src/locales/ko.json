@@ -501,6 +501,20 @@
     "no_doc_title": "이 카드는 편집할 수 없습니다",
     "no_doc_description": "편집기가 생기기 전에 만들어진 카드입니다. 다시 그리면 편집할 수 있습니다.",
     "layer_video": "영상",
-    "layer_logo": "로고"
+    "layer_logo": "로고",
+    "show": "보이기",
+    "hide": "숨기기",
+    "lock": "잠그기",
+    "unlock": "잠금 풀기",
+    "bring_forward": "앞으로",
+    "send_backward": "뒤로",
+    "duplicate": "복제",
+    "remove": "삭제",
+    "text_label": "내용",
+    "size_label": "글자 크기",
+    "size_hint": "직접 정하면 자동 맞춤이 꺼집니다.",
+    "focus_hint": "사진에서 보여줄 위치를 정합니다.",
+    "focus_x": "좌우",
+    "focus_y": "위아래"
   }
 }

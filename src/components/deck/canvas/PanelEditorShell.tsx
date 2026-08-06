@@ -10,6 +10,7 @@ import { typesetSlide } from '@/lib/renderer/typeset';
 import type { SlideDoc } from '@/lib/slidedoc/doc';
 import type { Layer as DocLayer } from '@/lib/slidedoc/layers';
 import { cn } from '@/lib/utils';
+import { LayerInspector } from './LayerInspector';
 
 // Canvas only in the browser, and only on this screen: konva touches `window`
 // on import, and no other page should carry 93KB it never draws with.
@@ -50,6 +51,9 @@ const STAGE_WIDTH = 420;
 /** Far enough back to undo a bad idea, not so far it becomes a version history. */
 const HISTORY_LIMIT = 50;
 
+/** Enough that a duplicate is visibly its own layer, not a suspected redraw. */
+const DUPLICATE_OFFSET = 0.02;
+
 /**
  * The editing surface: canvas on one side, the layers of the card on the other.
  *
@@ -81,6 +85,7 @@ export function PanelEditorShell(props: PanelEditorShellProps) {
   const [failed, setFailed] = useState(false);
   const [isPending, startTransition] = useTransition();
   const typeset = measure(doc);
+  const selected = doc.layers.find((layer) => layer.id === selectedId) ?? null;
 
   const commit = (next: SlideDoc) => {
     setPast((previous) => [...previous, doc].slice(-HISTORY_LIMIT));
@@ -97,6 +102,59 @@ export function PanelEditorShell(props: PanelEditorShellProps) {
       ...doc,
       layers: doc.layers.map((layer) => (layer.id === layerId ? { ...layer, layout } : layer)),
     });
+  };
+
+  // Only fields every layer has, so the spread narrows on each union member
+  // without a cast — which is what a partial of the whole union would need.
+  const toggleLayer = (layerId: string, patch: { hidden?: boolean; locked?: boolean }) => {
+    commit({
+      ...doc,
+      layers: doc.layers.map((layer) => (layer.id === layerId ? { ...layer, ...patch } : layer)),
+    });
+  };
+
+  const replaceLayer = (layerId: string, next: DocLayer) => {
+    commit({
+      ...doc,
+      layers: doc.layers.map((layer) => (layer.id === layerId ? next : layer)),
+    });
+  };
+
+  const duplicateLayer = (layer: DocLayer) => {
+    const at = doc.layers.findIndex((entry) => entry.id === layer.id);
+    // Offset so the copy is visible rather than exactly on top of the original.
+    const copy = {
+      ...layer,
+      id: `${layer.id}-copy-${doc.layers.length}`,
+      layout: { ...layer.layout, x: layer.layout.x + DUPLICATE_OFFSET },
+    };
+
+    commit({ ...doc, layers: doc.layers.toSpliced(at + 1, 0, copy) });
+    setSelectedId(copy.id);
+  };
+
+  const removeLayer = (layerId: string) => {
+    commit({ ...doc, layers: doc.layers.filter((layer) => layer.id !== layerId) });
+    setSelectedId(null);
+  };
+
+  // Array order is render order, so reordering is a swap. "Forward" means later
+  // in the array, which is what draws on top.
+  const reorderLayer = (layerId: string, direction: 'up' | 'down') => {
+    const at = doc.layers.findIndex((layer) => layer.id === layerId);
+    const to = direction === 'up' ? at + 1 : at - 1;
+    const moving = doc.layers[at];
+    const displaced = doc.layers[to];
+
+    if (!(moving && displaced)) {
+      return;
+    }
+
+    const layers = [...doc.layers];
+    layers[at] = displaced;
+    layers[to] = moving;
+
+    commit({ ...doc, layers });
   };
 
   const undo = () => {
@@ -211,6 +269,33 @@ export function PanelEditorShell(props: PanelEditorShellProps) {
               </li>
             ))}
           </ul>
+
+          {selected ? (
+            <div className="mt-3">
+              <LayerInspector
+                canMoveDown={doc.layers.findIndex((layer) => layer.id === selected.id) > 0}
+                canMoveUp={
+                  doc.layers.findIndex((layer) => layer.id === selected.id) < doc.layers.length - 1
+                }
+                layer={selected}
+                onReplace={(next) => {
+                  replaceLayer(selected.id, next);
+                }}
+                onToggle={(patch) => {
+                  toggleLayer(selected.id, patch);
+                }}
+                onDuplicate={() => {
+                  duplicateLayer(selected);
+                }}
+                onRemove={() => {
+                  removeLayer(selected.id);
+                }}
+                onReorder={(direction) => {
+                  reorderLayer(selected.id, direction);
+                }}
+              />
+            </div>
+          ) : null}
         </section>
       </div>
     </div>

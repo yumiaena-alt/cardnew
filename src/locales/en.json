@@ -501,6 +501,20 @@
     "no_doc_title": "This card cannot be edited",
     "no_doc_description": "It was made before the editor existed. Repaint it to edit.",
     "layer_video": "Video",
-    "layer_logo": "Logo"
+    "layer_logo": "Logo",
+    "show": "Show",
+    "hide": "Hide",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "bring_forward": "Forward",
+    "send_backward": "Backward",
+    "duplicate": "Duplicate",
+    "remove": "Delete",
+    "text_label": "Text",
+    "size_label": "Font size",
+    "size_hint": "Setting this by hand turns autofit off.",
+    "focus_hint": "Choose which part of the photo shows.",
+    "focus_x": "Across",
+    "focus_y": "Down"
   }
 }

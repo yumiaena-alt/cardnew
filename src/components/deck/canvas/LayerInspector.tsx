@@ -1,0 +1,216 @@
+'use client';
+
+import { Copy, Eye, EyeOff, Lock, LockOpen, MoveDown, MoveUp, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/Button';
+import { Field, Input, Textarea } from '@/components/ui/Field';
+import type { ImageLayer, Layer as DocLayer, TextLayer } from '@/lib/slidedoc/layers';
+
+type LayerInspectorProps = {
+  layer: DocLayer;
+  /** False for the layer already at the back, so it cannot be sent further. */
+  canMoveDown: boolean;
+  canMoveUp: boolean;
+  /** Fields every layer has, so a patch of them narrows on any of them. */
+  onToggle: (patch: { hidden?: boolean; locked?: boolean }) => void;
+  /** The whole layer, already narrowed by whichever field set built it. */
+  onReplace: (next: DocLayer) => void;
+  onDuplicate: () => void;
+  onRemove: () => void;
+  onReorder: (direction: 'up' | 'down') => void;
+};
+
+/** Below this a headline is smaller than the body it sits above. */
+const MIN_FONT_SIZE = 8;
+const MAX_FONT_SIZE = 400;
+
+/** Focus is a ratio, and a hundred steps is finer than anyone needs. */
+const FOCUS_STEP = 0.01;
+
+/**
+ * Copy and size for a text layer.
+ *
+ * Its own component so the layer arrives already narrowed: reading
+ * `props.layer.style` inside a callback on the union loses the refinement, and
+ * the fix for that is a cast.
+ *
+ * @param props - The text layer and how to patch it.
+ * @returns The text fields.
+ */
+function TextFields(props: { layer: TextLayer; onChange: (next: TextLayer) => void }) {
+  const t = useTranslations('PanelEditorPage');
+  const { layer } = props;
+
+  return (
+    <>
+      <Field htmlFor="layer-text" label={t('text_label')}>
+        <Textarea
+          id="layer-text"
+          onChange={(event) => {
+            props.onChange({ ...layer, text: event.target.value });
+          }}
+          rows={3}
+          value={layer.text}
+        />
+      </Field>
+
+      <Field hint={t('size_hint')} htmlFor="layer-size" label={t('size_label')}>
+        <Input
+          id="layer-size"
+          max={MAX_FONT_SIZE}
+          min={MIN_FONT_SIZE}
+          onChange={(event) => {
+            // Setting a size by hand is a decision, so autofit stops overriding
+            // it — otherwise the number would spring back on the next measure.
+            props.onChange({
+              ...layer,
+              style: {
+                ...layer.style,
+                size: Number(event.target.value),
+                autoFit: { ...layer.style.autoFit, enabled: false },
+              },
+            });
+          }}
+          type="number"
+          value={layer.style.size}
+        />
+      </Field>
+    </>
+  );
+}
+
+/**
+ * Which part of a photo shows.
+ *
+ * @param props - The image layer and how to patch it.
+ * @returns The focus controls.
+ */
+function ImageFields(props: { layer: ImageLayer; onChange: (next: ImageLayer) => void }) {
+  const t = useTranslations('PanelEditorPage');
+  const { layer } = props;
+  const axisLabels = { x: t('focus_x'), y: t('focus_y') };
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-sm text-muted-foreground">{t('focus_hint')}</p>
+
+      {(['x', 'y'] as const).map((axis) => (
+        <label className="flex items-center gap-3 text-sm" htmlFor={`focus-${axis}`} key={axis}>
+          <span className="w-16 text-muted-foreground">{axisLabels[axis]}</span>
+
+          <input
+            className="flex-1 accent-signal"
+            id={`focus-${axis}`}
+            max={1}
+            min={0}
+            onChange={(event) => {
+              props.onChange({
+                ...layer,
+                focus: { ...layer.focus, [axis]: Number(event.target.value) },
+              });
+            }}
+            step={FOCUS_STEP}
+            type="range"
+            value={layer.focus[axis]}
+          />
+
+          <span className="w-10 text-right text-muted-foreground tabular-nums">
+            {Math.round(layer.focus[axis] * 100)}
+          </span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * What can be changed about the selected layer.
+ *
+ * Text content lives here rather than on the canvas: editing copy in place
+ * means fighting the same autofit that decides how big it renders, and a
+ * headline that resizes under the cursor while being typed is hard to aim.
+ *
+ * @param props - The layer and the operations available to it.
+ * @returns The inspector.
+ */
+export function LayerInspector(props: LayerInspectorProps) {
+  const t = useTranslations('PanelEditorPage');
+
+  return (
+    <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4">
+      <div className="flex flex-wrap items-center gap-1">
+        <Button
+          onClick={() => {
+            props.onToggle({ hidden: !props.layer.hidden });
+          }}
+          size="xs"
+          variant="ghost"
+        >
+          {props.layer.hidden ? (
+            <EyeOff className="size-3.5" aria-hidden="true" />
+          ) : (
+            <Eye className="size-3.5" aria-hidden="true" />
+          )}
+          {props.layer.hidden ? t('show') : t('hide')}
+        </Button>
+
+        <Button
+          onClick={() => {
+            props.onToggle({ locked: !props.layer.locked });
+          }}
+          size="xs"
+          variant="ghost"
+        >
+          {props.layer.locked ? (
+            <Lock className="size-3.5" aria-hidden="true" />
+          ) : (
+            <LockOpen className="size-3.5" aria-hidden="true" />
+          )}
+          {props.layer.locked ? t('unlock') : t('lock')}
+        </Button>
+
+        <Button
+          disabled={!props.canMoveUp}
+          onClick={() => {
+            props.onReorder('up');
+          }}
+          size="xs"
+          variant="ghost"
+        >
+          <MoveUp className="size-3.5" aria-hidden="true" />
+          {t('bring_forward')}
+        </Button>
+
+        <Button
+          disabled={!props.canMoveDown}
+          onClick={() => {
+            props.onReorder('down');
+          }}
+          size="xs"
+          variant="ghost"
+        >
+          <MoveDown className="size-3.5" aria-hidden="true" />
+          {t('send_backward')}
+        </Button>
+
+        <Button onClick={props.onDuplicate} size="xs" variant="ghost">
+          <Copy className="size-3.5" aria-hidden="true" />
+          {t('duplicate')}
+        </Button>
+
+        <Button onClick={props.onRemove} size="xs" variant="ghost">
+          <Trash2 className="size-3.5" aria-hidden="true" />
+          {t('remove')}
+        </Button>
+      </div>
+
+      {props.layer.type === 'text' ? (
+        <TextFields layer={props.layer} onChange={props.onReplace} />
+      ) : null}
+
+      {props.layer.type === 'image' ? (
+        <ImageFields layer={props.layer} onChange={props.onReplace} />
+      ) : null}
+    </section>
+  );
+}

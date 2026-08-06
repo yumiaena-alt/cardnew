@@ -155,6 +155,42 @@ function toLayout(node: Konva.Node, layer: DocLayer, canvas: { width: number; he
 }
 
 /**
+ * The part of an image that fills a box, given where its focus sits.
+ *
+ * This is `object-fit: cover` with `object-position` written out: scale so the
+ * shorter side covers, then slide the visible window across the overflow by the
+ * focus ratio. `contain` shows the whole image, so it crops nothing.
+ *
+ * @param image - The loaded element, for its natural size.
+ * @param box - The box being filled, in canvas pixels.
+ * @param focus - Where the interesting part is, 0.5/0.5 being the middle.
+ * @param fit - Whether the image covers the box or fits inside it.
+ * @returns The source rectangle to draw from.
+ */
+function coverCrop(
+  image: HTMLImageElement,
+  box: { width: number; height: number },
+  focus: { x: number; y: number },
+  fit: 'contain' | 'cover',
+) {
+  const full = { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight };
+
+  if (fit === 'contain' || box.width === 0 || box.height === 0) {
+    return full;
+  }
+
+  const scale = Math.max(box.width / image.naturalWidth, box.height / image.naturalHeight);
+  const visible = { width: box.width / scale, height: box.height / scale };
+
+  return {
+    x: (image.naturalWidth - visible.width) * focus.x,
+    y: (image.naturalHeight - visible.height) * focus.y,
+    width: visible.width,
+    height: visible.height,
+  };
+}
+
+/**
  * One layer as a canvas node.
  *
  * @param props - The layer, canvas size, and selection callbacks.
@@ -198,7 +234,21 @@ function LayerNode(props: NodeProps) {
   }
 
   if (props.layer.type === 'image') {
-    return image ? <KonvaImage {...shared} image={image} /> : null;
+    if (!image) {
+      return null;
+    }
+
+    return (
+      <KonvaImage
+        {...shared}
+        // Cropped rather than stretched. The renderer draws these with CSS
+        // `object-fit: cover` and `object-position`, and a canvas that squashed
+        // the photo to the box instead would show a different picture than the
+        // one that gets published.
+        crop={coverCrop(image, box, props.layer.focus, props.layer.fit)}
+        image={image}
+      />
+    );
   }
 
   return <Rect {...shared} fill="rgba(0,0,0,0.15)" />;
