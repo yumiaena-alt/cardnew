@@ -68,7 +68,13 @@ describe.skipIf(!LIVE)('learned design, applied', () => {
     const learned = await learnDesign({ images, ratio: '4:5', instruction: null });
     const brand = toBrandStyle(learned.tokens);
 
-    const withBrand = composeCardnews({ plan: PLAN, ratio: '4:5', brand, seed: 'live' });
+    const withBrand = composeCardnews({
+      plan: PLAN,
+      ratio: '4:5',
+      brand,
+      learnedLayouts: learned.layouts,
+      seed: 'live',
+    });
     const without = composeCardnews({ plan: PLAN, ratio: '4:5', seed: 'live' });
     const [brandedCover] = withBrand.slides;
     const [plainCover] = without.slides;
@@ -87,7 +93,25 @@ describe.skipIf(!LIVE)('learned design, applied', () => {
       throw new Error('composed nothing to check');
     }
 
+    // The headline lands where the learned cover put it, not where a built-in
+    // template would. Same palette from two different layouts would mean the
+    // colours applied and the structure did not.
+    const learnedCover = learned.layouts.find((layout) => layout.role === 'cover');
+    const learnedHeadline = learnedCover?.slots.find((slot) => slot.key === 'headline');
+    const composedHeadline = brandedCover.doc.layers.find((layer) => layer.id === 'headline');
+
+    // biome-ignore lint/suspicious/noConsole: this harness reports to a person
+    console.log('  template  :', brandedCover.templateId);
+    // biome-ignore lint/suspicious/noConsole: this harness reports to a person
+    console.log(
+      '  headline y  learned:',
+      learnedHeadline?.box.y.toFixed(3),
+      '| composed:',
+      composedHeadline?.layout.y.toFixed(3),
+    );
+
     expect(brand.palette.background).toBeDefined();
     expect(background(brandedCover)).toBe(brand.palette.background);
+    expect(composedHeadline?.layout.y).toBeCloseTo(learnedHeadline?.box.y ?? -1, 3);
   }, 600_000);
 });

@@ -115,7 +115,7 @@ export async function listLearnedTemplates(scope: OrgScope): Promise<LearnedTemp
 }
 
 /**
- * Reads the brand style a learned template contributes.
+ * Reads what a learned template contributes to generation.
  *
  * Scoped, because a template version id is a client-supplied value on a run
  * item — one organization naming another's template would otherwise generate
@@ -123,18 +123,18 @@ export async function listLearnedTemplates(scope: OrgScope): Promise<LearnedTemp
  *
  * @param scope - Tenant scope.
  * @param templateVersionId - Version named by the run item.
- * @returns The style, or null when it is not the caller's.
+ * @returns The style and layouts, or null when it is not the caller's.
  */
 export async function findTemplateBrand(
   scope: OrgScope,
   templateVersionId: string,
-): Promise<BrandStyle | null> {
+): Promise<{ brand: BrandStyle; layouts: PanelLayoutSpec[] } | null> {
   const [row] = await db
-    .select({ tokens: templateVersions.tokens })
+    .select({ tokens: templateVersions.tokens, layouts: templateVersions.layouts })
     .from(templateVersions)
     .innerJoin(templates, eq(templates.id, templateVersions.templateId))
     .where(and(eq(templateVersions.id, templateVersionId), eq(templates.orgId, scope.orgId)))
     .limit(1);
 
-  return row ? toBrandStyle(row.tokens) : null;
+  return row ? { brand: toBrandStyle(row.tokens), layouts: row.layouts } : null;
 }

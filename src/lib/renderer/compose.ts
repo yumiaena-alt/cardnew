@@ -4,6 +4,8 @@ import type { SlideDoc } from '@/lib/slidedoc/doc';
 import type { Layer } from '@/lib/slidedoc/layers';
 import { CANVAS_BASE, canvasSize } from '@/lib/slidedoc/primitives';
 import type { AspectRatio } from '@/lib/slidedoc/primitives';
+import type { PanelLayoutSpec } from '@/models/Template';
+import { learnedTemplates } from './learned';
 import { selectTemplate } from './registry';
 import { resolveStack } from './stack';
 import { DEFAULT_BRAND_STYLE, estimateLumaFromMood } from './types';
@@ -33,6 +35,8 @@ export type ComposeSlideOptions = {
   image?: ResolvedImage | null;
   /** 브랜드킷의 템플릿 채택률 가중치 */
   templateWeights?: Record<string, number>;
+  /** Layouts read off reference designs. Used in place of the built-in set. */
+  learnedLayouts?: PanelLayoutSpec[];
   /** 템플릿 선택을 결정론적으로 만드는 시드 (보통 contentId) */
   seed: string;
   /** 페이지 번호 표시 여부 */
@@ -64,6 +68,7 @@ export function composeSlide(options: ComposeSlideOptions): ComposedSlide {
     brand = DEFAULT_BRAND_STYLE,
     image = null,
     templateWeights,
+    learnedLayouts,
     seed,
     showPageNumber = true,
     forceTemplateId,
@@ -77,6 +82,7 @@ export function composeSlide(options: ComposeSlideOptions): ComposedSlide {
     hasImage: image !== null,
     hint: plan.templateHint,
     weights: templateWeights,
+    ...(learnedLayouts ? { learned: learnedTemplates(learnedLayouts) } : {}),
     // 슬라이드마다 다른 템플릿이 나오도록 index를 시드에 섞는다.
     seed: `${seed}:${index}`,
   });
@@ -182,6 +188,7 @@ function resolveTemplate(params: {
   hasImage: boolean;
   hint: string | null;
   weights?: Record<string, number>;
+  learned?: readonly Template[];
   seed: string;
 }): Template {
   if (params.forceTemplateId) {
@@ -191,6 +198,7 @@ function resolveTemplate(params: {
       hasImage: params.hasImage,
       hint: params.forceTemplateId,
       ...(params.weights ? { weights: params.weights } : {}),
+      ...(params.learned ? { learned: params.learned } : {}),
       seed: params.seed,
     });
     if (forced.id !== params.forceTemplateId) {
@@ -206,6 +214,7 @@ function resolveTemplate(params: {
     hasImage: params.hasImage,
     hint: params.hint,
     ...(params.weights ? { weights: params.weights } : {}),
+    ...(params.learned ? { learned: params.learned } : {}),
     seed: params.seed,
   });
 }
@@ -217,6 +226,8 @@ export type ComposeCardnewsOptions = {
   /** 슬라이드별 이미지. 인덱스가 맞아야 한다. 조달 전이면 빈 배열/undefined. */
   images?: (ResolvedImage | null)[];
   templateWeights?: Record<string, number>;
+  /** Layouts read off reference designs. Used in place of the built-in set. */
+  learnedLayouts?: PanelLayoutSpec[];
   seed: string;
   showPageNumber?: boolean;
   brandKitId?: string | null;

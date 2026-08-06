@@ -49,6 +49,13 @@ export function templatesForRole(role: SlideRole, hasImage: boolean): Template[]
 export type SelectOptions = {
   role: SlideRole;
   hasImage: boolean;
+  /**
+   * 학습된 템플릿. 있으면 내장 후보 대신 이것만 쓴다.
+   *
+   * 섞지 않는 이유: 사용자가 자기 디자인으로 만들라고 골랐는데 절반이 내장
+   * 템플릿으로 나오면, 학습이 안 먹은 것처럼 보인다.
+   */
+  learned?: readonly Template[];
   /** LLM이 제안한 템플릿 id */
   hint?: string | null;
   /** 브랜드킷의 채택률 가중치 {templateId: 0~1} */
@@ -70,7 +77,11 @@ export const DEFAULT_EPSILON = 0.15;
  *  3) 아니면 가중치 최댓값
  */
 export function selectTemplate(options: SelectOptions): Template {
-  const candidates = templatesForRole(options.role, options.hasImage);
+  const learnedForRole = (options.learned ?? []).filter(
+    (entry) => entry.roles.includes(options.role) && (options.hasImage || !entry.requiresImage),
+  );
+  const candidates =
+    learnedForRole.length > 0 ? learnedForRole : templatesForRole(options.role, options.hasImage);
 
   // 후보가 없을 수는 없지만(폴백이 있음), 타입 안전을 위해 방어한다.
   const first = candidates[0];
