@@ -1,5 +1,6 @@
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { index, integer, jsonb, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import type { SlideDoc } from '@/lib/slidedoc/doc';
 import { channelEnum, deckStatusEnum, ratioEnum, runScopeKindEnum } from './Enums';
 import { cardnews } from './Namespace';
 import { organizations, projects, users } from './Org';
@@ -145,6 +146,18 @@ export const panels = cardnews.table(
      * Without it, regenerating one card would mean re-planning the whole deck.
      */
     plan: jsonb('plan').$type<PanelPlan>(),
+    /**
+     * The slide document this panel renders from.
+     *
+     * Written once the card is composed, and rewritten whenever someone moves a
+     * layer in the editor. Slots alone cannot hold an edit like "this headline
+     * sits lower now": they carry values, not positions, so a layout change had
+     * nowhere to live and could not survive the page being closed.
+     *
+     * Null on panels made before the editor existed. Those still render from
+     * their stored image; they just cannot be re-laid out until regenerated.
+     */
+    doc: jsonb('doc').$type<SlideDoc>(),
     /** Storage path of the rendered PNG. Null until the render service returns. */
     renderPath: text('render_path'),
     blurDataUrl: text('blur_data_url'),

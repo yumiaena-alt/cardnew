@@ -33,7 +33,8 @@
     "automation": "자동 DM",
     "comments": "댓글 관리",
     "settings_accounts": "SNS 계정 연동",
-    "social": "SNS 관리"
+    "social": "SNS 관리",
+    "deck_video": "비디오 생성"
   },
   "DashboardTopbar": {
     "open_sidebar": "사이드바 열기",
@@ -213,7 +214,8 @@
     "edit_cancel": "취소",
     "edit_failed": "저장하지 못했습니다.",
     "edit_limit": "{used}/{max}자",
-    "repaint_action": "다시 그리기"
+    "repaint_action": "다시 그리기",
+    "layout_action": "배치 편집"
   },
   "DeckNewPage": {
     "title": "카드뉴스 만들기",
@@ -472,5 +474,33 @@
     "status_done": "완료",
     "status_failed": "실패",
     "status_canceled": "취소"
+  },
+  "VideoPage": {
+    "meta_title": "비디오 생성",
+    "title": "비디오 생성",
+    "subtitle": "만들어 둔 카드뉴스를 세로 영상으로 이어붙입니다.",
+    "empty_title": "이어붙일 카드뉴스가 없습니다",
+    "empty_description": "카드뉴스를 먼저 만들면 여기서 영상으로 바꿀 수 있습니다.",
+    "panels": "{count}장"
+  },
+  "PanelEditorPage": {
+    "meta_title": "카드 편집",
+    "title": "{index}장 편집",
+    "subtitle": "요소를 끌어 옮기고 크기를 바꾼 뒤 저장하면 카드가 다시 그려집니다.",
+    "undo": "실행 취소",
+    "redo": "다시 실행",
+    "save": "저장",
+    "saving": "저장하는 중",
+    "saved": "저장했습니다",
+    "save_failed": "저장하지 못했습니다",
+    "layers": "요소 {count}개",
+    "layer_text": "텍스트",
+    "layer_image": "이미지",
+    "layer_shape": "도형",
+    "not_found": "카드를 찾을 수 없습니다",
+    "no_doc_title": "이 카드는 편집할 수 없습니다",
+    "no_doc_description": "편집기가 생기기 전에 만들어진 카드입니다. 다시 그리면 편집할 수 있습니다.",
+    "layer_video": "영상",
+    "layer_logo": "로고"
   }
 }

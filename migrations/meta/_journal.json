@@ -99,6 +99,13 @@
       "when": 1785759309593,
       "tag": "0013_deck_video",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1785848006384,
+      "tag": "0014_panel_slide_doc",
+      "breakpoints": true
     }
   ]
 }

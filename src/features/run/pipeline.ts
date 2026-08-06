@@ -181,6 +181,9 @@ async function renderAndStore(input: {
             templateHint: planned.templateHint,
           }
         : null,
+      // The document the card was rendered from. Kept so the editor can move a
+      // layer later: slots hold what a card says, never where anything sits.
+      doc: slide.doc,
       renderPath: path,
     });
   }

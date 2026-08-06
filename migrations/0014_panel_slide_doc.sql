@@ -1,0 +1,1 @@
+ALTER TABLE "cardnews"."panels" ADD COLUMN "doc" jsonb;

@@ -30,6 +30,7 @@ function useNavLabels(): NavLabels {
     deck_link: t('deck_link'),
     deck_new: t('deck_new'),
     deck_list: t('deck_list'),
+    deck_video: t('deck_video'),
     blog: t('blog'),
     automation: t('automation'),
     comments: t('comments'),

@@ -10,6 +10,7 @@ export type NavLabelKey =
   | 'deck_link'
   | 'deck_new'
   | 'deck_list'
+  | 'deck_video'
   | 'blog'
   | 'automation'
   | 'comments'
@@ -63,6 +64,7 @@ const navGroups: NavGroup[] = [
     children: [
       { id: 'deck-link', labelKey: 'deck_link', href: '/dashboard/deck/link' },
       { id: 'deck-new', labelKey: 'deck_new', href: '/dashboard/deck/new' },
+      { id: 'deck-video', labelKey: 'deck_video', href: '/dashboard/video' },
       { id: 'deck-blog', labelKey: 'blog', href: '/dashboard/blog' },
       { id: 'deck-list', labelKey: 'deck_list', href: '/dashboard/deck' },
     ],

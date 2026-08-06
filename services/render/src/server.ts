@@ -214,6 +214,10 @@ const server = createServer(async (req, res) => {
         fittedSizes: typeset.fittedSizes,
         overflows: typeset.overflows,
         collisions: typeset.collisions,
+        // 확정 사각형까지 돌려준다. 에디터 캔버스가 이걸로 배치를 그려야
+        // 화면과 실제 렌더가 같아진다 — 문서의 h는 대개 비어 있고, 높이는
+        // 텍스트를 실측해야만 나온다.
+        rects: typeset.rects,
       });
       return;
     }

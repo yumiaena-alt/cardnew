@@ -33,7 +33,8 @@
     "automation": "Auto DM",
     "comments": "Comments",
     "settings_accounts": "Social accounts",
-    "social": "Social"
+    "social": "Social",
+    "deck_video": "Video"
   },
   "DashboardTopbar": {
     "open_sidebar": "Open sidebar",
@@ -213,7 +214,8 @@
     "edit_cancel": "Cancel",
     "edit_failed": "Could not save.",
     "edit_limit": "{used}/{max} characters",
-    "repaint_action": "Repaint"
+    "repaint_action": "Repaint",
+    "layout_action": "Layout"
   },
   "DeckNewPage": {
     "title": "New card news",
@@ -472,5 +474,33 @@
     "status_done": "Done",
     "status_failed": "Failed",
     "status_canceled": "Canceled"
+  },
+  "VideoPage": {
+    "meta_title": "Video",
+    "title": "Video",
+    "subtitle": "Stitch card news you have already made into a vertical reel.",
+    "empty_title": "Nothing to stitch yet",
+    "empty_description": "Make card news first, then turn it into a reel here.",
+    "panels": "{count} cards"
+  },
+  "PanelEditorPage": {
+    "meta_title": "Edit card",
+    "title": "Editing card {index}",
+    "subtitle": "Move and resize elements, then save to redraw the card.",
+    "undo": "Undo",
+    "redo": "Redo",
+    "save": "Save",
+    "saving": "Saving",
+    "saved": "Saved",
+    "save_failed": "Could not save",
+    "layers": "{count} elements",
+    "layer_text": "Text",
+    "layer_image": "Image",
+    "layer_shape": "Shape",
+    "not_found": "Card not found",
+    "no_doc_title": "This card cannot be edited",
+    "no_doc_description": "It was made before the editor existed. Repaint it to edit.",
+    "layer_video": "Video",
+    "layer_logo": "Logo"
   }
 }

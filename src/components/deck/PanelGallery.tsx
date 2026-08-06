@@ -1,11 +1,12 @@
 'use client';
 
-import { ImageOff, Pencil, RefreshCw } from 'lucide-react';
+import { ImageOff, LayoutTemplate, Pencil, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { StatusChip } from '@/components/ui/StatusChip';
 import type { PanelView } from '@/features/deck/service';
+import { Link } from '@/libs/I18nNavigation';
 import type { RunItemInput } from '@/validations/RunValidation';
 import { PanelEditor } from './PanelEditor';
 import { PanelRepaint } from './PanelRepaint';
@@ -84,6 +85,19 @@ export function PanelGallery(props: PanelGalleryProps) {
                     <Pencil data-icon="inline-start" />
                     {t('edit_action')}
                   </Button>
+
+                  {/* Copy edits happen in the drawer above; this opens the card
+                      itself, where a layer can be moved rather than reworded. */}
+                  <Button
+                    render={
+                      <Link href={`/dashboard/deck/${props.deckId}/edit/${panel.index}`}>
+                        <LayoutTemplate data-icon="inline-start" />
+                        {t('layout_action')}
+                      </Link>
+                    }
+                    size="xs"
+                    variant="outline"
+                  />
 
                   {panel.canRepaint ? (
                     <Button

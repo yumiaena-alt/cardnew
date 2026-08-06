@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { slideDocSchema } from '@/lib/slidedoc/doc';
 
 /**
  * Zod schemas for editing a generated deck.
@@ -37,3 +38,17 @@ export const updateSlotSchema = z
   });
 
 export type UpdateSlotInput = z.infer<typeof updateSlotSchema>;
+
+/**
+ * A layout edit saved from the canvas.
+ *
+ * The whole document is sent rather than a patch: the editor holds it as one
+ * value, and a partial update would need the server to reconstruct what the
+ * user is looking at in order to apply it.
+ */
+export const savePanelDocSchema = z.object({
+  panelId: z.uuid(),
+  doc: slideDocSchema,
+});
+
+export type SavePanelDocInput = z.infer<typeof savePanelDocSchema>;

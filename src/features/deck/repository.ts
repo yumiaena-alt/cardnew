@@ -1,6 +1,7 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { orgScoped } from '@/features/shared/orgScope';
 import type { OrgScope } from '@/features/shared/scope';
+import type { SlideDoc } from '@/lib/slidedoc/doc';
 import { db } from '@/libs/DB';
 import type { Deck, DeckVersion, NewPanel, Panel } from '@/models/Deck';
 import { deckVersions, decks, panels } from '@/models/Deck';
@@ -249,6 +250,7 @@ export async function findOwnedPanel(scope: OrgScope, panelId: string): Promise<
       role: panels.role,
       slots: panels.slots,
       plan: panels.plan,
+      doc: panels.doc,
       renderPath: panels.renderPath,
       blurDataUrl: panels.blurDataUrl,
     })
@@ -273,6 +275,62 @@ export async function updatePanelSlots(
   slots: Panel['slots'],
 ): Promise<Panel | null> {
   const [row] = await db.update(panels).set({ slots }).where(eq(panels.id, panelId)).returning();
+
+  return row ?? null;
+}
+
+/**
+ * Replaces a panel's slide document after a layout edit.
+ *
+ * @param scope - Tenant scope.
+ * @param panelId - Panel to write.
+ * @param doc - The document the panel renders from now.
+ */
+export async function updatePanelDoc(
+  scope: OrgScope,
+  panelId: string,
+  doc: SlideDoc,
+): Promise<void> {
+  const owned = await findOwnedPanel(scope, panelId);
+
+  if (!owned) {
+    return;
+  }
+
+  await db.update(panels).set({ doc }).where(eq(panels.id, panelId));
+}
+
+/**
+ * Finds one card of a deck by its position, scoped to the caller.
+ *
+ * By index rather than by id because that is what a card's own URL carries:
+ * the editor is opened from "the third card of this deck", not from an id the
+ * user has never seen.
+ *
+ * @param scope - Tenant scope.
+ * @param deckId - Deck the card belongs to.
+ * @param index - Zero-based position in the active version.
+ * @returns The panel, or null when it is not the caller's.
+ */
+export async function findPanelByIndex(
+  scope: OrgScope,
+  deckId: string,
+  index: number,
+): Promise<{ id: string; index: number; doc: SlideDoc | null } | null> {
+  const [row] = await db
+    .select({ id: panels.id, index: panels.index, doc: panels.doc })
+    .from(panels)
+    .innerJoin(deckVersions, eq(deckVersions.id, panels.versionId))
+    .innerJoin(decks, eq(decks.id, deckVersions.deckId))
+    .where(
+      and(
+        eq(decks.id, deckId),
+        eq(decks.orgId, scope.orgId),
+        eq(panels.versionId, decks.activeVersionId),
+        eq(panels.index, index),
+      ),
+    )
+    .limit(1);
 
   return row ?? null;
 }

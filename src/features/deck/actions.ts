@@ -4,9 +4,11 @@ import { revalidatePath } from 'next/cache';
 import { DomainError } from '@/features/shared/errors';
 import { getScope, requirePermission } from '@/features/shared/scope';
 import { logger } from '@/libs/Logger';
-import type { UpdateSlotInput } from '@/validations/DeckValidation';
-import { updateSlotSchema } from '@/validations/DeckValidation';
-import { findOwnedPanel, updatePanelSlots } from './repository';
+import { PANEL_CONTENT_TYPE, renderPanel } from '@/libs/RenderService';
+import { RENDER_BUCKET, uploadObject } from '@/libs/Storage';
+import type { SavePanelDocInput, UpdateSlotInput } from '@/validations/DeckValidation';
+import { savePanelDocSchema, updateSlotSchema } from '@/validations/DeckValidation';
+import { findOwnedPanel, updatePanelDoc, updatePanelSlots } from './repository';
 import { buildDeckVideo } from './video';
 
 /**
@@ -16,6 +18,9 @@ import { buildDeckVideo } from './video';
  * decide what to leave alone. Without that flag, asking for a fresh version of
  * a card would silently discard the wording the user had just fixed by hand.
  */
+
+/** Same 2x the pipeline renders at, so an edited card matches its neighbours. */
+const RENDER_SCALE = 2;
 
 export type UpdateSlotResult = { ok: true } | { ok: false; code: string };
 
@@ -100,6 +105,60 @@ export async function buildVideo(deckId: string): Promise<BuildVideoResult> {
     const code = error instanceof DomainError ? error.code : 'invalid_input';
 
     logger.warn('Video build rejected', { code });
+
+    return { ok: false, code };
+  }
+}
+
+export type SavePanelDocResult = { ok: true } | { ok: false; code: string };
+
+/**
+ * Saves a layout edit and redraws the card from it.
+ *
+ * The image is re-rendered here, unlike a copy edit. A moved layer is a change
+ * nobody can see until the card is drawn again, and the published file is the
+ * render service's output — leaving the two apart would mean editing something
+ * and posting something else.
+ *
+ * No credits are taken. The card was paid for when it was generated, and this
+ * spends a browser screenshot rather than a model call.
+ *
+ * @param input - Panel and the document it should render from now.
+ * @returns Success, or a failure code.
+ */
+export async function savePanelDoc(input: SavePanelDocInput): Promise<SavePanelDocResult> {
+  try {
+    const scope = await getScope();
+    requirePermission(scope, 'deck:update');
+
+    const parsed = savePanelDocSchema.parse(input);
+    const panel = await findOwnedPanel(scope, parsed.panelId);
+
+    if (!panel) {
+      return { ok: false, code: 'not_found' };
+    }
+
+    const rendered = await renderPanel(parsed.doc, RENDER_SCALE);
+
+    // Overwrites the card in place. A new path per edit would leave every
+    // superseded version behind in storage with nothing pointing at it.
+    await uploadObject({
+      bucket: RENDER_BUCKET,
+      path: panel.renderPath ?? '',
+      body: rendered.bytes,
+      contentType: PANEL_CONTENT_TYPE,
+    });
+
+    await updatePanelDoc(scope, parsed.panelId, parsed.doc);
+
+    logger.info('Panel layout saved', { orgId: scope.orgId, panelId: parsed.panelId });
+    revalidatePath('/dashboard/deck');
+
+    return { ok: true };
+  } catch (error) {
+    const code = error instanceof DomainError ? error.code : 'invalid_input';
+
+    logger.warn('Panel layout save rejected', { code });
 
     return { ok: false, code };
   }
