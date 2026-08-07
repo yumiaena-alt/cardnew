@@ -7,10 +7,18 @@ import { checkMargin } from '@/features/run/providerCost';
 import { DomainError } from '@/features/shared/errors';
 import { getScope, requirePermission } from '@/features/shared/scope';
 import { logger } from '@/libs/Logger';
-import type { LearnDesignInput } from '@/validations/TemplateValidation';
-import { learnDesignSchema } from '@/validations/TemplateValidation';
+import type {
+  DeleteTemplateInput,
+  LearnDesignInput,
+  RenameTemplateInput,
+} from '@/validations/TemplateValidation';
+import {
+  deleteTemplateSchema,
+  learnDesignSchema,
+  renameTemplateSchema,
+} from '@/validations/TemplateValidation';
 import { learnDesign } from './learn';
-import { saveLearnedTemplate } from './repository';
+import { deleteTemplate, renameTemplate, saveLearnedTemplate } from './repository';
 
 /**
  * Server Actions for learning a design from reference images.
@@ -121,6 +129,61 @@ export async function runDesignLearning(input: LearnDesignInput): Promise<LearnR
     const code = error instanceof DomainError ? error.code : 'invalid_input';
 
     logger.warn('Design learning rejected', { code });
+
+    return { ok: false, code: code as LearnFailureCode };
+  }
+}
+
+export type TemplateEditResult = { ok: true } | { ok: false; code: LearnFailureCode };
+
+/**
+ * Renames a learned template.
+ *
+ * @param input - Template and its new name.
+ * @returns Success, or a failure code.
+ */
+export async function renameLearnedTemplate(
+  input: RenameTemplateInput,
+): Promise<TemplateEditResult> {
+  try {
+    const scope = await getScope();
+    requirePermission(scope, 'template:create');
+
+    const parsed = renameTemplateSchema.parse(input);
+    const renamed = await renameTemplate(scope, parsed.templateId, parsed.name.trim());
+
+    revalidatePath('/dashboard/templates');
+
+    return renamed ? { ok: true } : { ok: false, code: 'not_found' };
+  } catch (error) {
+    const code = error instanceof DomainError ? error.code : 'invalid_input';
+
+    return { ok: false, code: code as LearnFailureCode };
+  }
+}
+
+/**
+ * Deletes a learned template.
+ *
+ * @param input - The template to delete.
+ * @returns Success, or a failure code.
+ */
+export async function deleteLearnedTemplate(
+  input: DeleteTemplateInput,
+): Promise<TemplateEditResult> {
+  try {
+    const scope = await getScope();
+    requirePermission(scope, 'template:create');
+
+    const parsed = deleteTemplateSchema.parse(input);
+    const deleted = await deleteTemplate(scope, parsed.templateId);
+
+    logger.info('Learned template deleted', { orgId: scope.orgId, templateId: parsed.templateId });
+    revalidatePath('/dashboard/templates');
+
+    return deleted ? { ok: true } : { ok: false, code: 'not_found' };
+  } catch (error) {
+    const code = error instanceof DomainError ? error.code : 'invalid_input';
 
     return { ok: false, code: code as LearnFailureCode };
   }

@@ -1,9 +1,12 @@
 import { Palette } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { TemplateCard } from '@/components/template/TemplateCard';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { StatusChip } from '@/components/ui/StatusChip';
 import { findScope } from '@/features/shared/scope';
 import { listLearnedTemplates } from '@/features/template/repository';
+
+/** The three colours that say most about whether a design was read right. */
+const PALETTE_TOKENS = ['backgroundColor', 'textColor', 'accentColor'] as const;
 
 type TemplateGalleryPageProps = {
   params: Promise<{ locale: string }>;
@@ -38,31 +41,16 @@ export default async function TemplateGalleryPage(props: TemplateGalleryPageProp
 
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {learned.map((template) => (
-          <li
-            className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
-            key={template.id}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <h2 className="text-sm font-medium text-foreground">{template.name}</h2>
-              <StatusChip tone="done">{template.ratio}</StatusChip>
-            </div>
-
-            {/* The palette it learned, shown as the colours themselves. A hex
-                string tells nobody whether the design was read correctly. */}
-            <div className="flex gap-1.5">
-              {['backgroundColor', 'textColor', 'accentColor'].map((token) => (
-                <span
-                  className="size-6 rounded-full border border-border"
-                  key={token}
-                  style={{ backgroundColor: template.tokens[token] }}
-                  title={template.tokens[token]}
-                />
-              ))}
-            </div>
-
-            <p className="text-xs text-muted-foreground">
-              {t('layouts', { roles: template.layouts.map((layout) => layout.role).join(' · ') })}
-            </p>
+          <li key={template.id}>
+            <TemplateCard
+              colors={PALETTE_TOKENS.map((token) => template.tokens[token] ?? '#000000')}
+              id={template.id}
+              name={template.name}
+              ratio={template.ratio}
+              roles={t('layouts', {
+                roles: template.layouts.map((layout) => layout.role).join(' · '),
+              })}
+            />
           </li>
         ))}
       </ul>

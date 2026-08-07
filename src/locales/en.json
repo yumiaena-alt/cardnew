@@ -241,7 +241,12 @@
     "scaffold_description": "System templates land in Phase 1-D. Routing and layout are ready.",
     "title": "Templates",
     "summary": "{count} learned styles",
-    "layouts": "Layouts: {roles}"
+    "layouts": "Layouts: {roles}",
+    "rename": "Rename",
+    "delete": "Delete",
+    "delete_confirm": "You will not be able to make more in this style. Cards already made are unaffected.",
+    "delete_yes": "Delete",
+    "delete_no": "Keep it"
   },
   "TemplateLearnPage": {
     "scaffold_title": "Design learning is being built",

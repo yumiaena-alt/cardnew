@@ -138,3 +138,45 @@ export async function findTemplateBrand(
 
   return row ? { brand: toBrandStyle(row.tokens), layouts: row.layouts } : null;
 }
+
+/**
+ * Renames a learned template.
+ *
+ * @param scope - Tenant scope.
+ * @param templateId - Template to rename.
+ * @param name - The new name.
+ * @returns Whether it was the caller's to rename.
+ */
+export async function renameTemplate(
+  scope: OrgScope,
+  templateId: string,
+  name: string,
+): Promise<boolean> {
+  const rows = await db
+    .update(templates)
+    .set({ name })
+    .where(and(eq(templates.id, templateId), eq(templates.orgId, scope.orgId)))
+    .returning({ id: templates.id });
+
+  return rows.length > 0;
+}
+
+/**
+ * Deletes a learned template.
+ *
+ * The cards it already made are untouched: they hold their own documents, so a
+ * deck does not lose its design when the template it came from goes away. What
+ * is lost is the ability to make more in that style.
+ *
+ * @param scope - Tenant scope.
+ * @param templateId - Template to delete.
+ * @returns Whether it was the caller's to delete.
+ */
+export async function deleteTemplate(scope: OrgScope, templateId: string): Promise<boolean> {
+  const rows = await db
+    .delete(templates)
+    .where(and(eq(templates.id, templateId), eq(templates.orgId, scope.orgId)))
+    .returning({ id: templates.id });
+
+  return rows.length > 0;
+}

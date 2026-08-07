@@ -26,3 +26,14 @@ export const learnDesignSchema = z.object({
 });
 
 export type LearnDesignInput = z.infer<typeof learnDesignSchema>;
+
+export const renameTemplateSchema = z.object({
+  templateId: z.uuid(),
+  name: z.string().min(1).max(60),
+});
+
+export type RenameTemplateInput = z.infer<typeof renameTemplateSchema>;
+
+export const deleteTemplateSchema = z.object({ templateId: z.uuid() });
+
+export type DeleteTemplateInput = z.infer<typeof deleteTemplateSchema>;

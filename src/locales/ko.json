@@ -241,7 +241,12 @@
     "scaffold_description": "기본 템플릿은 Phase 1-D에 들어옵니다. 라우팅과 레이아웃은 준비됐어요.",
     "title": "템플릿",
     "summary": "학습한 스타일 {count}개",
-    "layouts": "배치: {roles}"
+    "layouts": "배치: {roles}",
+    "rename": "이름 변경",
+    "delete": "삭제",
+    "delete_confirm": "삭제하면 이 스타일로는 더 만들 수 없습니다. 이미 만든 카드뉴스는 그대로 남습니다.",
+    "delete_yes": "삭제",
+    "delete_no": "그대로 두기"
   },
   "TemplateLearnPage": {
     "scaffold_title": "디자인 학습 화면을 만들고 있어요",
