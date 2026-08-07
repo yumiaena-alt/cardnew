@@ -527,7 +527,17 @@
     "image_search_placeholder": "e.g. iced coffee",
     "image_search": "Search",
     "image_searching": "Searching",
-    "image_failed": "Could not load photos"
+    "image_failed": "Could not load photos",
+    "add_text": "Text",
+    "add_shape": "Shape",
+    "new_text": "New text",
+    "color_label": "Colour",
+    "align_label": "Align",
+    "align_left": "Left",
+    "align_center": "Centre",
+    "align_right": "Right",
+    "fill_label": "Fill",
+    "radius_label": "Corner"
   },
   "DesignLearnPage": {
     "meta_title": "Learn my design",

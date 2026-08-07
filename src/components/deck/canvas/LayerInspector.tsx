@@ -4,7 +4,7 @@ import { Copy, Eye, EyeOff, Lock, LockOpen, MoveDown, MoveUp, Trash2 } from 'luc
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Field, Input, Textarea } from '@/components/ui/Field';
-import type { ImageLayer, Layer as DocLayer, TextLayer } from '@/lib/slidedoc/layers';
+import type { ImageLayer, Layer as DocLayer, ShapeLayer, TextLayer } from '@/lib/slidedoc/layers';
 import { ImagePicker } from './ImagePicker';
 
 type LayerInspectorProps = {
@@ -29,8 +29,47 @@ const MAX_FONT_SIZE = 400;
 /** Focus is a ratio, and a hundred steps is finer than anyone needs. */
 const FOCUS_STEP = 0.01;
 
+/** Past this a rectangle is a pill, and the number stops meaning anything. */
+const MAX_RADIUS = 200;
+
 /** Cards are taller than they are wide on every channel we publish to. */
 const ORIENTATION_FOR_LAYER = 'portrait' as const;
+
+/**
+ * A colour, picked or typed.
+ *
+ * Both, because they fail in different places: the swatch is faster but cannot
+ * be told an exact brand hex, and the field can but is tedious for "a bit
+ * darker". Neither alone covers the two reasons someone opens this.
+ *
+ * @param props - Label, current value, and what to do with a new one.
+ * @returns The colour control.
+ */
+function ColorField(props: { label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <label className="flex items-center gap-3 text-sm">
+      <span className="w-20 text-muted-foreground">{props.label}</span>
+
+      <input
+        className="size-8 shrink-0 cursor-pointer rounded-md border border-border bg-transparent"
+        onChange={(event) => {
+          props.onChange(event.target.value);
+        }}
+        type="color"
+        value={props.value}
+      />
+
+      <Input
+        className="font-mono"
+        maxLength={9}
+        onChange={(event) => {
+          props.onChange(event.target.value);
+        }}
+        value={props.value}
+      />
+    </label>
+  );
+}
 
 /**
  * Copy and size for a text layer.
@@ -45,6 +84,7 @@ const ORIENTATION_FOR_LAYER = 'portrait' as const;
 function TextFields(props: { layer: TextLayer; onChange: (next: TextLayer) => void }) {
   const t = useTranslations('PanelEditorPage');
   const { layer } = props;
+  const alignLabels = { left: t('align_left'), center: t('align_center'), right: t('align_right') };
 
   return (
     <>
@@ -80,7 +120,70 @@ function TextFields(props: { layer: TextLayer; onChange: (next: TextLayer) => vo
           value={layer.style.size}
         />
       </Field>
+
+      <ColorField
+        label={t('color_label')}
+        onChange={(color) => {
+          props.onChange({ ...layer, style: { ...layer.style, color } });
+        }}
+        value={layer.style.color}
+      />
+
+      <div className="flex items-center gap-3 text-sm">
+        <span className="w-20 text-muted-foreground">{t('align_label')}</span>
+
+        <div className="flex gap-1">
+          {(['left', 'center', 'right'] as const).map((align) => (
+            <Button
+              key={align}
+              onClick={() => {
+                props.onChange({ ...layer, style: { ...layer.style, align } });
+              }}
+              size="xs"
+              variant={layer.style.align === align ? 'default' : 'outline'}
+            >
+              {alignLabels[align]}
+            </Button>
+          ))}
+        </div>
+      </div>
     </>
+  );
+}
+
+/**
+ * Fill and corner for a shape layer.
+ *
+ * @param props - The shape layer and how to patch it.
+ * @returns The shape fields.
+ */
+function ShapeFields(props: { layer: ShapeLayer; onChange: (next: ShapeLayer) => void }) {
+  const t = useTranslations('PanelEditorPage');
+  const { layer } = props;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <ColorField
+        label={t('fill_label')}
+        onChange={(color) => {
+          props.onChange({ ...layer, fill: { kind: 'solid', color } });
+        }}
+        value={layer.fill.kind === 'solid' ? layer.fill.color : '#000000'}
+      />
+
+      <Field htmlFor="layer-radius" label={t('radius_label')}>
+        <Input
+          id="layer-radius"
+          max={MAX_RADIUS}
+          min={0}
+          onChange={(event) => {
+            props.onChange({ ...layer, radius: Number(event.target.value) });
+          }}
+          type="number"
+          value={layer.radius}
+        />
+      </Field>
+    </div>
   );
 }
 
@@ -230,6 +333,10 @@ export function LayerInspector(props: LayerInspectorProps) {
 
       {props.layer.type === 'image' ? (
         <ImageFields layer={props.layer} onChange={props.onReplace} panelId={props.panelId} />
+      ) : null}
+
+      {props.layer.type === 'shape' ? (
+        <ShapeFields layer={props.layer} onChange={props.onReplace} />
       ) : null}
     </section>
   );

@@ -2,12 +2,17 @@
 
 import type Konva from 'konva';
 import { useEffect, useRef, useState } from 'react';
-import { Image as KonvaImage, Layer, Rect, Stage, Text, Transformer } from 'react-konva';
+import { Image as KonvaImage, Layer, Line, Rect, Stage, Text, Transformer } from 'react-konva';
 import { docCanvasSize } from '@/lib/slidedoc/doc';
 import type { SlideDoc } from '@/lib/slidedoc/doc';
 import type { Rect as MeasuredRect } from '@/lib/slidedoc/geometry';
 import { rectToOffset } from '@/lib/slidedoc/geometry';
 import type { Layer as DocLayer } from '@/lib/slidedoc/layers';
+import type { Guide } from './snap';
+import { snapBox, snapTargets } from './snap';
+
+/** Thin enough to read as a guide rather than as part of the design. */
+const GUIDE_WIDTH = 2;
 
 type PanelCanvasProps = {
   doc: SlideDoc;
@@ -77,6 +82,8 @@ type NodeProps = {
   isSelected: boolean;
   onSelect: () => void;
   onChange: (layout: Partial<DocLayer['layout']>) => void;
+  onDragMove: (node: Konva.Node) => void;
+  onDragEnd: () => void;
 };
 
 /**
@@ -208,7 +215,11 @@ function LayerNode(props: NodeProps) {
     draggable: !props.layer.locked,
     onClick: props.onSelect,
     onTap: props.onSelect,
+    onDragMove: (event: Konva.KonvaEventObject<DragEvent>) => {
+      props.onDragMove(event.target);
+    },
     onDragEnd: (event: Konva.KonvaEventObject<DragEvent>) => {
+      props.onDragEnd();
       props.onChange(toPosition(event.target, props.layer, props.canvas));
     },
     onTransformEnd: (event: Konva.KonvaEventObject<Event>) => {
@@ -268,6 +279,7 @@ function LayerNode(props: NodeProps) {
 export function PanelCanvas(props: PanelCanvasProps) {
   const canvas = docCanvasSize(props.doc);
   const scale = props.displayWidth / canvas.width;
+  const [guides, setGuides] = useState<Guide[]>([]);
   const transformer = useRef<Konva.Transformer>(null);
   const stage = useRef<Konva.Stage>(null);
 
@@ -313,9 +325,41 @@ export function PanelCanvas(props: PanelCanvasProps) {
             onChange={(layout) => {
               props.onLayerChange(layer.id, layout);
             }}
+            onDragEnd={() => {
+              setGuides([]);
+            }}
+            onDragMove={(node) => {
+              // Snapped on the node itself so the pull is felt during the drag
+              // rather than applied when it is already let go.
+              const others = Object.entries(props.rects)
+                .filter(([id]) => id !== layer.id)
+                .map(([, rect]) => rect);
+              const result = snapBox(
+                { x: node.x(), y: node.y(), width: node.width(), height: node.height() },
+                snapTargets(canvas, others, props.doc.safeArea),
+              );
+
+              node.position({ x: result.x, y: result.y });
+              setGuides(result.guides);
+            }}
             onSelect={() => {
               props.onSelect(layer.id);
             }}
+          />
+        ))}
+
+        {guides.map((guide) => (
+          <Line
+            dash={[8, 8]}
+            key={`${guide.axis}-${guide.at}`}
+            listening={false}
+            points={
+              guide.axis === 'x'
+                ? [guide.at, 0, guide.at, canvas.height]
+                : [0, guide.at, canvas.width, guide.at]
+            }
+            stroke="#8FBF12"
+            strokeWidth={GUIDE_WIDTH}
           />
         ))}
 

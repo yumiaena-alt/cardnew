@@ -527,7 +527,17 @@
     "image_search_placeholder": "예: 아이스 커피",
     "image_search": "검색",
     "image_searching": "찾는 중",
-    "image_failed": "사진을 가져오지 못했습니다"
+    "image_failed": "사진을 가져오지 못했습니다",
+    "add_text": "텍스트",
+    "add_shape": "도형",
+    "new_text": "새 텍스트",
+    "color_label": "글자색",
+    "align_label": "정렬",
+    "align_left": "왼쪽",
+    "align_center": "가운데",
+    "align_right": "오른쪽",
+    "fill_label": "채우기",
+    "radius_label": "모서리"
   },
   "DesignLearnPage": {
     "meta_title": "내 디자인 학습",

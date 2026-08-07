@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye, EyeOff, Lock, Redo2, Undo2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, Redo2, Square, Type, Undo2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useState, useTransition } from 'react';
@@ -133,6 +133,49 @@ export function PanelEditorShell(props: PanelEditorShellProps) {
     setSelectedId(copy.id);
   };
 
+  const addLayer = (kind: 'text' | 'shape') => {
+    const id = `${kind}-${doc.layers.length}-${past.length}`;
+    // Dropped a third of the way down rather than at the origin: a layer that
+    // appears in the corner reads as a mistake, not as something new to move.
+    const layout = { anchor: 'top-left' as const, x: 0.1, y: 0.35, w: 0.8, rotate: 0, z: 0 };
+    const shared = { id, layout, hidden: false, locked: false, opacity: 1 };
+
+    const layer: DocLayer =
+      kind === 'text'
+        ? {
+            ...shared,
+            type: 'text',
+            role: 'body',
+            text: t('new_text'),
+            style: {
+              family: 'Pretendard',
+              weight: 400,
+              size: 48,
+              autoFit: { enabled: false, min: 24, max: 96, maxLines: 6 },
+              color: '#FFFFFF',
+              align: 'left',
+              lineHeight: 1.3,
+              letterSpacing: -0.02,
+              italic: false,
+              underline: false,
+              strike: false,
+              transform: 'none',
+            },
+          }
+        : {
+            ...shared,
+            layout: { ...layout, h: 0.12 },
+            type: 'shape',
+            role: 'accent',
+            shape: 'rect',
+            fill: { kind: 'solid', color: '#C8F751' },
+            radius: 8,
+          };
+
+    commit({ ...doc, layers: [...doc.layers, layer] });
+    setSelectedId(id);
+  };
+
   const removeLayer = (layerId: string) => {
     commit({ ...doc, layers: doc.layers.filter((layer) => layer.id !== layerId) });
     setSelectedId(null);
@@ -200,6 +243,30 @@ export function PanelEditorShell(props: PanelEditorShellProps) {
           <Button disabled={future.length === 0} onClick={redo} size="sm" variant="ghost">
             <Redo2 className="size-4" aria-hidden="true" />
             {t('redo')}
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-1">
+          <Button
+            onClick={() => {
+              addLayer('text');
+            }}
+            size="sm"
+            variant="outline"
+          >
+            <Type className="size-4" aria-hidden="true" />
+            {t('add_text')}
+          </Button>
+
+          <Button
+            onClick={() => {
+              addLayer('shape');
+            }}
+            size="sm"
+            variant="outline"
+          >
+            <Square className="size-4" aria-hidden="true" />
+            {t('add_shape')}
           </Button>
         </div>
 
