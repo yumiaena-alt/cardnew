@@ -138,7 +138,9 @@
     "channel_tiktok": "TikTok",
     "channel_youtube": "YouTube",
     "channel_ready": "Ready",
-    "channel_later": "Not yet"
+    "channel_later": "Not yet",
+    "redirect_label": "Redirect URI to register on the Meta app",
+    "redirect_hint": "Paste this into Meta for Developers → Products → Facebook Login → Settings → Valid OAuth Redirect URIs, and add this address's domain under App settings → Basic → App Domains."
   },
   "DeckListPage": {
     "empty_title": "No decks yet",

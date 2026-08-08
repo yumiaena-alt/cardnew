@@ -136,6 +136,22 @@ export default async function AccountsPage(props: AccountsPageProps) {
         )}
       </section>
 
+      {/*
+        Shown because the provider's own failure for an unregistered domain
+        names neither this app nor this value: it reads as a broken Meta app
+        rather than a redirect URI that has to be copied into one. Printing the
+        exact string turns that dead end into something checkable.
+      */}
+      {redirectUri ? (
+        <section className="flex flex-col gap-2 rounded-lg border border-border bg-muted/40 p-3">
+          <span className="text-xs font-medium text-foreground">{t('redirect_label')}</span>
+          <code className="rounded-sm bg-background px-2 py-1.5 font-mono text-xs break-all text-foreground">
+            {redirectUri}
+          </code>
+          <span className="text-xs text-muted-foreground">{t('redirect_hint')}</span>
+        </section>
+      ) : null}
+
       <p className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
         <Link2 className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
         {t('scope_note')}

@@ -138,7 +138,9 @@
     "channel_tiktok": "틱톡",
     "channel_youtube": "유튜브",
     "channel_ready": "연동 가능",
-    "channel_later": "준비 중"
+    "channel_later": "준비 중",
+    "redirect_label": "Meta 앱에 등록할 리디렉션 URI",
+    "redirect_hint": "Meta 개발자 콘솔 → 제품 → Facebook 로그인 → 설정 → '유효한 OAuth 리디렉션 URI'에 이 값을 그대로 넣고, 앱 설정 → 기본 설정 → '앱 도메인'에 이 주소의 도메인을 추가하세요."
   },
   "DeckListPage": {
     "empty_title": "아직 만든 카드뉴스가 없어요",
