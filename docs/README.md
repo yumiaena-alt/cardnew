@@ -8,7 +8,8 @@
 
 | 문서 | 내용 | 대상 |
 |---|---|---|
-| **[project_status.md](project_status.md)** | **현재 진행 상태 · 다음 작업 · 세션 핸드오버** — 새 세션은 여기부터 | 전체 |
+| **[HANDOFF.md](HANDOFF.md)** | **세션 인수인계** — 새 세션은 **여기부터**. 검증된 것 · 다음 할 일 · 실행법 · 지뢰 | 전체 |
+| **[project_status.md](project_status.md)** | 리스크 대장 · 단계별 검증 기록 | 전체 |
 | [01-PRD.md](01-PRD.md) | 문제 정의, 타깃, 핵심 기능, IA, 성공 지표, 스코프 경계 | 전체 |
 | [02-ARCHITECTURE.md](02-ARCHITECTURE.md) | **v0 자산 실사**, 시스템 구조, 인증·RBAC, 생성 파이프라인, i18n, 관측 | 개발 |
 | [03-DATA-MODEL.md](03-DATA-MODEL.md) | Drizzle 스키마 전문(21개 테이블), 인덱스 전략, 마이그레이션 정책 | 개발 |
