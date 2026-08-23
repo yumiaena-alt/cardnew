@@ -696,5 +696,11 @@
     "error_planner_unavailable": "분석 모델에 연결하지 못했습니다",
     "delete_label": "{name} 삭제",
     "delete_confirm_label": "{name} 삭제를 확정"
+  },
+  "DashboardError": {
+    "heading": "화면을 불러오지 못했어요",
+    "body": "서버에서 데이터를 가져오는 중 문제가 생겼습니다. 브라우저가 아니라 서버 쪽 문제라, 아래 코드를 서버 로그에서 찾으면 원인이 나옵니다.",
+    "digest_label": "오류 코드",
+    "retry": "다시 불러오기"
   }
 }

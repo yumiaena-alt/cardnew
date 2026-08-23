@@ -696,5 +696,11 @@
     "error_planner_unavailable": "Could not reach the model",
     "delete_label": "Delete {name}",
     "delete_confirm_label": "Confirm deleting {name}"
+  },
+  "DashboardError": {
+    "heading": "This screen could not load",
+    "body": "Something went wrong fetching data from the server. The fault is on the server, not in the browser — matching the code below against the server log names the cause.",
+    "digest_label": "Error code",
+    "retry": "Reload"
   }
 }

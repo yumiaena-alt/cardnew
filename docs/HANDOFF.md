@@ -42,20 +42,28 @@
 
 ### 🔴 사장님 조작이 필요하다 (제가 대신 못 함)
 
-0. **인스타툰 마이그레이션 적용** — `migrations/0015_easy_stature.sql`
+1. **Supabase 프로젝트가 사라졌다 — 지금 로그인 자체가 막혀 있다.** 최우선.
+   프로덕션 로그의 원문: `(ENOTFOUND) tenant/user postgres.wprxbwoxmznmlmzbuwgz not found`.
+   해당 ref는 **DNS에서도 안 잡힌다**(`wprxbwoxmznmlmzbuwgz.supabase.co` → ENOTFOUND).
+   일시 정지가 아니라 프로젝트가 삭제된 상태다. 새 프로젝트를 만들고 Vercel의
+   `DATABASE_URL`·`SUPABASE_URL`·`SUPABASE_SERVICE_ROLE_KEY`를 갈아끼운 뒤
+   마이그레이션을 처음부터 다시 적용해야 한다. **기존 데이터·스토리지 파일은 복구 불가.**
+   키 교체는 제가 못 하는 조작이라 여기 남긴다.
+
+2. **인스타툰 마이그레이션 적용** — `migrations/0015_easy_stature.sql`
    테이블 3개(`toon_characters`·`toon_formulas`·`toon_storyboards`)와 `run_items`의 컬럼 2개를
    **더하기만 한다.** 파괴적 변경이 없어 읽고 바로 적용해도 되지만, SQL은 사람이 본 뒤 넣는 것이 규칙이다.
    프로덕션은 `.env.migrate.local`의 URL을 따로 지정해야 한다 — `db:migrate`는 로컬 PGlite로 간다.
 
-1. **Trigger.dev 태스크 배포**
+3. **Trigger.dev 태스크 배포**
    키는 Vercel에 들어갔지만 워커가 태스크를 모른다. **Run이 큐에만 쌓이고 크레딧은 차감된다.**
    `npx trigger.dev@latest login` (브라우저 인증) → 그다음 `deploy`는 에이전트가 실행 가능.
 
-2. **인스타그램 계정 연동** — `SNS 관리 → SNS 계정 연동`
+4. **인스타그램 계정 연동** — `SNS 관리 → SNS 계정 연동`
    마지막 승인은 실제 계정 권한을 넘기는 동작이라 에이전트가 누르지 않는다.
    연동되면 아래 4개가 한 번에 검증 가능해진다.
 
-3. **디자인 학습 파일 업로드** — 브라우저 파일 선택은 에이전트가 못 한다.
+5. **디자인 학습 파일 업로드** — 브라우저 파일 선택은 에이전트가 못 한다.
    참고 이미지 몇 장 올려 「견적 보기」 → 「학습하기」까지 눌러 주면 그 뒤는 검증 가능.
 
 ### 🟡 연동 후 검증 대기 (코드는 완성, 실동작 미확인)
@@ -148,6 +156,8 @@ ssh root@155.94.154.102 "systemctl status panelo-render"
 | 캐릭터 앵커 | `anchor_prompt`는 **저장된 값을 쓴다.** 런타임에 다시 조립하면 항목 하나 편집이 과거 덱까지 소급된다 |
 | 컷 시드 | 시드는 캐릭터 것이지 컷 것이 아니다. 컷마다 흔들면 3컷부터 다른 사람이 나온다 |
 | 생성 이미지 원가 | `providerCostUsd`에 `generatedImageCount`를 안 넘기면 인스타툰이 거의 무료로 기록된다 |
+| 에러 경계 부재 | `error.tsx`는 **같은 세그먼트의 `layout.tsx`를 못 잡는다.** 셸의 데이터 조회는 `dashboard/layout.tsx`에 있어서 `dashboard/error.tsx`로는 안 잡히고 `(auth)/error.tsx`가 필요하다 |
+| 거짓말하는 에러 | `global-error.tsx`가 `NextError statusCode={0}`을 쓰면 서버 장애에도 "client-side exception"이라 찍는다. 콘솔엔 아무것도 없어서 브라우저를 뒤지게 된다 |
 
 ### 가드레일 (`CLAUDE.md` §5)
 
