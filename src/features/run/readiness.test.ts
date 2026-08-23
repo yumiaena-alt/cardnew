@@ -8,6 +8,7 @@ const complete: PipelineEnv = {
   RENDER_SERVICE_TOKEN: 'a'.repeat(40),
   SUPABASE_URL: 'https://project.supabase.co',
   SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+  FAL_KEY: 'uuid:secret',
 };
 
 describe(findMissingStages, () => {
@@ -35,5 +36,15 @@ describe(findMissingStages, () => {
 
   it('reports every missing stage at once', () => {
     expect(findMissingStages({})).toStrictEqual(['queue', 'render', 'storage']);
+  });
+
+  it('ignores the image model for card news, which never draws', () => {
+    expect(findMissingStages({ ...complete, FAL_KEY: undefined })).toStrictEqual([]);
+  });
+
+  it('reports image generation when an instatoon run has no image key', () => {
+    expect(findMissingStages({ ...complete, FAL_KEY: undefined }, 'toon')).toStrictEqual([
+      'imagegen',
+    ]);
   });
 });

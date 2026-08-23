@@ -26,11 +26,22 @@ const TOKENS_PER_MILLION = 1_000_000;
  */
 const TOKENS_PER_IMAGE = 1944;
 
+/**
+ * USD for one generated panel, at roughly one megapixel.
+ *
+ * This is the line that separates an instatoon from a card news deck. A stock
+ * photo is a search and costs nothing; nine drawn panels cost real money before
+ * a single word is rendered, which is why the two cannot share a price.
+ */
+const USD_PER_GENERATED_IMAGE = 0.025;
+
 export type RunUsage = {
   llmInputTokens: number;
   llmOutputTokens: number;
   /** Images sent to the model, not cards rendered. Rendering costs no tokens. */
   visionImageCount?: number;
+  /** Panels drawn by the image model. Priced per image, not per token. */
+  generatedImageCount?: number;
 };
 
 /**
@@ -44,8 +55,9 @@ export function providerCostUsd(usage: RunUsage): number {
   const inputCost =
     ((usage.llmInputTokens + visionTokens) * RATE_PER_MTOK.input) / TOKENS_PER_MILLION;
   const outputCost = (usage.llmOutputTokens * RATE_PER_MTOK.output) / TOKENS_PER_MILLION;
+  const imageCost = (usage.generatedImageCount ?? 0) * USD_PER_GENERATED_IMAGE;
 
-  return inputCost + outputCost;
+  return inputCost + outputCost + imageCost;
 }
 
 /** What one credit is sold for, in USD. Matches `overage_cents_per_credit`. */

@@ -15,7 +15,7 @@ import { Env } from '@/libs/Env';
  */
 
 /** A stage of the pipeline that has to be configured for a run to complete. */
-export type PipelineStage = 'queue' | 'render' | 'storage';
+export type PipelineStage = 'queue' | 'render' | 'storage' | 'imagegen';
 
 /** The subset of the environment generation depends on. */
 export type PipelineEnv = {
@@ -24,6 +24,7 @@ export type PipelineEnv = {
   RENDER_SERVICE_TOKEN?: string | undefined;
   SUPABASE_URL?: string | undefined;
   SUPABASE_SERVICE_ROLE_KEY?: string | undefined;
+  FAL_KEY?: string | undefined;
 };
 
 /**
@@ -32,11 +33,23 @@ export type PipelineEnv = {
  * Takes the environment as an argument so the rule can be tested by passing
  * configurations rather than by mocking the validated `Env` module.
  *
+ * Image generation is only required for instatoon. Card news sources stock
+ * photography and finishes without it, so demanding the key from every run
+ * would block a pipeline that is in fact complete.
+ *
  * @param env - Environment to inspect. Defaults to the validated one.
+ * @param mode - What the run produces. Card news unless stated.
  * @returns The missing stages, empty when generation is ready.
  */
-export function findMissingStages(env: PipelineEnv = Env): PipelineStage[] {
+export function findMissingStages(
+  env: PipelineEnv = Env,
+  mode: 'cardnews' | 'toon' = 'cardnews',
+): PipelineStage[] {
   const missing: PipelineStage[] = [];
+
+  if (mode === 'toon' && !env.FAL_KEY) {
+    missing.push('imagegen');
+  }
 
   if (!env.TRIGGER_SECRET_KEY) {
     missing.push('queue');

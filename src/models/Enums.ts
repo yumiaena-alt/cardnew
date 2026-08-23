@@ -37,6 +37,26 @@ export const deckStatusEnum = cardnews.enum('deck_status', [
 /** How much of a deck one generation touches. Drives the credit price of a run. */
 export const runScopeKindEnum = cardnews.enum('run_scope_kind', ['full', 'panel', 'slot']);
 
+/**
+ * What kind of thing a run item produces.
+ *
+ * On the item rather than the run because one batch can mix them: a monthly
+ * board holds card news rows and instatoon rows side by side, and the worker
+ * has to price and generate each row for what it actually is.
+ */
+export const runModeEnum = cardnews.enum('run_mode', ['cardnews', 'toon']);
+
+/** Drawing style an instatoon character is rendered in. */
+export const artStyleEnum = cardnews.enum('art_style', [
+  'soft-webtoon',
+  'bold-comic',
+  'sketch-diary',
+  'minimal-line',
+]);
+
+/** Where a story formula came from. `preset` ships with the product. */
+export const toonFormulaSourceEnum = cardnews.enum('toon_formula_source', ['learned', 'preset']);
+
 export const boardRowStatusEnum = cardnews.enum('board_row_status', [
   'draft',
   'queued',
@@ -86,6 +106,9 @@ export const creditReasonEnum = cardnews.enum('credit_reason', [
   'refund.manual',
   'expire.monthly',
 ]);
+
+/** What kind of content one run item produces. */
+export type RunMode = (typeof runModeEnum.enumValues)[number];
 
 /** Aspect ratio of a rendered card. Fan-out reuses one layout across all of them. */
 export type Ratio = (typeof ratioEnum.enumValues)[number];

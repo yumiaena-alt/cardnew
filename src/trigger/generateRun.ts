@@ -8,6 +8,7 @@ import { findRun, listRunItems, updateRun, updateRunItem } from '@/features/run/
 import type { RunItemOutcome } from '@/features/run/service';
 import { finalizeRun } from '@/features/run/service';
 import type { Scope } from '@/features/shared/scope';
+import { generateToonCut } from '@/features/toon/pipeline';
 import type { CardnewsPlan } from '@/lib/plan/schema';
 import { isRenderServiceReachable } from '@/libs/RenderService';
 import type { RunItem } from '@/models/Run';
@@ -51,6 +52,8 @@ type CutOutcome = {
   outcome: RunItemOutcome;
   usage: { inputTokens: number; outputTokens: number };
   panelCount: number;
+  /** Panels drawn by the image model. Card news draws none. */
+  generatedImageCount: number;
 };
 
 /**
@@ -75,6 +78,32 @@ async function runOneCut(input: {
       attempts: input.item.attempts + 1,
     });
 
+    // Instatoon branches before anything card news does, because none of what
+    // follows applies: there is no plan to reuse across channels and no stock
+    // photography to share — the art is drawn for one character and one story.
+    if (input.item.mode === 'toon') {
+      const toon = await generateToonCut({
+        scope: input.scope,
+        item: input.item,
+        projectId: input.projectId,
+        createdBy: input.scope.userId,
+      });
+
+      if (toon.warnings.length > 0) {
+        triggerLogger.warn('Instatoon finished with warnings', {
+          itemId: input.item.id,
+          warnings: toon.warnings.slice(0, 10),
+        });
+      }
+
+      return {
+        outcome: { itemId: input.item.id, status: 'done', deckId: toon.deckId },
+        usage: toon.usage,
+        panelCount: toon.panelCount,
+        generatedImageCount: toon.generatedImageCount,
+      };
+    }
+
     if (input.panelIndex !== null) {
       const repaint = await regeneratePanels(input.scope, {
         item: input.item,
@@ -85,6 +114,7 @@ async function runOneCut(input: {
         outcome: { itemId: input.item.id, status: 'done', deckId: repaint.deckId },
         usage: empty,
         panelCount: repaint.repainted,
+        generatedImageCount: 0,
       };
     }
 
@@ -107,6 +137,7 @@ async function runOneCut(input: {
       outcome: { itemId: input.item.id, status: 'done', deckId: result.deckId },
       usage: result.usage,
       panelCount: result.panelCount,
+      generatedImageCount: 0,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Generation failed';
@@ -117,6 +148,7 @@ async function runOneCut(input: {
       outcome: { itemId: input.item.id, status: 'failed', errorMessage: message },
       usage: empty,
       panelCount: 0,
+      generatedImageCount: 0,
     };
   }
 }
@@ -168,6 +200,7 @@ export const generateRunTask = task({
     let inputTokens = 0;
     let outputTokens = 0;
     let panelCount = 0;
+    let generatedImageCount = 0;
 
     for (const [position, item] of ordered.entries()) {
       const result = await runOneCut({ scope, item, projectId, plans, panelIndex });
@@ -176,6 +209,7 @@ export const generateRunTask = task({
       inputTokens += result.usage.inputTokens;
       outputTokens += result.usage.outputTokens;
       panelCount += result.panelCount;
+      generatedImageCount += result.generatedImageCount;
 
       if (position === 0 && result.outcome.status === 'failed') {
         triggerLogger.error('First cut failed, abandoning the rest', { runId: payload.runId });
@@ -193,7 +227,15 @@ export const generateRunTask = task({
       }
     }
 
-    const usage = { llmInputTokens: inputTokens, llmOutputTokens: outputTokens };
+    // Drawn panels are the dominant cost of an instatoon and are priced per
+    // image, not per token. Leaving them out would report every toon run as
+    // near-free and make the margin check meaningless for the mode that needs
+    // it most.
+    const usage = {
+      llmInputTokens: inputTokens,
+      llmOutputTokens: outputTokens,
+      generatedImageCount,
+    };
 
     const closed = await finalizeRun(scope, payload.runId, {
       outcomes,

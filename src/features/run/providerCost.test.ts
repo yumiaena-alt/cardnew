@@ -83,3 +83,35 @@ describe(checkMargin, () => {
     expect(margin.healthy).toBeTruthy();
   });
 });
+
+describe('generated panel cost', () => {
+  it('prices drawn panels on top of the tokens that wrote them', () => {
+    const withoutArt = providerCostUsd({ llmInputTokens: 2000, llmOutputTokens: 3000 });
+    const withArt = providerCostUsd({
+      llmInputTokens: 2000,
+      llmOutputTokens: 3000,
+      generatedImageCount: 9,
+    });
+
+    expect(withArt - withoutArt).toBeCloseTo(0.225, 4);
+  });
+
+  it('keeps a nine-cut instatoon clear of the margin floor', () => {
+    // 6 base + 9 x 2 per cut, the rate CREDIT_RATES charges for this length.
+    const margin = checkMargin({
+      creditsCharged: 24,
+      usage: { llmInputTokens: 2000, llmOutputTokens: 3000, generatedImageCount: 9 },
+    });
+
+    expect(margin.healthy).toBeTruthy();
+  });
+
+  it('flags an instatoon priced at the card news rate', () => {
+    const margin = checkMargin({
+      creditsCharged: 15,
+      usage: { llmInputTokens: 2000, llmOutputTokens: 3000, generatedImageCount: 9 },
+    });
+
+    expect(margin.healthy).toBeFalsy();
+  });
+});

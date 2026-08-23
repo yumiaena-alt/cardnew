@@ -67,6 +67,8 @@ vi.mock(import('./repository'), () => ({
         topic: item.topic,
         ratio: item.ratio,
         templateVersionId: item.templateVersionId ?? null,
+        mode: item.mode ?? 'cardnews',
+        toon: item.toon ?? null,
         isOrigin: item.isOrigin,
         estimatedCredits: item.estimatedCredits,
         status: 'queued',

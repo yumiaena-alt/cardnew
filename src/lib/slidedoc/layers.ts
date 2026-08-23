@@ -141,13 +141,35 @@ export type ImageLayer = z.infer<typeof imageLayerSchema>;
 
 // ─── 도형 ────────────────────────────────────────────────────
 
+/**
+ * 말풍선 꼬리.
+ *
+ * 별도 레이어 타입을 만들지 않고 도형에 붙이는 이유: 말풍선 본체는 결국
+ * 둥근 사각형이고, 안에 들어가는 대사는 이미 텍스트 레이어가 autoFit·조판·
+ * 충돌 검사를 전부 해 준다. 타입을 새로 만들면 에디터(PanelCanvas·
+ * LayerInspector)와 조판 엔진에 같은 로직을 한 벌 더 써야 한다.
+ *
+ * `at`은 해당 변을 따라가는 0~1 위치다. 픽셀이 아니라 비율이라
+ * 비율 리사이즈에서도 꼬리가 화자를 계속 가리킨다.
+ */
+export const bubbleTailSchema = z.object({
+  side: z.enum(['top', 'right', 'bottom', 'left']).default('bottom'),
+  at: ratioSchema.default(0.3),
+  /** base(1080px) 캔버스 기준 px. 렌더 시 스케일을 곱한다. */
+  size: z.number().positive().default(28),
+});
+
+export type BubbleTail = z.infer<typeof bubbleTailSchema>;
+
 export const shapeLayerSchema = layerBaseSchema.extend({
   type: z.literal('shape'),
-  role: z.enum(['divider', 'accent', 'scrim', 'frame']),
+  role: z.enum(['divider', 'accent', 'scrim', 'frame', 'bubble']),
   shape: z.enum(['rect', 'ellipse', 'line']).default('rect'),
   fill: paintSchema.default({ kind: 'solid', color: '#000000' }),
   stroke: z.object({ color: cssColorSchema, width: z.number().positive() }).optional(),
   radius: z.number().min(0).default(0),
+  /** 말풍선 꼬리. role='bubble'일 때만 의미가 있다. */
+  tail: bubbleTailSchema.optional(),
 });
 
 export type ShapeLayer = z.infer<typeof shapeLayerSchema>;

@@ -60,7 +60,10 @@ export async function submitRun(input: CreateRunInput): Promise<RunActionResult>
   try {
     const scope = await getScope();
 
-    const missing = input.dryRun ? [] : findMissingStages();
+    // Instatoon needs the image model on top of everything card news needs, so
+    // the readiness question is asked for the heaviest mode in the batch.
+    const mode = input.items.some((item) => item.mode === 'toon') ? 'toon' : 'cardnews';
+    const missing = input.dryRun ? [] : findMissingStages(undefined, mode);
 
     if (missing.length > 0) {
       logger.warn('Run refused: pipeline incomplete', {

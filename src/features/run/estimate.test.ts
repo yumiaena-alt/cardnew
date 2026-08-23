@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CREDIT_RATES } from '@/features/credit/estimate';
 import type { CreateRunInput } from '@/validations/RunValidation';
 import { estimateRun } from './estimate';
 
@@ -79,6 +80,64 @@ describe(estimateRun, () => {
       });
 
       expect(estimate.total).toBe(1);
+    });
+  });
+
+  describe('instatoon', () => {
+    const CHARACTER_ID = '9a1c7b2e-5d34-4f61-8b0a-6c2e9d4f7a13';
+
+    function toonItem(cutCount: number) {
+      return {
+        topic: '내 성과가 남의 이름으로 올라간 날',
+        mode: 'toon' as const,
+        toon: { characterId: CHARACTER_ID, formulaId: null, cutCount },
+        targets: [origin],
+      };
+    }
+
+    it('prices an instatoon by its length, not as one flat deck', () => {
+      const nine = estimateRun({ items: [toonItem(9)], scope: { kind: 'full' } });
+      const five = estimateRun({ items: [toonItem(5)], scope: { kind: 'full' } });
+
+      expect(nine.total).toBe(CREDIT_RATES.toonBase + 9 * CREDIT_RATES.toonCut);
+      expect(five.total).toBeLessThan(nine.total);
+    });
+
+    it('charges more than a card news deck, because it draws every panel', () => {
+      const toon = estimateRun({ items: [toonItem(9)], scope: { kind: 'full' } });
+
+      expect(toon.total).toBeGreaterThan(CREDIT_RATES.originDeck);
+    });
+
+    it('prices another channel of the same story as a derived cut', () => {
+      const estimate = estimateRun({
+        items: [{ ...toonItem(9), targets: [origin, reelsCut] }],
+        scope: { kind: 'full' },
+      });
+
+      expect(estimate.total).toBe(
+        CREDIT_RATES.toonBase + 9 * CREDIT_RATES.toonCut + CREDIT_RATES.toonDerivedCut,
+      );
+    });
+
+    it('prices repainting one cut at the panel rate, like any other card', () => {
+      const estimate = estimateRun({
+        items: [{ ...toonItem(9), deckId: CHARACTER_ID }],
+        scope: { kind: 'panel', panelIndex: 3 },
+      });
+
+      expect(estimate.total).toBe(CREDIT_RATES.panel);
+    });
+
+    it('leaves card news items on the card news rate inside a mixed batch', () => {
+      const estimate = estimateRun({
+        items: [item([origin]), toonItem(9)],
+        scope: { kind: 'full' },
+      });
+
+      expect(estimate.total).toBe(
+        CREDIT_RATES.originDeck + CREDIT_RATES.toonBase + 9 * CREDIT_RATES.toonCut,
+      );
     });
   });
 });

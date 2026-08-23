@@ -7,6 +7,7 @@ import type { CSSProperties, ReactElement } from 'react';
 import type { SlideDoc } from '@/lib/slidedoc/doc';
 import { docCanvasSize } from '@/lib/slidedoc/doc';
 import type {
+  BubbleTail,
   ImageLayer,
   Layer,
   LogoLayer,
@@ -253,6 +254,79 @@ function ShapeLayerView({
       }}
       data-layer-id={layer.id}
       data-layer-role={layer.role}
+    >
+      {layer.tail ? <BubbleTailView layer={layer} fontScale={fontScale} /> : null}
+    </div>
+  );
+}
+
+/**
+ * 말풍선 꼬리.
+ *
+ * CSS 삼각형(투명 테두리)으로 그린다. SVG나 clip-path 대신 이걸 쓰는 이유는
+ * 말풍선 본체가 이미 div의 background이기 때문이다 — 같은 색을 한 곳에서
+ * 읽어 쓰면 본체와 꼬리의 색이 어긋날 수 없다.
+ *
+ * 테두리가 있는 말풍선은 꼬리에 테두리를 그리지 않는다. 삼각형 두 겹을
+ * 정확히 겹치는 것보다, 꼬리를 본체 쪽으로 1px 밀어 이음매를 감추는 편이
+ * 렌더 배수가 바뀌어도 틈이 벌어지지 않는다.
+ */
+function BubbleTailView({
+  layer,
+  fontScale,
+}: {
+  layer: ShapeLayer;
+  fontScale: number;
+}): ReactElement | null {
+  const tail = layer.tail;
+
+  if (!tail) {
+    return null;
+  }
+
+  const size = tail.size * fontScale;
+  const fill = paintToCss(layer.fill);
+  const along = `${(tail.at * 100).toFixed(2)}%`;
+  const transparent = `${size}px solid transparent`;
+  const solid = `${size}px solid ${fill}`;
+  // 본체와 겹쳐 이음매를 지운다. 1px이 아니라 스케일에 비례해야 2x 렌더에서도 같다.
+  const overlap = `${-size + Math.max(1, fontScale)}px`;
+
+  const bySide: Record<BubbleTail['side'], CSSProperties> = {
+    bottom: {
+      left: along,
+      bottom: overlap,
+      borderLeft: transparent,
+      borderRight: transparent,
+      borderTop: solid,
+    },
+    top: {
+      left: along,
+      top: overlap,
+      borderLeft: transparent,
+      borderRight: transparent,
+      borderBottom: solid,
+    },
+    left: {
+      top: along,
+      left: overlap,
+      borderTop: transparent,
+      borderBottom: transparent,
+      borderRight: solid,
+    },
+    right: {
+      top: along,
+      right: overlap,
+      borderTop: transparent,
+      borderBottom: transparent,
+      borderLeft: solid,
+    },
+  };
+
+  return (
+    <span
+      data-bubble-tail={tail.side}
+      style={{ position: 'absolute', width: 0, height: 0, ...bySide[tail.side] }}
     />
   );
 }

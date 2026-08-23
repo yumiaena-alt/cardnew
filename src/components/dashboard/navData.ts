@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Calendar, Images, Share2, Sparkles } from 'lucide-react';
+import { Calendar, Images, Share2, Sparkles, Drama } from 'lucide-react';
 
 /** Keys available in the `DashboardNav` i18n namespace. Keeps `t()` type-safe. */
 export type NavLabelKey =
@@ -11,6 +11,10 @@ export type NavLabelKey =
   | 'deck_new'
   | 'deck_list'
   | 'deck_video'
+  | 'toon'
+  | 'toon_create'
+  | 'toon_characters'
+  | 'toon_formulas'
   | 'blog'
   | 'automation'
   | 'comments'
@@ -67,6 +71,20 @@ const navGroups: NavGroup[] = [
       { id: 'deck-video', labelKey: 'deck_video', href: '/dashboard/video' },
       { id: 'deck-blog', labelKey: 'blog', href: '/dashboard/blog' },
       { id: 'deck-list', labelKey: 'deck_list', href: '/dashboard/deck' },
+    ],
+  },
+  // Instatoon sits beside card news rather than inside it. Both end in a deck,
+  // but making one starts somewhere else entirely: a character has to exist
+  // before there is anything to draw, and that step has no card news analogue.
+  {
+    id: 'toon',
+    labelKey: 'toon',
+    icon: Drama,
+    phase: 2,
+    children: [
+      { id: 'toon-create', labelKey: 'toon_create', href: '/dashboard/toon' },
+      { id: 'toon-characters', labelKey: 'toon_characters', href: '/dashboard/toon/characters' },
+      { id: 'toon-formulas', labelKey: 'toon_formulas', href: '/dashboard/toon/formulas' },
     ],
   },
   {

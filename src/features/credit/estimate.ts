@@ -27,6 +27,33 @@ export const CREDIT_RATES = {
   /** One ad-library search. Charged once per query per day, not per attempt. */
   referenceSearch: 1,
   /**
+   * Writing one instatoon: the storyboard call, once per deck.
+   *
+   * Separate from the per-cut rate because the writing does not get cheaper
+   * when the story is shorter — the model reads the same formula either way.
+   */
+  toonBase: 6,
+  /**
+   * Drawing one instatoon cut.
+   *
+   * A generated panel costs about 2.5 cents against 5 cents a credit, so two
+   * credits clear it by 4x. Card news pays nothing here: a stock photo is a
+   * search, and searches are free. This is the whole reason an instatoon
+   * cannot be priced at the card news rate. See `run/providerCost.ts`.
+   */
+  toonCut: 2,
+  /**
+   * One instatoon turned into another channel's ratio. Priced like any derived
+   * cut: the art and the dialogue are already paid for, only the layout moves.
+   */
+  toonDerivedCut: 5,
+  /**
+   * Reference instatoons turned into a reusable story formula. One vision call
+   * with the same shape and the same image count as design learning, so it
+   * carries the same price.
+   */
+  toonFormula: 10,
+  /**
    * One long-form draft. Priced at the derived-cut rate because that is what it
    * is: the same thinking as a deck, written out long instead of laid out.
    */

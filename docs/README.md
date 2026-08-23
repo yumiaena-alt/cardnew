@@ -15,6 +15,7 @@
 | [03-DATA-MODEL.md](03-DATA-MODEL.md) | Drizzle 스키마 전문(21개 테이블), 인덱스 전략, 마이그레이션 정책 | 개발 |
 | [04-TASKS.md](04-TASKS.md) | Phase 0~4 태스크리스트와 완료 기준 | 전체 |
 | [05-DESIGN-SYSTEM.md](05-DESIGN-SYSTEM.md) | v0 토큰 매핑, 타이포, 컴포넌트 규약, 모션, a11y | 디자인·개발 |
+| [08-TOON-PIPELINE.md](08-TOON-PIPELINE.md) | 인스타툰 — 벤치마킹 분석, 스토리보드 계약, 캐릭터 일관성, 말풍선 합성 | 개발 |
 
 ## 확정 사항
 

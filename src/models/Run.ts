@@ -10,7 +10,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { boardRows, boards } from './Board';
 import { decks } from './Deck';
-import { channelEnum, ratioEnum, runScopeKindEnum, runStatusEnum } from './Enums';
+import { channelEnum, ratioEnum, runModeEnum, runScopeKindEnum, runStatusEnum } from './Enums';
 import { cardnews } from './Namespace';
 import { organizations, users } from './Org';
 import { templateVersions } from './Template';
@@ -62,6 +62,19 @@ export const runs = cardnews.table(
 );
 
 /**
+ * What an instatoon item needs beyond the topic.
+ *
+ * The cut count is frozen here rather than read back from the formula: the
+ * quote the user accepted was priced per cut, and a formula edited between the
+ * charge and the run must not change what they are billed for.
+ */
+export type RunItemToonSpec = {
+  characterId: string;
+  formulaId: string | null;
+  cutCount: number;
+};
+
+/**
  * One cut inside a run. Items carry their own status because partial failure is
  * expected: a single failed card leaves the rest of the run to finish, and only
  * the failed items are refunded.
@@ -85,6 +98,17 @@ export const runItems = cardnews.table(
     ratio: ratioEnum('ratio').notNull(),
     /** Pins a template. Null lets the template engine pick from the topic. */
     templateVersionId: uuid('template_version_id').references(() => templateVersions.id),
+    /**
+     * What this item produces. Defaults to card news so every row written
+     * before instatoon existed keeps meaning what it meant.
+     */
+    mode: runModeEnum('mode').notNull().default('cardnews'),
+    /**
+     * The instatoon inputs, on the item for the same reason `topic` is: a
+     * worker retry must not depend on the character or formula still being
+     * pointed at by whatever screen started the run. Null for card news.
+     */
+    toon: jsonb('toon').$type<RunItemToonSpec>(),
     isOrigin: boolean('is_origin').notNull(),
     estimatedCredits: integer('estimated_credits').notNull(),
     status: runStatusEnum('status').notNull().default('queued'),

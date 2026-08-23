@@ -177,6 +177,11 @@ export async function createRun(scope: Scope, input: CreateRunInput): Promise<Cr
       channel: cut.channel,
       ratio: cut.ratio,
       templateVersionId: cut.templateVersionId,
+      mode: cut.mode,
+      // Frozen onto the row at charge time. The worker reads this and never
+      // the screen that started the run, so editing a formula afterwards
+      // cannot change what was paid for.
+      toon: cut.toon ?? null,
       isOrigin: cut.isOrigin,
       estimatedCredits: cut.credits,
     })),

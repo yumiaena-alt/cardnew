@@ -1,9 +1,9 @@
 # 인수인계 — 세션이 끊겨도 여기서부터
 
 > **새 세션은 이 파일을 가장 먼저 읽는다.** 다 읽는 데 3분이면 된다.
-> 기준 커밋 `27cd8b2` · 마이그레이션 `0014` · 테스트 497 통과 / 10 skip
+> 기준 커밋 `2a9fbd2` · 마이그레이션 `0015`(생성만, **미적용**) · 테스트 540 통과 / 10 skip
 >
-> 관련 문서: [`CLAUDE.md`](../CLAUDE.md) 규칙 · [`project_status.md`](project_status.md) 리스크 대장 · [`04-TASKS.md`](04-TASKS.md) 단계별 계획
+> 관련 문서: [`CLAUDE.md`](../CLAUDE.md) 규칙 · [`project_status.md`](project_status.md) 리스크 대장 · [`04-TASKS.md`](04-TASKS.md) 단계별 계획 · [`08-TOON-PIPELINE.md`](08-TOON-PIPELINE.md) 인스타툰
 
 ---
 
@@ -42,6 +42,11 @@
 
 ### 🔴 사장님 조작이 필요하다 (제가 대신 못 함)
 
+0. **인스타툰 마이그레이션 적용** — `migrations/0015_easy_stature.sql`
+   테이블 3개(`toon_characters`·`toon_formulas`·`toon_storyboards`)와 `run_items`의 컬럼 2개를
+   **더하기만 한다.** 파괴적 변경이 없어 읽고 바로 적용해도 되지만, SQL은 사람이 본 뒤 넣는 것이 규칙이다.
+   프로덕션은 `.env.migrate.local`의 URL을 따로 지정해야 한다 — `db:migrate`는 로컬 PGlite로 간다.
+
 1. **Trigger.dev 태스크 배포**
    키는 Vercel에 들어갔지만 워커가 태스크를 모른다. **Run이 큐에만 쌓이고 크레딧은 차감된다.**
    `npx trigger.dev@latest login` (브라우저 인증) → 그다음 `deploy`는 에이전트가 실행 가능.
@@ -54,6 +59,10 @@
    참고 이미지 몇 장 올려 「견적 보기」 → 「학습하기」까지 눌러 주면 그 뒤는 검증 가능.
 
 ### 🟡 연동 후 검증 대기 (코드는 완성, 실동작 미확인)
+
+- **인스타툰 전 구간** — `FAL_KEY`는 있지만 이 파이프라인으로 실제 호출한 적이 없다.
+  주인공 1명 만들고 → 4컷으로 견적(14크레딧) → 생성 → 얼굴이 컷마다 같은지 눈으로 확인하는 것이 첫 검증.
+  라이브 하네스(`toonLive.test.ts`)는 아직 없다 — [`08-TOON-PIPELINE.md`](08-TOON-PIPELINE.md) §10
 
 - 토큰 암호화 저장 · 장기 토큰 교환(60일)
 - 댓글 인박스가 실제 댓글을 가져오는가
@@ -136,6 +145,9 @@ ssh root@155.94.154.102 "systemctl status panelo-render"
 | 판별 유니온 | `Partial<Layer>` spread는 캐스팅을 부른다. 공통 필드 토글과 전체 교체로 나눌 것 |
 | 포트 5432 | dev 서버와 `build-local`이 같은 포트를 쓴다. 하나를 끄고 돌린다 |
 | 렌더 실행기 | `node --experimental-strip-types`로는 안 뜬다(JSX·확장자 없는 import). **tsx** |
+| 캐릭터 앵커 | `anchor_prompt`는 **저장된 값을 쓴다.** 런타임에 다시 조립하면 항목 하나 편집이 과거 덱까지 소급된다 |
+| 컷 시드 | 시드는 캐릭터 것이지 컷 것이 아니다. 컷마다 흔들면 3컷부터 다른 사람이 나온다 |
+| 생성 이미지 원가 | `providerCostUsd`에 `generatedImageCount`를 안 넘기면 인스타툰이 거의 무료로 기록된다 |
 
 ### 가드레일 (`CLAUDE.md` §5)
 
@@ -153,6 +165,8 @@ src/features/run/          생성 실행. pipeline.ts 가 중심. providerCost.t
 src/features/template/     디자인 학습. learn.ts(추출) actions.ts(견적·차감) brand.ts(토큰→스타일)
 src/features/deck/         카드뉴스·영상. actions.ts 에 편집 저장·사진 교체
 src/features/social/       계정 연동·댓글·DM. connect.ts 가 OAuth
+src/features/toon/         인스타툰. pipeline.ts 가 중심. 카드뉴스와 같은 run/deck 위에 얹혀 있다
+src/lib/toon/              스토리보드 계약·프롬프트·캐릭터 앵커·말풍선 조판
 src/lib/slidedoc/          문서 스키마. geometry.ts 에 앵커 좌표 왕복
 src/lib/renderer/          조판·템플릿. compose.ts / typeset.ts / learned.ts(학습본을 템플릿으로)
 src/components/deck/canvas/  캔버스 편집기. PanelCanvas · LayerInspector · snap.ts
